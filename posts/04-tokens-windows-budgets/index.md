@@ -9,6 +9,9 @@
 > - Decide between a smaller model on a longer prompt and a larger model on a shorter one.
 > - Set a defensible token budget for each layer of your agent.
 
+![Token, window, and budget at a glance](./diagrams/00-hero-token-window-budget.svg)
+*The token is the unit, the window is the ceiling, and the budget is the smaller share you actually spend.*
+
 ---
 
 ## 1. What a token is, exactly

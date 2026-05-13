@@ -2,17 +2,17 @@
   <title id="t">The cost, latency, quality triangle</title>
   <desc id="d">An equilateral triangle with the three vertices labelled cost, latency, and quality. Three workloads sit on the edges between pairs of vertices, illustrating that any LLM design optimises two corners at the expense of the third.</desc>
   <style><![CDATA[
-    :root{--bg:#FAFAF7;--ink:#1A1A1A;--muted:#5C5C5C;--primary:#5B7FBF;--accent:#D98E5F;--success:#5C9E78;--alert:#C66B5E;}
-    @media (prefers-color-scheme:dark){:root{--bg:#161512;--ink:#F1EEE8;--muted:#A6A29B;--primary:#8BA8E0;--accent:#E8B088;--success:#7FBF9B;--alert:#D88880;}}
-    .bg{fill:var(--bg);}
-    .tri{fill:none;stroke:var(--ink);stroke-width:1.5;}
-    .corner{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--ink);}
-    .edge{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ink);}
-    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--muted);}
-    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ink);}
-    .dot-q{fill:var(--success);}
-    .dot-c{fill:var(--accent);}
-    .dot-l{fill:var(--primary);}
+    :root{--ce-bg:#FAFAF7;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;--ce-primary:#5B7FBF;--ce-accent:#D98E5F;--ce-success:#5C9E78;--ce-alert:#C66B5E;}
+    @media (prefers-color-scheme:dark){:root{--ce-bg:#0E0F12;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;--ce-primary:#8BA8E0;--ce-accent:#E8B088;--ce-success:#7FBF9B;--ce-alert:#D88880;}}
+    .bg{fill:var(--ce-bg);}
+    .tri{fill:none;stroke:var(--ce-ink);stroke-width:1.5;}
+    .corner{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--ce-ink);}
+    .edge{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ce-ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--ce-ink-muted);}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ce-ink);}
+    .dot-q{fill:var(--ce-success);}
+    .dot-c{fill:var(--ce-accent);}
+    .dot-l{fill:var(--ce-primary);}
   ]]></style>
   <rect class="bg" width="760" height="440"/>
   <text class="title" x="32" y="32">Pick two: the cost, latency, quality triangle</text>

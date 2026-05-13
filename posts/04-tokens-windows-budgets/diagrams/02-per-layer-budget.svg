@@ -2,14 +2,14 @@
   <title id="t">Per-layer token budget allocation</title>
   <desc id="d">A horizontal stacked bar showing default token budget shares for the six layers of an LLM call. From left to right: system prompt, tools, memory, RAG, history, user turn. RAG and history are the largest variable shares and the most common silent budget-eaters.</desc>
   <style><![CDATA[
-    :root{--bg:#FAFAF7;--ink:#1A1A1A;--muted:#5C5C5C;--p1:#5B7FBF;--p2:#7FBF9B;--p3:#D98E5F;--p4:#B8895A;--p5:#8B7AA8;--p6:#5C9E78;}
-    @media (prefers-color-scheme:dark){:root{--bg:#161512;--ink:#F1EEE8;--muted:#A6A29B;--p1:#8BA8E0;--p2:#7FBF9B;--p3:#E8B088;--p4:#D4B58A;--p5:#B5A2CC;--p6:#7FBF9B;}}
-    .bg{fill:var(--bg);}
-    .seg{stroke:var(--bg);stroke-width:2;}
-    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ink);}
-    .l{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:11px;fill:var(--ink);}
-    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--muted);}
-    .lab{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:12px;fill:var(--ink);}
+    :root{--ce-bg:#FAFAF7;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;--p1:#5B7FBF;--p2:#5C9E78;--p3:#B8895A;--p4:#D98E5F;--p5:#C66B5E;--p6:#8E8E88;}
+    @media (prefers-color-scheme:dark){:root{--ce-bg:#0E0F12;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;--p1:#8BA8E0;--p2:#7FBF9B;--p3:#D4B58A;--p4:#E8B088;--p5:#D88880;--p6:#6E6E68;}}
+    .bg{fill:var(--ce-bg);}
+    .seg{stroke:var(--ce-bg);stroke-width:2;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ce-ink);}
+    .l{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:11px;fill:var(--ce-ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--ce-ink-muted);}
+    .lab{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:12px;fill:var(--ce-ink);}
   ]]></style>
   <rect class="bg" width="800" height="360"/>
   <text class="title" x="32" y="34">Default token budget share per layer (input = 100%)</text>

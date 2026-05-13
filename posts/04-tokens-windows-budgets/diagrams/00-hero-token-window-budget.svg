@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" width="960" height="360" role="img" aria-labelledby="t d">
+  <title id="t">Tokens, windows, and budgets</title>
+  <desc id="d">Three nested concepts. The token is the atomic billed unit. The context window is the architectural ceiling of how many tokens the model will accept. The token budget is the smaller share of that window the engineer chooses to spend, divided across the six layers and an output reserve. The hero shows a long horizontal bar representing the window, with the budget filling roughly half of it and subdivided by layer.</desc>
+
+  <style><![CDATA[
+    :root{
+      --ce-bg:#FAFAF7;--ce-surface:#FFFFFF;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;
+      --ce-ink-subtle:#9A9A9A;--ce-border:#D9D9D4;
+      --ce-primary:#5B7FBF;--ce-accent:#D98E5F;--ce-success:#5C9E78;
+      --ce-warn:#B8895A;--ce-alert:#C66B5E;--ce-neutral-1:#EAEAE4;--ce-neutral-3:#8E8E88;
+    }
+    @media (prefers-color-scheme:dark){
+      :root{
+        --ce-bg:#0E0F12;--ce-surface:#16181C;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;
+        --ce-ink-subtle:#6E6E68;--ce-border:#2A2D33;
+        --ce-primary:#8BA8E0;--ce-accent:#E8B088;--ce-success:#7FBF9B;
+        --ce-warn:#D4B58A;--ce-alert:#D88880;--ce-neutral-1:#1F2229;--ce-neutral-3:#6E6E68;
+      }
+    }
+    .bg{fill:var(--ce-bg);}
+    .window{fill:var(--ce-neutral-1);stroke:var(--ce-border);stroke-width:1;}
+    .seg{stroke:var(--ce-bg);stroke-width:1.5;}
+    .reserve{fill:none;stroke:var(--ce-ink-muted);stroke-width:1;stroke-dasharray:4 3;}
+    .tick{stroke:var(--ce-ink-muted);stroke-width:1;fill:none;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:20px;fill:var(--ce-ink);}
+    .h{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:13px;fill:var(--ce-ink);text-transform:uppercase;letter-spacing:0.06em;}
+    .l{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ce-ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:12px;fill:var(--ce-ink-muted);}
+    .lab{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:11px;fill:#FFFFFF;}
+    .mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:11px;fill:var(--ce-ink-muted);}
+  ]]></style>
+
+  <rect class="bg" width="960" height="360"/>
+  <text class="title" x="48" y="44">Token · window · budget</text>
+  <text class="s" x="48" y="64">A token is the unit. The window is the ceiling. The budget is what you choose to spend.</text>
+
+  <!-- The window bar: x 60..900 (width 840) representing the model's full context window -->
+  <text class="h" x="60" y="118">Context window  ·  e.g. 200 000 tokens</text>
+  <rect class="window" x="60" y="130" width="840" height="56" rx="6"/>
+
+  <!-- Budget fills ~50% of window: x 60..480 = 420 wide, subdivided by layer share -->
+  <!-- shares (of the 420 budget bar): system 10%=42, tools 10%=42, memory 8%=34, RAG 32%=134, history 35%=147, user 5%=21 -->
+  <g>
+    <rect class="seg" x="60"  y="130" width="42"  height="56" fill="var(--ce-primary)"/>
+    <rect class="seg" x="102" y="130" width="42"  height="56" fill="var(--ce-success)"/>
+    <rect class="seg" x="144" y="130" width="34"  height="56" fill="var(--ce-warn)"/>
+    <rect class="seg" x="178" y="130" width="134" height="56" fill="var(--ce-accent)"/>
+    <rect class="seg" x="312" y="130" width="147" height="56" fill="var(--ce-alert)"/>
+    <rect class="seg" x="459" y="130" width="21"  height="56" fill="var(--ce-neutral-3)"/>
+  </g>
+
+  <!-- in-segment labels (only for wide enough segments) -->
+  <text class="lab" x="245" y="163" text-anchor="middle">RAG</text>
+  <text class="lab" x="385" y="163" text-anchor="middle">history</text>
+
+  <!-- Output reserve marker on right side of window -->
+  <rect class="reserve" x="780" y="130" width="120" height="56" rx="6"/>
+  <text class="s" x="840" y="163" text-anchor="middle">output reserve</text>
+
+  <!-- Brackets under window -->
+  <line class="tick" x1="60"  y1="196" x2="60"  y2="206"/>
+  <line class="tick" x1="480" y1="196" x2="480" y2="206"/>
+  <line class="tick" x1="60"  y1="206" x2="480" y2="206"/>
+  <text class="l" x="270" y="224" text-anchor="middle">Input token budget  ·  what you choose to spend</text>
+  <text class="mono" x="270" y="240" text-anchor="middle">~50% of the window  ·  ceiling is not a target</text>
+
+  <line class="tick" x1="780" y1="196" x2="780" y2="206"/>
+  <line class="tick" x1="900" y1="196" x2="900" y2="206"/>
+  <line class="tick" x1="780" y1="206" x2="900" y2="206"/>
+  <text class="s" x="840" y="224" text-anchor="middle">capped by max_tokens</text>
+
+  <!-- Three callouts -->
+  <g transform="translate(48,272)">
+    <rect width="280" height="64" rx="8" fill="var(--ce-surface)" stroke="var(--ce-border)"/>
+    <text class="h" x="16" y="22">1 · Token</text>
+    <text class="s" x="16" y="42">≈ ¾ of an English word.</text>
+    <text class="s" x="16" y="58">Code and JSON tokenise 30–80% worse.</text>
+  </g>
+  <g transform="translate(340,272)">
+    <rect width="280" height="64" rx="8" fill="var(--ce-surface)" stroke="var(--ce-border)"/>
+    <text class="h" x="16" y="22">2 · Window</text>
+    <text class="s" x="16" y="42">Hard architectural ceiling.</text>
+    <text class="s" x="16" y="58">Quality degrades long before it.</text>
+  </g>
+  <g transform="translate(632,272)">
+    <rect width="280" height="64" rx="8" fill="var(--ce-surface)" stroke="var(--ce-border)"/>
+    <text class="h" x="16" y="22">3 · Budget</text>
+    <text class="s" x="16" y="42">Per-layer caps you enforce.</text>
+    <text class="s" x="16" y="58">Cost · latency · quality, pick two.</text>
+  </g>
+</svg>

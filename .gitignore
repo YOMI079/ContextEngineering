@@ -1,0 +1,63 @@
+# ===== OS / editor =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# ===== Workspace-only folders (not shipped) =====
+templates/
+tools/
+assets/diagrams/src/
+assets/diagrams/style/
+
+# ===== Loose notes / drafts / archives =====
+# Root-only loose .txt notes (don't ignore data fixtures under code/**/*.txt)
+/*.txt
+*.rar
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+
+# ===== Memory / scratch =====
+/memories/
+.scratch/
+scratch/
+TODO.local.md
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ===== Node (in case of static-site tooling) =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.next/
+.cache/
+
+# ===== Diagram render byproducts =====
+*.drawio.bkp
+*.excalidraw.bak

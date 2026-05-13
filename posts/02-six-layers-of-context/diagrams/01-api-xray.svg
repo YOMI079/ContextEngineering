@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" role="img" aria-labelledby="t d">
+  <title id="t">A real API call, X-rayed against the six layers</title>
+  <desc id="d">A JSON request body sent to the Anthropic Messages API, annotated to show how each top-level field and message maps to one of the six context layers: system prompt, tools and MCP descriptions, memory and state, retrieved chunks, conversation history, and the user instruction.</desc>
+
+  <style><![CDATA[
+    :root{
+      --ce-bg:#FAFAF7;--ce-surface:#FFFFFF;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;
+      --ce-ink-subtle:#9A9A9A;--ce-border:#D9D9D4;
+      --ce-primary:#5B7FBF;--ce-accent:#D98E5F;--ce-success:#5C9E78;
+      --ce-warn:#B8895A;--ce-alert:#C66B5E;--ce-neutral-3:#8E8E88;
+    }
+    @media (prefers-color-scheme:dark){
+      :root{
+        --ce-bg:#0E0F12;--ce-surface:#16181C;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;
+        --ce-ink-subtle:#6E6E68;--ce-border:#2A2D33;
+        --ce-primary:#8BA8E0;--ce-accent:#E8B088;--ce-success:#7FBF9B;
+        --ce-warn:#D4B58A;--ce-alert:#D88880;--ce-neutral-3:#6E6E68;
+      }
+    }
+    .bg{fill:var(--ce-bg);}
+    .card{fill:var(--ce-surface);stroke:var(--ce-border);stroke-width:1;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:20px;fill:var(--ce-ink);}
+    .small{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:12px;fill:var(--ce-ink-muted);}
+    .mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:12.5px;fill:var(--ce-ink);}
+    .key{fill:var(--ce-primary);}
+    .str{fill:var(--ce-success);}
+    .punct{fill:var(--ce-ink-subtle);}
+    .pill{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:11px;fill:#FFFFFF;}
+    .lbl{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ce-ink);}
+    .leader{stroke:var(--ce-ink-muted);stroke-width:1;fill:none;stroke-dasharray:3 3;}
+  ]]></style>
+
+  <rect class="bg" width="960" height="560"/>
+  <text class="title" x="48" y="44">A real API call, X-rayed against the six layers</text>
+  <text class="small" x="48" y="64">Anthropic Messages shape. Field names differ across providers; the layers do not.</text>
+
+  <!-- JSON card -->
+  <rect class="card" x="48" y="88" width="540" height="448" rx="10"/>
+
+  <g transform="translate(64,112)">
+    <text class="mono"><tspan class="punct">{</tspan></text>
+
+    <!-- system -->
+    <text class="mono" y="22"><tspan x="16" class="key">"system"</tspan><tspan class="punct">: </tspan><tspan class="str">"You are a senior research assistant…"</tspan><tspan class="punct">,</tspan></text>
+
+    <!-- tools -->
+    <text class="mono" y="48"><tspan x="16" class="key">"tools"</tspan><tspan class="punct">: [</tspan></text>
+    <text class="mono" y="68"><tspan x="32" class="punct">{ </tspan><tspan class="key">"name"</tspan><tspan class="punct">: </tspan><tspan class="str">"search_docs"</tspan><tspan class="punct">, </tspan><tspan class="key">"input_schema"</tspan><tspan class="punct">: {…} },</tspan></text>
+    <text class="mono" y="88"><tspan x="32" class="punct">{ </tspan><tspan class="key">"name"</tspan><tspan class="punct">: </tspan><tspan class="str">"open_url"</tspan><tspan class="punct">,    </tspan><tspan class="key">"input_schema"</tspan><tspan class="punct">: {…} }</tspan></text>
+    <text class="mono" y="108"><tspan x="16" class="punct">],</tspan></text>
+
+    <!-- messages -->
+    <text class="mono" y="134"><tspan x="16" class="key">"messages"</tspan><tspan class="punct">: [</tspan></text>
+
+    <!-- memory -->
+    <text class="mono" y="156"><tspan x="32" class="punct">{ </tspan><tspan class="key">"role"</tspan><tspan class="punct">: </tspan><tspan class="str">"user"</tspan><tspan class="punct">,      </tspan><tspan class="key">"content"</tspan><tspan class="punct">: </tspan><tspan class="str">"[memory] prefers Python"</tspan><tspan class="punct"> },</tspan></text>
+    <text class="mono" y="174"><tspan x="32" class="punct">{ </tspan><tspan class="key">"role"</tspan><tspan class="punct">: </tspan><tspan class="str">"assistant"</tspan><tspan class="punct">, </tspan><tspan class="key">"content"</tspan><tspan class="punct">: </tspan><tspan class="str">"Acknowledged."</tspan><tspan class="punct"> },</tspan></text>
+
+    <!-- retrieved -->
+    <text class="mono" y="200"><tspan x="32" class="punct">{ </tspan><tspan class="key">"role"</tspan><tspan class="punct">: </tspan><tspan class="str">"user"</tspan><tspan class="punct">,      </tspan><tspan class="key">"content"</tspan><tspan class="punct">: </tspan><tspan class="str">"[retrieved] &lt;chunk&gt;…&lt;/chunk&gt;"</tspan><tspan class="punct"> },</tspan></text>
+
+    <!-- history -->
+    <text class="mono" y="226"><tspan x="32" class="punct">{ </tspan><tspan class="key">"role"</tspan><tspan class="punct">: </tspan><tspan class="str">"user"</tspan><tspan class="punct">,      </tspan><tspan class="key">"content"</tspan><tspan class="punct">: </tspan><tspan class="str">"How do webhooks work?"</tspan><tspan class="punct"> },</tspan></text>
+    <text class="mono" y="244"><tspan x="32" class="punct">{ </tspan><tspan class="key">"role"</tspan><tspan class="punct">: </tspan><tspan class="str">"assistant"</tspan><tspan class="punct">, </tspan><tspan class="key">"content"</tspan><tspan class="punct">: </tspan><tspan class="str">"A webhook is an HTTP callback…"</tspan><tspan class="punct"> },</tspan></text>
+
+    <!-- user -->
+    <text class="mono" y="270"><tspan x="32" class="punct">{ </tspan><tspan class="key">"role"</tspan><tspan class="punct">: </tspan><tspan class="str">"user"</tspan><tspan class="punct">,      </tspan><tspan class="key">"content"</tspan><tspan class="punct">: </tspan><tspan class="str">"Now show me how to rotate the secret."</tspan><tspan class="punct"> }</tspan></text>
+
+    <text class="mono" y="290"><tspan x="16" class="punct">],</tspan></text>
+    <text class="mono" y="312"><tspan x="16" class="key">"model"</tspan><tspan class="punct">: </tspan><tspan class="str">"claude-sonnet-4-5"</tspan><tspan class="punct">,</tspan></text>
+    <text class="mono" y="332"><tspan x="16" class="key">"max_tokens"</tspan><tspan class="punct">: 1024</tspan></text>
+    <text class="mono" y="354"><tspan class="punct">}</tspan></text>
+  </g>
+
+  <!-- Layer pills column -->
+  <g>
+    <!-- 01 system -->
+    <rect x="620" y="124" width="290" height="28" rx="14" fill="var(--ce-primary)"/>
+    <text class="pill" x="638" y="143">01 · System prompt</text>
+    <line class="leader" x1="588" y1="134" x2="618" y2="138"/>
+
+    <!-- 02 tools -->
+    <rect x="620" y="172" width="290" height="28" rx="14" fill="var(--ce-success)"/>
+    <text class="pill" x="638" y="191">02 · Tools / MCP descriptions</text>
+    <line class="leader" x1="588" y1="172" x2="618" y2="186"/>
+
+    <!-- 03 memory -->
+    <rect x="620" y="244" width="290" height="28" rx="14" fill="var(--ce-warn)"/>
+    <text class="pill" x="638" y="263">03 · Memory &amp; state</text>
+    <line class="leader" x1="588" y1="262" x2="618" y2="258"/>
+
+    <!-- 04 retrieved -->
+    <rect x="620" y="296" width="290" height="28" rx="14" fill="var(--ce-accent)"/>
+    <text class="pill" x="638" y="315">04 · RAG / retrieved chunks</text>
+    <line class="leader" x1="588" y1="306" x2="618" y2="310"/>
+
+    <!-- 05 history -->
+    <rect x="620" y="344" width="290" height="28" rx="14" fill="var(--ce-alert)"/>
+    <text class="pill" x="638" y="363">05 · Conversation history</text>
+    <line class="leader" x1="588" y1="346" x2="618" y2="358"/>
+
+    <!-- 06 user -->
+    <rect x="620" y="392" width="290" height="28" rx="14" fill="var(--ce-neutral-3)"/>
+    <text class="pill" x="638" y="411">06 · User instruction (last)</text>
+    <line class="leader" x1="588" y1="380" x2="618" y2="406"/>
+  </g>
+
+  <text class="small" x="620" y="448">The stable prefix (01–02) is identical on every call → cache-friendly.</text>
+  <text class="small" x="620" y="466">Per-turn injection (03–04) is assembled fresh → biggest cost lever.</text>
+  <text class="small" x="620" y="484">History (05) grows monotonically; the user turn (06) is small but last.</text>
+</svg>

@@ -2,17 +2,17 @@
   <title id="t">Effective attention as a function of position in a long prompt</title>
   <desc id="d">A bar histogram showing high effective attention at the start and end of a long prompt and a marked dip across the middle. The shape mirrors the lost-in-the-middle U-curve and motivates the placement heuristic of front-load stable content, end-load the user question, and compress the middle.</desc>
   <style><![CDATA[
-    :root{--bg:#FAFAF7;--ink:#1A1A1A;--muted:#5C5C5C;--primary:#5B7FBF;--accent:#D98E5F;--alert:#C66B5E;--grid:rgba(26,26,26,0.06);}
-    @media (prefers-color-scheme:dark){:root{--bg:#161512;--ink:#F1EEE8;--muted:#A6A29B;--primary:#8BA8E0;--accent:#E8B088;--alert:#D88880;--grid:rgba(241,238,232,0.08);}}
-    .bg{fill:var(--bg);}
-    .ax{stroke:var(--muted);stroke-width:1;}
-    .grid{stroke:var(--grid);stroke-width:0.75;}
-    .b-high{fill:var(--primary);fill-opacity:0.85;}
-    .b-mid{fill:var(--alert);fill-opacity:0.55;}
-    .b-end{fill:var(--accent);fill-opacity:0.85;}
-    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ink);}
-    .l{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ink);}
-    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--muted);}
+    :root{--ce-bg:#FAFAF7;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;--ce-primary:#5B7FBF;--ce-accent:#D98E5F;--ce-alert:#C66B5E;--ce-grid:rgba(26,26,26,0.06);}
+    @media (prefers-color-scheme:dark){:root{--ce-bg:#0E0F12;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;--ce-primary:#8BA8E0;--ce-accent:#E8B088;--ce-alert:#D88880;--ce-grid:rgba(242,242,238,0.08);}}
+    .bg{fill:var(--ce-bg);}
+    .ax{stroke:var(--ce-ink-muted);stroke-width:1;}
+    .grid{stroke:var(--ce-grid);stroke-width:0.75;}
+    .b-high{fill:var(--ce-primary);fill-opacity:0.85;}
+    .b-mid{fill:var(--ce-alert);fill-opacity:0.55;}
+    .b-end{fill:var(--ce-accent);fill-opacity:0.85;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ce-ink);}
+    .l{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ce-ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--ce-ink-muted);}
   ]]></style>
   <rect class="bg" width="800" height="320"/>
   <text class="title" x="32" y="32">Where in the prompt does the model actually look?</text>
