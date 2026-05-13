@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" role="img" aria-labelledby="t d">
+  <title id="t">Per-layer token budget allocation</title>
+  <desc id="d">A horizontal stacked bar showing default token budget shares for the six layers of an LLM call. From left to right: system prompt, tools, memory, RAG, history, user turn. RAG and history are the largest variable shares and the most common silent budget-eaters.</desc>
+  <style><![CDATA[
+    :root{--bg:#FAFAF7;--ink:#1A1A1A;--muted:#5C5C5C;--p1:#5B7FBF;--p2:#7FBF9B;--p3:#D98E5F;--p4:#B8895A;--p5:#8B7AA8;--p6:#5C9E78;}
+    @media (prefers-color-scheme:dark){:root{--bg:#161512;--ink:#F1EEE8;--muted:#A6A29B;--p1:#8BA8E0;--p2:#7FBF9B;--p3:#E8B088;--p4:#D4B58A;--p5:#B5A2CC;--p6:#7FBF9B;}}
+    .bg{fill:var(--bg);}
+    .seg{stroke:var(--bg);stroke-width:2;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ink);}
+    .l{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:11px;fill:var(--ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--muted);}
+    .lab{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:12px;fill:var(--ink);}
+  ]]></style>
+  <rect class="bg" width="800" height="360"/>
+  <text class="title" x="32" y="34">Default token budget share per layer (input = 100%)</text>
+
+  <!-- Stacked bar: x from 60 to 740 = 680 wide. Shares: system 10, tools 10, memory 8, rag 32, history 35, user 5 -->
+  <g>
+    <rect class="seg" x="60"  y="120" width="68"  height="80" fill="var(--p1)"/>
+    <rect class="seg" x="128" y="120" width="68"  height="80" fill="var(--p2)"/>
+    <rect class="seg" x="196" y="120" width="55"  height="80" fill="var(--p3)"/>
+    <rect class="seg" x="251" y="120" width="218" height="80" fill="var(--p4)"/>
+    <rect class="seg" x="469" y="120" width="237" height="80" fill="var(--p5)"/>
+    <rect class="seg" x="706" y="120" width="34"  height="80" fill="var(--p6)"/>
+  </g>
+  <!-- in-segment labels -->
+  <text class="l" x="94"  y="166" text-anchor="middle" fill="#FFFFFF">10%</text>
+  <text class="l" x="162" y="166" text-anchor="middle" fill="#FFFFFF">10%</text>
+  <text class="l" x="223" y="166" text-anchor="middle" fill="#FFFFFF">8%</text>
+  <text class="l" x="360" y="166" text-anchor="middle" fill="#FFFFFF">32%</text>
+  <text class="l" x="587" y="166" text-anchor="middle" fill="#FFFFFF">35%</text>
+  <text class="l" x="723" y="166" text-anchor="middle" fill="#FFFFFF">5%</text>
+
+  <!-- Segment titles below -->
+  <text class="lab" x="94"  y="222" text-anchor="middle">system</text>
+  <text class="lab" x="162" y="222" text-anchor="middle">tools</text>
+  <text class="lab" x="223" y="222" text-anchor="middle">memory</text>
+  <text class="lab" x="360" y="222" text-anchor="middle">RAG</text>
+  <text class="lab" x="587" y="222" text-anchor="middle">history</text>
+  <text class="lab" x="723" y="222" text-anchor="middle">user</text>
+
+  <text class="s" x="32" y="270">Variable shares: RAG and history. Hard caps: system and tools (cache prefix). Output reserve sits outside this 100% as 10–20% of the window.</text>
+  <text class="s" x="32" y="290">Without per-layer caps, RAG or history will silently consume everyone else's share within weeks.</text>
+</svg>

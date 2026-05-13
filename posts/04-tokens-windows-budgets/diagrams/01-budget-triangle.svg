@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" role="img" aria-labelledby="t d">
+  <title id="t">The cost, latency, quality triangle</title>
+  <desc id="d">An equilateral triangle with the three vertices labelled cost, latency, and quality. Three workloads sit on the edges between pairs of vertices, illustrating that any LLM design optimises two corners at the expense of the third.</desc>
+  <style><![CDATA[
+    :root{--bg:#FAFAF7;--ink:#1A1A1A;--muted:#5C5C5C;--primary:#5B7FBF;--accent:#D98E5F;--success:#5C9E78;--alert:#C66B5E;}
+    @media (prefers-color-scheme:dark){:root{--bg:#161512;--ink:#F1EEE8;--muted:#A6A29B;--primary:#8BA8E0;--accent:#E8B088;--success:#7FBF9B;--alert:#D88880;}}
+    .bg{fill:var(--bg);}
+    .tri{fill:none;stroke:var(--ink);stroke-width:1.5;}
+    .corner{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--ink);}
+    .edge{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--muted);}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ink);}
+    .dot-q{fill:var(--success);}
+    .dot-c{fill:var(--accent);}
+    .dot-l{fill:var(--primary);}
+  ]]></style>
+  <rect class="bg" width="760" height="440"/>
+  <text class="title" x="32" y="32">Pick two: the cost, latency, quality triangle</text>
+
+  <!-- Triangle: top vertex (Quality) at (380, 80); bottom-left (Cost) at (120, 360); bottom-right (Latency) at (640, 360) -->
+  <polygon class="tri" points="380,80 120,360 640,360"/>
+
+  <!-- Vertex labels -->
+  <circle class="dot-q" cx="380" cy="80"  r="6"/>
+  <text class="corner" x="380" y="62" text-anchor="middle">Quality</text>
+
+  <circle class="dot-c" cx="120" cy="360" r="6"/>
+  <text class="corner" x="100" y="386">Cost</text>
+
+  <circle class="dot-l" cx="640" cy="360" r="6"/>
+  <text class="corner" x="664" y="386">Latency</text>
+
+  <!-- Edge labels -->
+  <text class="edge" x="220" y="200" transform="rotate(-47 220 200)">cheap + high quality → slow</text>
+  <text class="edge" x="540" y="200" transform="rotate( 47 540 200)">fast + high quality → expensive</text>
+  <text class="edge" x="380" y="380" text-anchor="middle">cheap + fast → lower quality</text>
+
+  <!-- Workload examples -->
+  <text class="s" x="220" y="220" transform="rotate(-47 220 220)">e.g. nightly batch summarisation</text>
+  <text class="s" x="540" y="220" transform="rotate( 47 540 220)">e.g. user-facing chat critical path</text>
+  <text class="s" x="380" y="396" text-anchor="middle">e.g. high-volume classification</text>
+
+  <text class="s" x="32" y="420">Choose the corner per workflow, not per company. Cascade and plan-and-execute let one product live in two corners at once.</text>
+</svg>

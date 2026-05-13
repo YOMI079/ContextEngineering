@@ -1,6 +1,6 @@
 # 01 · Why context engineering — and why now
 
-> **TL;DR.** "Prompt engineering" was the right name for what people did with LLMs in 2022–2023, when the model only saw a single user message. The work has since changed shape entirely: most of the input the model now sees is *not* the user's sentence but tools, memory, retrieved chunks, and conversation history that an engineer assembled. **Context engineering** is the discipline of doing that assembly well across all six layers, so that the model has the right information, in the right place, at the right cost. This first post explains why the rename happened, what is and is not new, and what you will be able to do by the end of the series.
+> **TL;DR.** "Prompt engineering" was the right name for what people did with LLMs in 2022–2023, when the model only saw a single user message. The work has since changed shape entirely: most of the input the model now sees is *not* the user's sentence but tools, memory, retrieved chunks, and conversation history that an engineer assembled. **Context engineering** is the discipline of doing that assembly well — across all six layers — so that the model has the right information, in the right place, at the right cost. This first post explains why the rename happened, what is and is not new, and what you will be able to do by the end of the series.
 >
 > **Reading time:** ~12 minutes.
 >

@@ -1,0 +1,2708 @@
+0:01
+So welcome back to the LLM context engineering boot camp and today we are going to be discussing about model
+0:08
+context protocol tools function calling and how LLM can do all these things with
+0:14
+natural language instructions and what are its applications. So today's will be one of the most exciting lectures simply
+0:20
+because of because you will get to see the power of model context protocol and what it can accomplish.
+0:26
+This was a term which was extremely popular around um April May of 2025 last
+0:32
+year on x.com and LinkedIn. Everybody was talking about MCP. Uh whenever I opened LinkedIn, it was flooded with
+0:39
+just posts about MCP and uh now it has become more than just a fad. It's like
+0:46
+it's truly truly useful to you for many different applications. So um my plan is the following. We will
+0:53
+first discuss a little bit about the aspects of um handling different tools
+0:58
+by LLM because usually when you are building a agentic applications there will be several functions or several
+1:04
+tools that the LLM should get exposed to for performing certain operations but
+1:09
+you cannot pollute the context of the LLM by adding too many things uh into
+1:15
+the context. So you have to be very frugal when it comes to how the descriptions of tools are being exposed
+1:20
+to the LLM's context. So first we will discuss about that a little bit. Um and
+1:25
+then my plan is unlike last three lectures where we did the quiz part in the end I might probably do a little bit
+1:33
+of um MCP related quiz uh in the early part of today's lecture because I have
+1:40
+noticed that uh many people this is when I read different blogs and articles from
+1:45
+uh Reddit and so on there is a lot of confusion surrounding uh what is MCP client what is MCP server how do LLM
+1:53
+interact with either of these what is the role of each of these three parts and what are some applications of this
+1:59
+so I hope that through the quiz uh lot of these things will get clarified for you so first uh let's just recap what we
+2:08
+did yesterday so yesterday we were discussing about rag and rag is a select layer of the um context engineering
+2:15
+layers select meaning you are selecting what should be part of the um LLM's context in tools it's more about LLM
+2:23
+deciding okay what can I do next. I have so and so information and now what could I do with all of this information,
+2:29
+right? Uh just one update. Uh yesterday's recording uh will be uploaded in the free course dashboard by
+2:36
+today around 2 p.m. or something like that and today's will be available tomorrow. Um so just uh it's a minor
+2:42
+update. All right. So today we'll discuss how do we define tool schemas
+2:48
+when you have 10 tools or 20 tools or 50 tools that the LLM is getting uh exposure to.
+2:54
+Then we will discuss about model context protocol. How it blew up the internet a few months ago and why it has become
+3:00
+such a standardized protocol where LLM and any tool can interact with each
+3:05
+other. Any LLM and any tool and what exact problem does MCP uh server and MCP
+3:10
+client solve and can you do something without MCP? What's the problem of not using MCP in the first place? We'll
+3:16
+discuss all of that and we'll also see how the anatomy of an MCP server looks like. So I'm planning to show you two
+3:23
+examples. One is a case where we will use an already existing tool with the help of MCP from cloud code that I will
+3:31
+show you first uh first or second that I have I'll decide on the go. Another thing which I'll show you is like the
+3:37
+entire anatomy of a very simple MCP server which has a very useful function. So I'll get to that uh in some time.
+3:45
+So I have one question to ask. Let's say you have something like 7,321
+3:51
+multiplied by 8761. You are multiplying two numbers. If you
+3:56
+have this as part of your query, will you directly ask this to the LLM or
+4:01
+should you directly ask this to the LLM? You can answer in the chat. What what exactly should you do?
+4:08
+If you directly ask the LLM, what's the problem? The problem is that see LLM is not a
+4:16
+it's not a sophisticated math calculating calculation engine or something like that right it is simply
+4:23
+um a next token prediction model lm is not really really strong at doing
+4:29
+mathematical calculations like multiplication division it can do that it will most likely won't make any mistake but sometimes it always it has
+4:37
+the possibility of hallucination and a simple deterministic calculation like this may also result in error if you are
+4:45
+assigning this duty to the LLM. Instead, this duty should be assigned to whom? What should who should take this
+4:52
+duty of executing a mathematical operation like this?
+4:59
+It should probably be done by a like a a function in which addition,
+5:04
+multiplication, bunch of those things are defined or like a calculator tool, right?
+5:10
+um you could have API access to a calculator tool, right? So if you were
+5:16
+doing if you as a human if you are building a website and in that website you want to execute a complex function
+5:22
+and this function is hosted in a on a server side what you typically do is
+5:28
+like you design an API uh and then you make an API called request and you will get the response right. So the execution
+5:35
+is not done from whatever logic you have on your website. It is rather done by
+5:40
+the function. Similarly, if within the context of an LLM, it just so happens
+5:46
+that it needs to execute a mathematical operation. Okay, just a random example, it needs to
+5:52
+execute a mathematical operation. Ideally, LLM should figure out that hey, I probably have to call a tool
+5:57
+calculator tool for executing this without any mistake. So that is where tool the idea of tools are coming into
+6:04
+picture. LLM's um let's say you want to access information like there are tools
+6:10
+will expose weather related data right so there are APIs using which you can you can get weather data and if you want
+6:17
+to display today's weather on your uh app let's say you are running blinket or
+6:22
+you are running any grocery delivery application you will see that it also reflects the weather if there is rain
+6:28
+happening it reflects that it's raining how does it happen that app has access to some API which exposes the current
+6:35
+weather conditions which are constantly updated in some sort of database. So they will most likely be using some
+6:41
+proper weather app API um or if you need to let's say uh on our
+6:47
+website for example we have a function where somebody can switch the currency from INR to USD or vice versa. So how
+6:53
+does the website know what is the current u exchange rate between USD and INR? Again it's an API call. it's it
+7:00
+makes an API call to some um financial tool which exposes the current exchange
+7:05
+rate. So similarly um LLM has no access to live data. Live
+7:11
+data exists on internet it exists on different websites and if those websites allow access to those data through APIs
+7:18
+LLM should be able to somehow access it. So there are these are actually tools.
+7:24
+Second is LLM cannot do actual computation. LLM is only good at next token prediction. But all other
+7:31
+capabilities that LLM has like LLM can write code. LLM can actually do math. I
+7:36
+mean in theory in theory it can make mistakes but in practice it can do math right? LLM will make mistake only once
+7:42
+in a while. In 2022 if you have noticed it towards the end if you ask RGPT basic math questions it was making a lot of
+7:48
+mistakes but these days the mistakes have reduced tremendously. So the of course the um emergent properties
+7:55
+resulting from next token prediction when you are um scaling up the large language model of course it is
+8:00
+increasing but yet you would mostly if you want high reliability you will rely
+8:05
+on computation tools. Then the third thing is LLM cannot make any changes or
+8:11
+any effects in the real world. For example LLM by default cannot place an order on Amazon. LLM by default cannot
+8:18
+send an email. For sending an email, you use any email sending tool. You use Gmail API or some some setup like that.
+8:25
+LLM cannot directly send a message in Slack or in Discord. For that, you may
+8:30
+use MCP for Slack or or you will use a API service. Right? So, LLM do not have
+8:36
+access to live data. It has no access to computational tools or it cannot make any change in real world by directly by
+8:43
+itself. but rather if it has exposure to tools it can do all these things and one
+8:49
+thing you should notice is whenever LLM makes a tool call if LLM makes a call to a weather um you know weather condition
+8:58
+retrieval tool the result of the tool will be stored in the context only because the tool will send the result
+9:04
+back and then that result is compiled in a certain way before feeding into the LLM so that LLM can give you natural
+9:11
+language response saying hey the weather today is likely not very favorable for you. You should probably not go out and
+9:17
+that will be stored in the context as well. So of course you have to have some window available for storing the um tool
+9:24
+results also. Okay, this is just an example. Yesterday we had discussed that rag results will probably take up to
+9:29
+60%age. In this example, it's only showing 30%age. But don't get hung up on
+9:34
+the percentages. It's anyway a thumb rule. But here is the issue. If you have
+9:40
+a tool that is very uh that has so many different uh uh capabilities, for
+9:46
+example, let's say you have you are making an LLM talk with Slack. Slack has
+9:53
+so many different functionalities. You can create channels, you can assign admins, add members, delete members, uh
+10:00
+you can post, you can there are many many things you can do in Slack. So now think about this. Let's say as a result
+10:06
+of you your LLM interacting with Slack if the response is something like a
+10:11
+5,000 token JSON it's very big 5,000 token roughly equates to 5,000 words not
+10:17
+exactly I'm just saying order of magnitude wise and this is too big for a context window of the LLM you might not
+10:25
+need these many tokens to be fed into the LLM for you to get the response that you need let's say the question that you
+10:31
+are asking is in the general channel what was being discussed yesterday. Can
+10:36
+you give me a three sentence summary? If this is what is being discussed, the JSON need not contain information about
+10:42
+how to create channels or it need not contain information about all the other channels. So the the token consumption
+10:48
+by LLM should be ideally minimized which means whatever a tool is returning or
+10:54
+whatever the description of a tool is or whatever information is there associated with the tool is it should be stored in
+11:00
+a concise format so that LLM's context is preserved. Uh there is a question by Abi. How is a
+11:06
+rag result different from tool result in this example? Both have knowledge based uh on live weather, right? Okay, very
+11:12
+good question. Um think about this. In rag what we are doing is we have documents that are not
+11:19
+necessarily live. These documents are converted into some sort of vector embedding, right? So the the vector
+11:25
+database itself is not getting updated very frequently. And then from that database you might want to fetch
+11:32
+information once in a while uh and you want to analyze that information using rag. So yesterday what did we do?
+11:38
+Yesterday we took the PDF file from the Microsoft shareholder report. That shareholder report is not going to
+11:44
+change anymore because it's a already done 2025 shareholder report. So now from that document you might want to
+11:50
+fetch and analyze information. For that you use rag. But let's say now there is another tool which is also um having
+11:58
+realtime updates of the Microsoft stock price and if you want to fetch that that
+12:04
+is when you truly have something like an MCP you can think of having an MCP server we'll we'll discuss the
+12:09
+definitions and details in a little bit but rag and MCP are fundamentally different in that way uh MCP can have
+12:16
+access to realtime data and it will be agnostic to what LLM you are using to
+12:22
+connect to an MCP server. We we will come to that in a moment. So when it comes to LLM's interacting
+12:28
+with tools, you need a tool description. LLM should be able to decide what tools among the
+12:35
+all the tool descriptions should I use. And then LLM should figure out how to make a call to the tool when the tool
+12:42
+returns some response that will be taken into account. and then final response in natural language so that the user who
+12:49
+asked a question let's say you are asking a question about a mathematical operation or you you're asking question about financial data you finally want a
+12:56
+response from the LLM just like it is a human so this response will be crafted now there is a fundamental question who
+13:03
+runs the tool is it LLM who is actually running the tool
+13:16
+So think about it when when we say LLM having access to tool what exactly is
+13:23
+LLM producing as the output just before the tool is being executed I'll repeat the question a tool you can
+13:30
+imagine a tool to be a function right that function you will require arguments to be passed into the function when we
+13:36
+say out of 10 functions LLM decided to call function number three. LLM is not executing the tool.
+13:43
+LLM is deciding the LLM's output decide the structure of how the tool call
+13:48
+should look like along with the arguments that we pass into it. Right?
+13:54
+The actual execution is done by the logic of the the the logic written inside that function itself. Right? So
+14:00
+please understand that LLM is not running that LLM is deciding what tools to uh call and what tool to execute and
+14:07
+it produces a structured response as a result of this decision. Okay, that
+14:13
+structured response will be used to call the tool. So this is one place where LLM will produce a response which the which
+14:18
+as a user you will not have to see but LLM will produce a structured response and that structured response will decide
+14:25
+what tool to call and what tool to uh what argument to pass and then the tool will return its response and the final
+14:32
+sort of structured or unstructured response which is exposed to the user is
+14:37
+coming at the very end. Okay. So this is the LLM's decision producing a structured response for tool call. This
+14:44
+is also LLM's uh decision to to to kind of display the final outcome in whatever
+14:49
+format is required to the end user. Okay. So just just understand this. Now
+14:56
+a tool schema which describes how a tool looks like or what a tool should do or
+15:02
+what variables to pass or what this tool is even uh capable of doing whether it is uh searching of weather data or
+15:09
+whether it is searching of uh US to US dollar to INR exchange rate whatever it is the schema can roughly look like this
+15:16
+there will be a name and the convention is that if a name is there it should
+15:22
+ideally mention the functionality the function funality searching so
+15:27
+functionality and some sort of uh description about where this functionality is applied to in this
+15:34
+format. So this is called as snake case. Whereas if it is something like search
+15:41
+products with capital P, what is this called? It's called camel case, right? If I'm not wrong. So the name uh of the
+15:50
+tool will be in this kind of a snake case. Search is the action that it is doing. Products is what it is searching.
+15:57
+Then the description will be in natural language. It will describe what this tool is capable of doing which is
+16:02
+already available some sort of to to some extent in the name but description expands it. Then it will also describe
+16:09
+the different properties. It will if it is a function it will describe what arguments are being passed. If there is
+16:16
+a category selection, it will enumerate the category so that LLM will not hallucinate something outside of this
+16:21
+category. Most likely, LLM can still hallucinate any time, but this will tremendously reduce LLM's hallucination.
+16:27
+If these are the only only categories that LLM should consider uh and many other details, right? So,
+16:34
+this is a rough example of how the schema in in sort of JSON format how it can look like.
+16:40
+Now the schema design principles as we discussed just look at this. Um the
+16:47
+description which tells what the tool is supposed to do should be clearly saying
+16:53
+um this tool is supposed to search the product catalog from this website database and it is ideally returning the
+17:01
+maybe top 50 items from the database. Uh there is one question is tool and MCP
+17:07
+are they the same? Are they different? they are different tool you can imagine as just a function so we are yet to
+17:13
+reach to the MCP okay I have not defined what is MCP yet so just don't get confused here if I talk about tool just
+17:20
+imagine that within your let's say uh if you are writing in cloud code within
+17:26
+there you have written let's say 50 functions for different activities now you your LLM has to decide for your
+17:33
+execution which among those functions it has to execute which among those functions it has to called for that you
+17:40
+need to have some sort of description of the function itself rather than the apart from the actual function actual
+17:45
+function will be written let's let's say in python format or javascript format but you need to have some sort of
+17:50
+description so that llm can decide which one to call based on a short description
+17:56
+so here we are talking about that selection of functions to execute okay in simple words then one more thing is
+18:03
+uh make sure that your name of the tool or name of the function is unambiguous.
+18:10
+Uh this is a better convention. This is better convention. This is better convention. But if you write it something like search
+18:17
+products or something like this, it's it's not considered to be a good convention. And this enumeration, if it
+18:23
+is a categorical variable that this function is supposed to be handling, explicitly enumerate those categories
+18:30
+into uh the tool description. That will help a lot. We'll come to we'll see how these descriptions can look like.
+18:38
+Um this we have already discussed the tool description will help the LLM decide what to tool to call and then it
+18:45
+will produce a structured response which will also include the arguments to be passed and then tool will be called or
+18:50
+tool will be executed and it will at the end of it if it's a function it will return a certain value and once you once
+18:56
+this returned value is available for LLM LLM will reason based on that returned value and then LLM coin can give you a
+19:04
+response which you can utilize right so this is the five steps involved in it. We will we'll see this in detail when we
+19:10
+are going through a interactive website just like how we were doing in the last couple of lectures.
+19:16
+One more thing I want to discuss before we move into the MCP is um what if you have 100 tools or thousand tools each
+19:23
+tool description may be around 100 to 200 tokens or maybe 100 to 150 words or
+19:29
+something like that. So if you have 100 tools and each tool description is 100 to 200 tokens, you may end up consuming
+19:35
+2,000 tokens or 5,000 tokens or 10,000 tokens depending on the tool. Now imagine you are building a complex
+19:42
+software. Your complex software will have so many different functionalities that if you are now handling all the all
+19:49
+those tool descriptions within the context at once, your context will definitely will become bloated. So a
+19:55
+good practice is on the lower extreme if your number of tools are very low. Okay,
+20:00
+then you can include all the tool definitions inside your system prompt. It is not a problem. However, if your
+20:07
+tool descriptions are so big just because of the sheer number of tools, you have to do some kind of rag where
+20:14
+you will have minimum description available. From that minimum description or minimum available metadata, your rack
+20:20
+can decide which five tools or which 10 tools you require during the execution of the current task. So in that case you
+20:28
+have to utilize rag. The rack can be using vector database or it can be using keyword matching. It does not matter.
+20:35
+But at the end of the day the descriptions that are loaded into the context window will be only a subset of
+20:40
+all the tool descriptions available. Um this is the other extreme regarding just in time instructions. JIT we will
+20:47
+discuss towards the end of this uh the set of slides. Uh this we'll come back to in a little
+20:54
+bit. So now we can get into uh model context protocol where anyway by default
+20:59
+disc discussions about tool will come. First of all let me ask you how many of you have heard about model context
+21:05
+protocol before or how many of you know about what it is or what uh I can ask
+21:11
+you one more follow-up question. Uh seems like some people have heard about it. Okay, awesome.
+21:17
+Now please tell me um in two sentences what is the fundamental difference
+21:23
+between model context protocol versus let's say making API calls? Let's say
+21:29
+you have an MCP server in one case. In another case you have a server which has several APIs. What's the difference
+21:36
+between running having an API call executed versus um making a handshake
+21:43
+with the MCP server to get um data or get whatever you need from the tool.
+21:52
+The fundamental difference is that uh different LLM handle um API calls and
+21:58
+responses from it in a different way, right? and the LLM U you if you want to
+22:06
+really switch between Gemini or OpenAI or um LLM provided by by any other
+22:12
+companies you need some sort of standardization. So I'll come to this definition but before that let me show you. So what
+22:19
+happens in the absence of MCP is that this N byM problem. If you have NLMs and
+22:25
+M tools by M tools you imagine softwares GitHub Slack your company is using this
+22:30
+and maybe docker maybe um you also have fire store database you have bunch of
+22:36
+tools and let's say your company uses three LLMs then what will happen is in the absence of MCP if you want to define
+22:43
+interactions between your LLM and tools you may use it use API calls for sure
+22:48
+but then you will have to write the structure for these interactions N by M times for uh interaction between cloud
+22:55
+and GitHub you will have to define between cloud and slack you will have to define between cloud and database you will have to define but when you utilize
+23:03
+MCP uh model context protocol what it does is it standardizes the way in which
+23:08
+instructions are sent into this MCP server it standardizes the way in which instructions are sent back from the U
+23:16
+MCP server this protocol which means it doesn't matter which large language model you use there's a common way of
+23:23
+communicating with the MCP server to provide information to the MCP server
+23:28
+and to get a response from it and this makes the life very easy for developers
+23:34
+because that way developer need not think about a developer who is who's let's say building an MCP server need
+23:40
+not think about which model which large language model the user is going to use it makes it very easy so that then the
+23:47
+problem becomes sort of like N plus M you have to set set up three MCP servers And you have to set up the connection to
+23:54
+the MCP server for each of these three LLMs. Right now there is there are two
+23:59
+things here. One is MCP client and there is MCP server.
+24:07
+The best way to understand the distinguishing the difference between these two u I will ask you bunch of
+24:13
+questions and at the end of those questions you will have a very clear idea in your mind what is the role of MCP client and what is the role of MCP
+24:20
+server. Okay, I'll come to that in a moment. But there is a beautiful analogy that you may have seen in the internet
+24:26
+about MCP server which is that of a USBC port. So before USBC you had many different ways in which your devices can
+24:33
+be connected to whatever charging point or to a laptop. You remember like uh maybe 10 years back Windows laptops they
+24:41
+have many different ports for connections for HDMI, VGA or uh then
+24:46
+there is USB before USBC there are other variants of USB connections micro USB
+24:52
+it's like a pain but USB kind of standardized this so that in my MacBook in the same port I could connect mouse I
+24:59
+could connect u um you know like a converter for USBC to uh HDMI. Oh yes, I
+25:06
+will check the waiting room. Thanks for the reminder. Yeah, I have just admitted. Thank you.
+25:12
+Uh or I can I can convert my USBC connection into anything else which
+25:17
+connects to that separate tool. So my now my USBC port will act as a connector between my laptop and projector, my
+25:24
+laptop and mouse, my laptop and let's say this VCOM tablet or my laptop and mic anything, right? So it standardizes
+25:31
+this connection problem between two different um hardwares just like that MCP server standardizes the connection
+25:37
+between different tools or different software with u your large language models. Now what we can do is um before
+25:47
+we go into this further I will first show you one simple u MCP tool which I
+25:53
+had defined recently. Okay, can you see my um screen right now which says a YouTube
+26:01
+MCP? Okay, so what this does is the following.
+26:08
+So here I have defined two things. One is
+26:14
+an MCP client which is a website with some URL. So
+26:19
+let's say this is YouTube mcp.com. So this MCP client is basically the the
+26:27
+web app and this client runs on Versel.
+26:34
+Okay. Now what this does is I will just show you the front end of this application so
+26:40
+that you have a better idea. What this does is this is a simple application which looks like
+26:48
+which looks like this where if I provide the openi API key and if I provide the
+26:55
+YouTube uh URL of any video. So here I have added I have taken the link to the second lecture video itself. And if I
+27:02
+provide the video link here then I should be able to fetch the transcript
+27:08
+or based on the transcript I should be able to generate lecture notes or I should be able to generate key points or
+27:14
+summarize what happened in the lecture in one uh paragraph. All right. So here what is happening is
+27:21
+the open AAI API key provides access to um GPT4 mini or one of the LLMs.
+27:28
+Then what is the tool that is being used here? If any of you can tell me what tool what is the tool that LLM is
+27:37
+accessing to from the MCP server.
+27:43
+The tool is basically a tool which YouTube library provides for fetching the uh not summary transcript. That is
+27:51
+the key distinction. Just let me go back. The only tool used here is for fetching the transcript. Is the tool
+27:58
+creating the lecture note or is the tool creating the key point or is the tool creating summarize? None of that is done
+28:03
+by the tool. The only role of the tool is when I when my client when my client
+28:09
+meaning when this website asks to fetch the transcript. Okay. Or when it asks to fetch the lecture notes. What it does
+28:16
+does is this client makes a call to a server
+28:22
+in which a server.py file is running. I'll show you the file. Where is the
+28:27
+server hosted? For the time being, I have hosted this on it on railway.com.
+28:32
+Now this server um so this is the MCP client
+28:40
+and LLMS or GPT4 mini
+28:47
+and this is the MCP server and the tool is uh let's call it as uh
+28:53
+get transcript
+28:58
+Okay. Now what we want ideally is
+29:05
+manually how will we do this manually? If we were using chat GPT what will we do? We will somehow run this somewhere
+29:12
+this this get transcript function if if it is available on our VS code in a
+29:17
+Python file. We'll just run it. We will provide the YouTube uh video URL and
+29:22
+we'll get the transcript and then we will copy paste the transcript to chat GPT and then we'll ask hey based on this
+29:29
+transcript create a lecture video description or lecture notes or lecture summary right here on the other hand
+29:36
+when you when this is the client itself what you see right now is the MCP client in which let's say you press this click
+29:42
+this uh lecture notes button what happens is there is this YouTube URL which is
+29:48
+provided to the client And this URL is communicated to get
+29:55
+transcript. And there is one more step that happens before this which is called the client uh server handshake. Uh I
+30:01
+should also mention that probably first. Let me just draw this a bit far away.
+30:09
+So the very step step that happens in the communication between server and uh the client and server is that is the
+30:16
+server client handshake. This in this handshake the only information that will be passed from MCP
+30:22
+server to client will be that hey here are the list and descriptions of the tools that I can provide you and based
+30:30
+on that the client can decide what tools client can help LLM decide what tool
+30:36
+what tools to call right so this first step is called the client server handshake after this only the actual
+30:43
+tool calling will happen so the handshake will happen automatically it's part of the protocol and there are two ways in which communication can happen.
+30:50
+I will uh show you two examples uh one example of both. In some cases, your
+30:57
+client and your server
+31:02
+might be on the same device. Can you give me an example of this case?
+31:07
+Can you give me an example of a case where your client and server may be on the same device like on my computer? Any
+31:14
+example where this might be the case?
+31:25
+local LLM, access file system, database, MCP, file server.
+31:30
+So one good example you can think of is let's say you have a software that is installed on your device. To make it
+31:36
+very simple, I'll show you an example. Okay, let's say the software is Blender. Uh have you heard of the software
+31:42
+Blender? It's a 3D modeling software. uh very good software right let's say this
+31:47
+is installed on your computer and you are using cloud code on your computer
+31:55
+so that cloud code can communicate with blender to create 3D models or to create scenes okay normally for a human to
+32:03
+create scenes in blender even for experts it take a lot of it will take a lot of time I'll show you a very good example here now but the the thing here
+32:11
+is here cloud code is running on your computer. Blender is also on your computer. So the MCP server as well as
+32:18
+MCP client. So this is the client and this is the server. Uh not blender is not the server but MCP server which will
+32:23
+connect to different functions available in Blender both are running on your device. In that case the communication
+32:29
+protocol between them is called stdio communication protocol. But if this is
+32:34
+happening through the internet like this example, this example where client is one website which is hosted on Versel.
+32:41
+The server is a um um MCP server is basically a function that is running on railway in the back end. Here the
+32:48
+communication protocol can be HTTPS just like how it usually happens on internet
+32:54
+or SSE or sometimes it can be uh socket websocket.
+33:00
+HTTPS is the most uh common one. Uh we don't have to go into the details of
+33:05
+this because uh it's not what is relevant. But what is relevant is to just understand that the way in which
+33:11
+the client and u server will communicate will slightly differ based on whether
+33:16
+the places where client and server are hosted is the same device or different devices across the internet.
+33:22
+Now tell me what will happen when I ask my client who is the website where I
+33:27
+pass the openi API key and I pass a YouTube um URL. What happens is first
+33:34
+the client will pass the YouTube URL such that this uh to the LLM such that
+33:41
+the LLM will decide a definition of a um tool call in the
+33:48
+sense that there will be a structured output coming out of this where it may say the tool that I have to call is get
+33:53
+transcript and the argument that I have to pass is this YouTube video URL.
+34:02
+And then this will be passed using HTTPS request uh in the form of HTTPS uh
+34:08
+protocol into the uh MCP server. And
+34:14
+what does the MCP server do? MCP server will access this get transcript function
+34:20
+into which the YouTube URL is passed. This get transcript function. In our case, if I go back, there is one more
+34:27
+function that the get transcript function is calling. I will show you the structure in a moment. Uh I don't want to go into the detail right away, but it
+34:34
+calls a function called extract video uh ID. Basically, given a YouTube URL, this
+34:39
+function can extract the ID of the URL and that ID is needed to finally fetch the uh fetch the transcript. So then
+34:46
+this function will fetch the transcript. Okay. And that fetch transcript is now
+34:52
+the data that is being passed from the server back into the client.
+34:58
+So now um usually what is the format in which uh the date or the communication
+35:04
+happens when you do an API call? What format document is usually passed in an API call?
+35:12
+It's usually JSON. But here is my question. What if uh as part of the API
+35:17
+call you are also getting a uh video file or or image
+35:24
+is that passed through the JSON or is it just referenced in the JSON?
+35:31
+It is referenced in the JSON it will be just streamed as data. Right? Similarly here the JSON or the format of the
+35:37
+response will talk about the metadata of what the data is being passed but the actual data that is being passed from
+35:43
+the MCP server to the client will be what will be the transcript.
+35:49
+Now if from our tool um if we were asking to summarize now
+35:56
+one more question where is this transcript passing is that going into MCP client which is
+36:03
+cloud cloud code or is it going directly into the large language model this transcript that we get from the server.
+36:13
+Does it go to the LLM or does it go to the MCP client? it goes to the MCP client always. Why is
+36:21
+that? Why should it go to MCP client and why not to the LLM? Because LLM only wrote the structured uh um structure for
+36:28
+calling the function. So why not put the response to the LLM?
+36:35
+The problem is let's say your MCP server ended up giving you a huge output.
+36:42
+This server is not the guy who is maintaining your context window of the LLM. Server does not care about the
+36:48
+LLM's context window. Server only cares about returning what is asked. The guy
+36:54
+who is caring about your context window is whom? Who cares about the context window of
+37:00
+the LLM? MCP client cares about the context window of the LLM. In this particular
+37:05
+case, the client is the cloud code itself. I mean not in this case in the case when I am using my local device.
+37:11
+But in this case, the cl the MCP client is my u the logic of my website.
+37:17
+Okay. And then this guy will decide what to ask my LLM to do next provided this
+37:24
+output which you which it received from the server. So server will communicate to the client. Client will decide with
+37:31
+this available data what all things should I pass to my LLM. Then if we had clicked this button for called summarize
+37:38
+it will pass two things. It will ask in in the prompt it will pass the transcript as well as it will pass the
+37:44
+uh command that you have to summarize this transcript into a one paragraph. If we had clicked this key points button,
+37:51
+it will say make a bulletpointed list of uh items
+37:56
+uh which was discussed in the which were discussed in the lecture based on the transcript and then it will also pass
+38:01
+the transcript. Yeah, there is a question can you please explain the difference between MCP host and MCP
+38:07
+client? Yes. Um it's a it's an ongoing discussion. So I will ask you many more questions to make it clear.
+38:14
+Um one more thing is uh let's actually before we go ahead let me ask you a few
+38:19
+questions. I think this will clear a lot of confusions about what is a server, what is a client and so on. So let's get
+38:27
+into a a series of questions in the model context protocol architecture. What is the primary role
+38:34
+of MCP server? So in MCP architecture there is server and client store the conversation
+38:40
+history replace the l uh when tools are needed. What's the
+38:46
+role of MCP uh server? Clearly it is MCP server provides the tools as well as any
+38:52
+other resources which the client can access.
+38:58
+Next one. What does tool selection where does tool selection actually happen in
+39:03
+MCP workflow? Who uh who decides what what tools to
+39:10
+select?
+39:16
+Is it the server or is it the client? One more. Is it the client or ultimately
+39:23
+it is the LLM? Ultimately it's the LLM but it will happen inside the client
+39:28
+because client is having direct access to LLM. Right? Then
+39:35
+what is the main purpose of the tool schema that the server sends to the client? This is in the uh initial
+39:42
+handshake. Initial handshake uh the schema of the entire tools that are available will be sent or even within
+39:48
+individual tool call a schema is sent from server to the client. Why do you why do you need the schema?
+39:57
+Without the schema, how does the LLM know what kind of format response to
+40:02
+produce to make a tool call? LLM does not know, right? You have to explicitly teach the LLM otherwise. But if the
+40:10
+schema is exposed saying, hey, here is how the function call should look like. Here are the arguments that you should pass to this function and these are the
+40:16
+purposes of this function. If you tell this to the LLM, then LLM can produce a structured response call which will
+40:23
+invoke the function call from the in the MCP server. So it is it tells the LLM how to call the tool.
+40:30
+Next, if LLM decides to use a tool, what does it actually produce?
+40:39
+Does it produce a Python function which is the tool itself?
+40:44
+Does it produce a answer to the user immediately which is exposed to the user or does it provide a
+40:51
+response in natural language uh which is which which serves as a request to the server? None of that. It produces a
+40:58
+structured tool call. And where does this structured tool call go? Where is it going to?
+41:06
+It's not going to the client. We have already passed the client stage because client will ask the client will give
+41:12
+enough information to the LLM to give the yes I mean yes in the beginning client has to communicate with servers
+41:18
+for sure. Ultimately it's going to the server for sure. Um so this is a
+41:23
+structured tool called which the LLM produces. Next is what condition might must be
+41:29
+true for a tool to be usable by an LLM uh by an MCP client. The tool must expose a schema describing
+41:36
+inputs and outputs. Tool must be written in Python. Tool must run inside the LLM process. Tool must return JSON
+41:42
+embeddings. There is no restriction that it should only response
+41:47
+JSON embedding. So tool must expose a schema. It should describe what the inputs are, what the outputs are. In the
+41:53
+inputs although al also the arguments will be explained what is the main role of the transport
+41:58
+layer such that such as stdio or sec or https in the MCP.
+42:06
+So this transport layer establishes a protocol for communication between the client and server. When is HDDIO used?
+42:16
+when both the client and server are locally it's within the same device otherwise you could use sec HTTPS or uh
+42:24
+websocket so this is to this is a protocol for transferring messages
+42:29
+between the client and the server if an MCP server exposes 10 tools but the
+42:35
+client sends only LLM uh sends the LLM only three tool schemas what will happen
+42:43
+so server communicated to this uh client that there are 10 tools available but
+42:49
+client decided to send only three tool schemas to the LLM
+42:55
+which means the model will only be able to access three tools those three tools. So think about this model LLM is only
+43:01
+communicating with client. LLM is not directly communicating with the uh MCP server. All the communication between
+43:07
+server is with the client and then all the communication of the LLM is with the client.
+43:14
+Then after a tool runs on MCP server, where
+43:19
+does the tool result go first?
+43:27
+Is it into the LLM itself or is it to the user or is it to back to it's back to the MCP client because this is why we
+43:34
+have established communication protocol between the client and MCP.
+43:40
+Why does MCP separate the client and the server instead of having you know just
+43:45
+the LLM call these functions directly or maybe API call. Why can't the LLM directly make API call or something like
+43:51
+that? The basic idea is that this will allow
+43:58
+any LLM connect with any tool with a common using a common protocol. So it
+44:04
+makes the life of the developers so much more easier. Right? So it allows external systems and tool to be accessed
+44:10
+safely and modularly. If an MCP server exposes a tool but the
+44:17
+LLM never sees the tool schema, what will happen? So who decides whether LLM should see
+44:23
+the tool schema or not? MCP client decides. So MCP server exposed the tool but LLM never got to see the tool
+44:29
+schema. Then basically LLM won't be able to
+44:35
+access the tool. Right? Uh because the tool schema is never visible to the LLM.
+44:40
+So LLM has no idea about the existence of the tool in the MCP server unless the
+44:45
+communication happened from server to client is also communicated to the um LLM. Which component in an MCP system
+44:53
+actually executes the tool called uh tool code?
+45:01
+This is a very interesting question. You have a code for executing a fun I
+45:08
+mean uh there is a function or the tool. Who is who is doing this?
+45:15
+Because the tool who has direct access to the tool client does not have direct access to the tool. LLM does not have
+45:21
+direct access to the tool. Direct access to the tool is only for the server. So server executes the tool and whatever
+45:27
+results are there, it will pass on to the client. Right? If a retrieval tool returns multiple documents, who decides
+45:35
+what portion of these document documents go back into the prompt for the LLM?
+45:42
+This is easy because everything what should go into the context of the LLM is
+45:47
+decided by MCP client. So if we have cloud code as the MCP client and if we are using Opus 4.6 what goes into the
+45:55
+OPUS 4.6 model it is is decided by the MCP client.
+46:01
+Now, which component maintains the conversation loop with the LLM during
+46:07
+tool usage?
+46:16
+So, I can see A and B.
+46:25
+So conversations with the LLM is always done directly by the client. Right? Tool
+46:34
+directly does not communicate to the LLM. Server does not directly communicate to the LLM. Only client can
+46:40
+directly communicate to the LLM. In our example, cloud code or our website which is hosted, it can communicate directly
+46:46
+to the LLM. The website is hosted on Versell. Then besides tools, what else can MCP server expose?
+46:54
+This is something which I haven't discussed yet. I will come to that in a little bit. Uh I'm jumping the gun here.
+47:00
+But MCP server can actually expose uh three things. Uh it's called three primitives. Tools, resources, and
+47:07
+prompts. So I will just go back to my um mirrorboard once just to show you that
+47:12
+there are three primitives which are part of uh a model context protocol. So
+47:18
+this is the way in which the server will expose tool at server. Uh let me just
+47:23
+change the color. At server dot tool followed by whatever function this exposes tools
+47:30
+at server uh resource. This exposes the resources which are documents.
+47:36
+And then uh at server.prompt this will this will expose predefined prompts. I
+47:42
+will show you one example where this is kind of done in our uh YouTube MCP. So
+47:49
+here let me show you the folder structure. So here you see bunch of folders. Um what I have done here is
+47:56
+both the client and the server I have written the code here and I push the code to GitHub. But whatever code is
+48:02
+available in this web folder this is the website that I have hosted on Versel
+48:08
+which acts as the front end. So this website YouTube uh MCP get main this
+48:14
+website. Okay. this button definition, this style definition and um the way
+48:19
+this uh open AAI um API is stored in the local storage. All of these things are
+48:26
+are defined in this inside this web folder. So this web folder has nothing to do with uh server but it has got
+48:32
+everything to do with what? This folder has nothing to do with server but it has everything to do with
+48:41
+the MCP client. Here the MCP client is our this web web app itself. So this web
+48:46
+app access acts as the client and this folder defines the client which means when I'm deploying on Versel only the
+48:53
+contents of this folder is deployed from GitHub. So I will change my root folder as the web folder uh in Versel and then
+48:59
+Versel can automatically fetch whenever changes are made to this folder and when I push it to deploy it on GitHub uh
+49:05
+Versel will refer to this folder on GitHub and it will redeploy it. Now the
+49:10
+files that are primarily used in the MCP server which runs on railway. So I'll
+49:15
+just show you on versel. This is how it how the deployment looks like for my front end and on railway uh where is
+49:22
+railway on railway I have deployed the back end
+49:28
+um I mean the server which is active like this. This is referring to primarily
+49:35
+these two python files uh primarily this server.py file. So let me just show you
+49:40
+server.py and its structure. So first it is importing u a function
+49:47
+called fast mcp. This is uh inherently for implementing things related to the mcp the communication protocol etc. So
+49:53
+this is by default. But another thing this server.py is calling is one is llm
+49:58
+utilities lm utils which we have defined manually here and this will help us switch between openai
+50:06
+uh or gemini models. So here I have given uh two options.
+50:13
+So in the front end I had given two options openAI or Gemini. And when that switch is made that change should also
+50:20
+reflect uh in the way server sees the uh model right or server knows how to
+50:25
+communicate with the uh client. So to the provider which is the uh I mean to
+50:31
+the uh client I have to say what LLM is being currently used. The LLM that is
+50:37
+being currently used is either OpenAI or Gemini. And then in the server.py
+50:44
+um I have three things written here which are several several of them are redundant actually you know. So the
+50:50
+redundant things are I'll tell you what are redundant and maybe you can tell me my yourself.
+51:04
+Oh okay there is a question. Why should the server know about the um LLM? So
+51:09
+basically here I am passing the uh API key in the server function. Um in the
+51:17
+MCP tool function here I am passing this and this is being passed into this ask lm function. Ask lm is over
+51:25
+uh llm utils. So basically whatever function this LLM utils is exposing and
+51:32
+that function has uh details about what model is being used and it's not that okay I think earlier I said the server
+51:38
+is directly getting access to the LLM. Yeah I I'll come to the redundant redundancy part but basically just to
+51:44
+explain this um the server is getting access to a function which says these
+51:50
+are the um models and these are the parameters. Ideally these things could
+51:56
+be defined I think in the front end also. I could simply say um the definition of the LLM and the definition
+52:03
+of the model can be done in the front end and server gets exposed only server gets exposure only to the client. But
+52:09
+the way here it is written is in such a way that um this function is being exposed to the uh server.py Pi that's
+52:16
+the only reason why I have to write in the LLM utils the providers which LLM are being you is being used at the
+52:22
+moment in the server can I show you in a zoomed out way I don't know if you can
+52:27
+see this fully um can you just tell me
+52:32
+which tool might be redundant here so the reason why I have written this is to show you the three three primitives the
+52:37
+tools the um uh prompts and the resources but so and and then Let us see
+52:45
+this. The only function that this tool or the prompt or the resource is calling
+52:51
+is get transcript function. Get transcript function is being imported from the other Python file which is
+52:58
+YouTube tools.py. In the YouTube tools.pby, this get transcript function gets the video URL.
+53:05
+Video URL is passed into this function called extract video ID. Extract video ID based on the URL. it will see uh it
+53:12
+will check if the URL consists of certain pattern and if the pattern is matching it's a valid URL and then it
+53:18
+will fetch the uh um ID of the particular video and the
+53:24
+ID of the video is stored in video ID which is passed into this YouTube transcript API function that API is
+53:30
+imported directly from this library YouTube transcript uh YouTube transcript API this is provided by YouTube directly
+53:37
+and one thing here which was interesting for me is there is no need of any YouTube API key or something. This
+53:42
+function directly allows anyone even without YouTube API to directly get the transcript of a YouTube video. Um, so
+53:50
+here ideally I don't need any of these functions like I don't need this resources.
+53:57
+I could simply comment I don't need the prompt. The only reason why I have written it is to show you that if we
+54:02
+were having prompts and if we have if we were having resources as the primitives how the function will look like. Let me
+54:09
+just comment this. The only thing that we need here is look at the client. What
+54:15
+all what all tasks are client asking the server to do? Uh ultimately or what all
+54:20
+things are client asking the LLM to do? Client is asking for creating lecture notes. Client is asking for key points.
+54:28
+Client is asking to summarize and client is asking to uh to get the transcript.
+54:33
+In ideal case in a different way if we implement this um MCP client and MCP
+54:38
+server a different way of implementation would be trans for fetching the
+54:43
+transcript alone one communication happens between the tool and the um uh
+54:50
+server sorry tool and the client and then everything else summarization key
+54:57
+points lecture notes everything happens on the client side Here one thing you
+55:03
+notice is like the the way this is defined which is not ideal is that there is one tool MCP tool for getting video
+55:10
+transcript. There is another tool for summarizing the video. There is another tool for defining extract uh extracting
+55:17
+the key points. There is another tool for generating nodes. Now tell me was it
+55:23
+necessary that I define these three tools on the server side?
+55:28
+these these three tools should it need should it necessarily be on the server side. It should ideally be on the client
+55:34
+side, right? There is no need for me to do these actions on the server side. And
+55:39
+this is the reason why if we come back to the earlier point, uh because these functions are executed on the server
+55:46
+side itself. Uh the LLM access is provided to the MCP server in this case. But this is not an ideal practice at
+55:52
+all. Right? Uh yes in no in this case we will need if these tools are defined on
+55:58
+the server side and if the definition of this tool is to call an LLM and do a certain function of course the server
+56:04
+should require access to LLM. Yeah. So just to clarify let me just draw this
+56:26
+So MCP server is there.
+56:35
+MCP client is there. This is the versel website and this is the um
+56:43
+uh railway deployment. In this particular case, one thing that
+56:49
+will confuse you is the server is finally returning the final output. It
+56:55
+returns one of the four things. It returns transcript
+57:02
+or it returns um summary
+57:11
+or it returns um let's say lecture notes
+57:18
+or it returns um I think bulletointed outline or something like that
+57:23
+and there could be one LLM over here
+57:28
+which can decide what to do with this. MCP client can ask the LM hey here are the lecture notes do this with the
+57:34
+lecture note. Hey here is a summary do this with the summary. Hey here are the bullet points beautify the bullet points
+57:40
+but this part we are not doing yet. What is doing is what is being done is MCP
+57:46
+client is interacting with the MCP server. This server as part of its tools, it has four tools
+57:55
+get transcript. Yes, all results can be derived from the from the transcript. So there is no need
+58:01
+for having these four uh three tools in the server side. But right now the way it is defined is there are four tools.
+58:07
+Uh get transcript, get summary, then get uh bullet points, forgot the
+58:15
+name of this but something like that. then get the lecture notes.
+58:20
+Okay. And all these tools out of the four tools um this this and this require an
+58:28
+LLM access. This does not require an LLM access. This is directly getting it from YouTube. Now if you were to design this
+58:36
+in a different way, what you should do is remove all of these tools or all of
+58:43
+these functions from MCP server because this is unnecessarily requiring a communication with and with LLM
+58:51
+and move this here. And when the communication happens
+58:57
+between server and client, remove all of this and just ask the server to do one
+59:03
+function. The only one function the server would do is get transcript which
+59:08
+does not need any LLM access. This is purely a YouTube um function, YouTube
+59:13
+call, API call and then pass the transcript to the client and then ask
+59:19
+the LLM here on the client side whether I should summarize it or whether I should convert it into bullet points or
+59:25
+lecture notes. Okay, but uh here in this example get transcript is the only
+59:30
+client which only tool which I can show you. So I thought we could show uh we could display more tools if I also add
+59:36
+some additional tools here. Okay. So the confusion that was created earlier was
+59:42
+initially I said why do we uh LLM will never communicate with the server. That
+59:47
+is still true. LLM will never communicate with the server. The LLM associated with the client will only communicate with the client. But if the
+59:55
+server tools have access to its own LLM that communication can happen and client
+1:00:00
+does not have anything to do with that communication. If MCP server functions also got its own API call to make to a
+1:00:06
+different LLM, it can do that. Right? So in this current case, the reason why these um in LLM utils this uh provider
+1:00:15
+is written, the OpenAI and Gemini is written is because these functions for extracting um summarizing video,
+1:00:22
+extracting uh transcript. So here you see in this extract transcript there is no LLM call coming. But here in
+1:00:29
+summarize tool there is this ask lm llm call coming in extract key points it is coming in generate nodes it's coming. So
+1:00:35
+what does this mean? It simply means the following. This tool has access to an API call to YouTube whereas this tool
+1:00:42
+has access to API call to where LLM. This tool has API access to API call to LLM. So does this tool. That's the only
+1:00:49
+difference here. But then on the client side you will most like mostly in most cases have will have your its own LLM
+1:00:57
+which will decide or which will be asked to do whatever you are supposed to do with the output you get from the server.
+1:01:04
+So if you were to redesign this particular tool or this particular application what you should do is you
+1:01:09
+should delete these three things. Simply delete these three things. Just
+1:01:15
+keep only one tool. Keep only the get video transcript tool. Then the commun
+1:01:20
+only communication that should happen between client and LLM should be pass the transcript and then eliminate this
+1:01:26
+LLM utils because this is also not needed because client uh the server need not know about LLM. Server has nothing
+1:01:32
+to do this with LLM. Why? Because server is not even calling any LLM. So just comment this line uh no need of LLM
+1:01:40
+utils. You can delete this file altogether. this lm util completely delete on the server.mm only thing that
+1:01:45
+is running is this MCP tool and then this will communicate the transcript to the uh front end and then from the front
+1:01:52
+end only the LLM API call is made for executing whether you need to summarize
+1:01:58
+or whether you need key points or whether you need lecture notes or whether you need to just purely uh
+1:02:03
+display the transcript which you directly get from the server. If you purely want to display the transcript which you get from the server, you don't
+1:02:10
+even need the LLM. All right, you can just directly display only server is needed. Does this client server
+1:02:15
+architecture restrict client to only read from the server and not able to write to the server?
+1:02:22
+Uh that is a good question. Right now to the server what is happening is not
+1:02:27
+writing to the server what is being passed is the function called with the arguments. So Amit when you say writing
+1:02:34
+you mean to say can something change in the database of the server as a result
+1:02:39
+of the communication that is happening between client to server right
+1:02:45
+h that is a good question I think writing
+1:02:52
+writing can happen right that is that is what is happening in but at the end of the day writing is done by the tool it
+1:02:58
+is not done by the um client So client can to give an example let's
+1:03:05
+say you build a chatbot. So yesterday I was building a chatbot for discord. Now this chatbot will act as a bot and it
+1:03:11
+will post comments or reply. It can do whatever on discord or slack or whatever. So there the tool is in in
+1:03:20
+ence the tool is making changes to the database on the server side right but uh
+1:03:26
+it is not directly done by the client. Client is simply communicating that to the server. server is making the
+1:03:32
+appropriate tool call. The appropriate tool call may make changes in the database or it may fetch the read the
+1:03:38
+data from the database. It's up to what we have designed the tool for.
+1:03:43
+Okay. Now I want to show you one more thing which I don't know uh how many of
+1:03:49
+you are aware of uh which is the u power of MCB. So I'll show you one YouTube
+1:03:55
+channel. So we actually have a YouTube channel uh called visual learning. Okay, this is anyway our side business in the
+1:04:02
+sense like this has got nothing to do with AI or anything but it's a good channel. So we uh our team basically
+1:04:07
+makes these uh amazing 3D visualizations explaining science concepts and those kinds of things. Uh and most of these
+1:04:14
+are made using Blender and some things are additionally added using Unity. Now
+1:04:19
+the good thing is the quality is very high but see a human's effort is needed to make stuff like this on Blender. It's
+1:04:25
+very very timeconuming but it has a huge impact on you know small kids uh who can
+1:04:30
+who finds it difficult to visualize these concepts otherwise. So now I'll show you this is the blender software.
+1:04:36
+Um I don't know how many of you have seen this blender software. Can you see blender software by the way right now? Are you seeing blender or are you seeing
+1:04:42
+something else? Okay. Now
+1:04:48
+I don't know if I have to zoom in a little bit. Um
+1:04:53
+let me try to zoom in. Yeah. Do you see something called Blender MCP here? Uh,
+1:04:58
+so this is one of the latest versions of Blender 4.4.3. There is something called Blender MCP. What you can do is you can
+1:05:07
+start an MCP server. Right now I have started it. It says the server is running on port 9876.
+1:05:13
+So now this the way this structure is in the following way.
+1:05:19
+um we have uh let's say cloud code and and say my requirement is this I want to
+1:05:25
+make such beautiful visualizations and animations without touching the blender just using natural language okay so I
+1:05:31
+have cloud code which is the MCP client
+1:05:39
+then I have LLM which is opus 4.6 fix.
+1:05:47
+Then I have uh MCP Blender MCP server
+1:05:58
+which is the MCP server and then I have Blender itself. Blender
+1:06:03
+and different functions or tools within the blender. I can maybe write like create 3D model or whatever the tool
+1:06:09
+name is. there will be mill like hundreds or thousands of functions in in Blender.
+1:06:20
+So this is the tool. Now what I need to do is this.
+1:06:26
+I will talk to my client and I will say hey make this kind of an animation
+1:06:32
+render it on Blender. Right? The name of the YouTube channel is this visual learning. It's an amazing channel. I
+1:06:38
+don't know how much utility this will have for you guys but this is mostly for folks studying in like 10th grade 12th
+1:06:45
+grade etc. It's a nice channel. Um anyways so now coming back to what we do
+1:06:52
+here. So here let me switch to the so can you currently see this blender
+1:06:59
+agent or are you seeing some other screen? Are you seeing this blender agent um uh vs studio uh visual sorry VS
+1:07:06
+code? Okay, now let's do something. Um, I have already set up the connection.
+1:07:12
+Uh, setting up the connection part is easy between uh Blender and um your client. Uh, that cloud code will take
+1:07:19
+care of itself, right? You don't have to do something special or anything. But basically, this is how it works.
+1:07:26
+First, let me check check if the connection with MCP server is still
+1:07:33
+live.
+1:07:49
+So this is only connected, this client is only connected to Blender MCP. It's not connected to any other. Now we will
+1:07:55
+say, okay, let me clear all the context and let me say something like this. I want to make a new scene.
+1:08:04
+um rendered as a
+1:08:10
+5-second video using EV
+1:08:16
+instead of cycles. Uh this is just a rendering uh format. EV gives cycles is
+1:08:21
+very realistic but very slow. EV is less realistic but it's very fast. Uh you don't have to know about that. I want
+1:08:27
+the rendering to happen in 2 minutes. So select the
+1:08:36
+resolution accordingly and then here is the description
+1:08:46
+of my scene. Um
+1:08:52
+I want to make an animated scene
+1:08:59
+that shows um let's say something like
+1:09:04
+can you tell me any science experiment which is which won't take too much time to render something that is neither too
+1:09:10
+complex nor too simple there are many concepts edurren but something which you prefer anything okay
+1:09:17
+refraction running on I mean oh just jumping on
+1:09:22
+moon photosynthesis atom molecule okay atom molecule sounds very much doable refraction the only issue I know is if
+1:09:28
+you render something that looks transparent or something like that uh with a different medium it will look a little bit weird with EV rendering then
+1:09:35
+we need cycles rendering but cycles rendering will take a lot of time okay simple harmonic motion I really like
+1:09:42
+that shows uh simple harmonic
+1:09:48
+motion uh using let's say it's not a pure spring mass
+1:09:55
+it's a spring mass damper also is there spring mass damper system
+1:10:02
+uh make sure that the lighting is uh little bright
+1:10:10
+but not overexposed also make sure
+1:10:17
+that the camera is pointed at the experimental
+1:10:25
+setup. All right. So just this is a very basic thing. Ideally what we should do is so
+1:10:30
+we have still not yet created a single blender animation for our YouTube channel but this idea occurred to us
+1:10:36
+only like this week or last weekend and our team is experimenting how much can we teach cloud code to learn the
+1:10:43
+patterns of our previous blender renderings because all we can do is um
+1:10:48
+we can provide the previous uh blender files to cloud code and ask it to create
+1:10:54
+markdown files like skill.md files which will summarize our general blender
+1:11:00
+skills, right? Our team skills like uh this is the way in which we do the lighting, this is the way in which we um
+1:11:07
+define the objects and when we define constraints between the objects, this is how we define. So it can create enough
+1:11:13
+skill MD files to to kind of capture our our style of making and then ideally I
+1:11:22
+can give very little number of u experiments um to sort of um you know
+1:11:28
+very little number of uh um sort of instructions to pro to create something
+1:11:33
+in our own style right so it's a it's a very interesting tool and you know we even recently tried this with CAD so
+1:11:40
+there are lot of CAD softwares where people are designing actual machinery right and those companies the thing is
+1:11:46
+those companies are still the companies who use CAD is still running years behind I mean they are not running uh
+1:11:51
+with the latest AI tools in their arsenal or something like that so there is a lot of scope for disruption just by
+1:11:57
+introducing um sort of um uh these tools to such
+1:12:03
+companies or even helping them set up such workflow one more thing is I was recently having a um like this was three
+1:12:10
+four weeks back having a meeting with a company what they are trying to do is they're trying to create uh you might
+1:12:15
+have seen these companies where there are 3D renders of any house uh so if you're trying to buy a house or rent a
+1:12:22
+house many platform provides you 3D renderings through which you can create you can do a walk through so um it's
+1:12:29
+actually a difficult problem because there are more houses and more apartments for which such a 3D render
+1:12:34
+does not even exist from camera photos but you could imagine creating a workflow where you go to an apartment
+1:12:42
+and uh from the apartment you can click large number of photos in different
+1:12:47
+angles or you can even take a 360° camera and then uh you can have a um
+1:12:54
+setup where all the all your preferences of how 3D modeling should be done using whatever software you use is to is
+1:13:01
+mentioned to the cloud code and then that software you can make the connection to the software using its MCP
+1:13:07
+server. So literally if you think about the industries that are being disrupted right now uh because of this kind of
+1:13:13
+workflow is so huge. It's just that some of those companies will take time to realize that things are changing at a at
+1:13:19
+such a fast rate. Uh including us I mean we were we were like blown. I did not know last year when we checked something
+1:13:26
+like this for blender it output was not at all good. Like what it was doing was I mean you could write Python code and
+1:13:31
+then that code you could uh uh import to blender and that code will render something on blender. It's not very it's
+1:13:37
+not very uh what do you say? Uh it's not possible to make complex uh renderings
+1:13:43
+using that. But this time it was very mind-blowing. I'll show you some sample outputs if I can find it over somewhere
+1:13:49
+here. But but what I'm trying to say is most
+1:13:54
+of the modern tools right they have its own MCP server. I will show you one
+1:14:00
+uh GitHub repo.
+1:14:20
+Okay, there is a question what what are being communicated between the cloud code and MCP server? Basically cloud
+1:14:26
+code is communicating to the MCP server its function call. So if the function call involves creating a square shaped
+1:14:32
+object of certain dimension let's say the dimension and its xyz position are the arguments the function uh that
+1:14:40
+particular function uh call is being passed and then the blender tool will execute it. The tool which is meant for
+1:14:46
+creation of the object. So all the at the end of the day whether you are implementing uh this uh scene see the
+1:14:53
+scene is getting created as we speak it's amazing it's not easy so the spring
+1:14:58
+mass damper system is here it's not easy for a human to do this it's very very timeconuming and this is with our very
+1:15:05
+primitive prompt we have not followed any standards like our prompt is like very very basic right now but now imagine what you could accomplish if the
+1:15:11
+prompt was detailed if all your preferences are stored and this will also be animated I'll show you once the
+1:15:16
+render is complete um it's it's completely disrupting every industry. So um one thing you should try
+1:15:24
+is I don't know how much your company wherever you are working allows you to use different tools but my opinion is I
+1:15:30
+have tried many different AI coding agents cloud code and codex are above the one league above every other thing
+1:15:37
+which you can use. So if your company is not allowing it allowing you to use it
+1:15:42
+for whatever reason security or whatever at least on in your personal capacity for something which you want to build
+1:15:48
+yourself you should use it. It's otherwise it's a big loss in my opinion. Um this GitHub repo actually has a lot
+1:15:56
+of different uh MCP servers for many many different purposes. So you can scroll down here. There are many uh
+1:16:02
+interesting MCP servers people have created and uh you can deploy it yourself also or it is already deployed
+1:16:08
+uh for for various tools as well as um for various uh I mean various famous
+1:16:14
+softwares as well as for other random tools. So just check this. This has 89k
+1:16:20
+stars. Uh there was actually one more GitHub repo for MCP servers which I don't have um I don't remember on top of
+1:16:26
+my mind but I'll show you. But anyways, let's check if what happened to our rendering.
+1:16:32
+Uh there is a play button here. So you see this right now I'm playing this on Blender. Uh it is showing the spring
+1:16:37
+mass damper system. Right? You should know how difficult this is to make um in
+1:16:43
+Blender. Something like this. It's for somebody who is a beginner or even someone who knows this Blender in and
+1:16:48
+out. It's not like a it's not a child's play to put these objects and and some
+1:16:54
+people have very poor 3D visualization skills also. It's it's to animate these
+1:16:59
+things to define constraints between different objects because now this square has to this cube has to move along with the spring as the spring is
+1:17:06
+getting compressed. So there is a question can blend generate videos as well. Yes. Yes. So that is what I'm going to show you. So this animation
+1:17:12
+that is being played uh will be stored as a video. I have asked um cloud code
+1:17:18
+to render it as a video. You can render an image which will obviously be faster. This video will be like a 10 or 5 second
+1:17:25
+video. Um my computer is a little bit slow right now because of the rendering but I'll show you.
+1:17:31
+Uh now think about softwares which are used in traditional industry. Um maybe
+1:17:36
+like a logistics handling software in in hospitals or um in in some softwares
+1:17:43
+used in big company inventories. Um the problem is that if those
+1:17:49
+softwares are internal softwares, somebody has to create the MCP server if people need to use LLM along with it. If
+1:17:56
+they want to use LLM along with it, right? Um and somehow yeah, our company is
+1:18:03
+blocking to use MCP due to security. Is MCP the only way to do? Can we have our own way to do MCP using function or tool
+1:18:09
+calling? um MCP is the best way to expose a tool to
+1:18:16
+an LLM. But the the thing is you don't have to host the MCP server anywhere in
+1:18:21
+a publicly accessible way or something right it can be purely internal and if you are worried that your MCP tool may
+1:18:27
+erase some data in your data set. So I had recently created an MCP server for modifying some content on our own
+1:18:33
+website. Our website back end is in Firebase and uh usually we have to go through the front end of the website and
+1:18:40
+make some modifications. Let me just um my screen is frozen actually. Let me
+1:18:45
+stop sharing my screen. Can you hear me? All right. At least or
+1:18:51
+is my my screen is a bit frozen. I think this render is taking time. Okay. But you can hear me all right without break,
+1:18:57
+right? Okay. Okay. Thanks. So, I'll just continue speaking. uh let this let the
+1:19:02
+screen come back to normal once the render is complete. Uh but what I'm saying is one of the one of the issues
+1:19:08
+that I had was if I create tools for uh editing let's say a course or deleting a
+1:19:13
+course and then let's say that tool is MCP server is exo exposing that tool to my MCP client. What if I accidentally
+1:19:21
+say something uh and then uh that thing deletes an entire database or something like that.
+1:19:27
+So I was worried about that. So then what I did was I defined the MCP server such that the functions for deleting or
+1:19:34
+editing are having much more guardrails. Uh so the guardrails are on the client side before the client even produces the
+1:19:41
+instruction to delete or edit. There is a triple check I have added. So me as a user I have to cons confirm three times
+1:19:48
+before something like that is uh sent to the server. That is one option. Another option is eliminating that altogether.
+1:19:55
+uh eliminating the ability of the MCP server to make uh deletions altogether.
+1:20:01
+Uh I'm not able to actually even switch on switch off my camera
+1:20:07
+because my screen is entirely frozen. Let me just give me a moment guys.
+1:20:13
+Let me close Blender.
+1:20:19
+Anyways, this is the problem with uh using Blender while you're doing bunch of other things.
+1:20:32
+One more thing you can do is you can install Blender on a remote uh server like EC2 or something. The same thing
+1:20:39
+you can do on that so that your local computer is not getting um you know uh
+1:20:44
+hung up. But yeah actually let me kill this process. You
+1:20:50
+don't have to see the video to believe me right? I'll show you some other videos but uh this is fairly straightforward. The point being is um I
+1:20:57
+think there is a good money-m opportunity in different industries. If something like that interests you, um
+1:21:03
+one thing you could do is like find industries that are still relying on uh softwares and um those softwares which
+1:21:12
+which is like a real big pain point for its users. It need not be customerf facing software or anything. It can
+1:21:18
+literally be softwares for internal purposes. It can be softwares which are for um managing inventory uh or sorry
+1:21:26
+managing invoices on say using salesforce or it can be uh any other any
+1:21:31
+other tool which uh causes a pain to a a large industry to a large number of
+1:21:36
+internal users and now see where you can produce disruption
+1:21:42
+introducing some sort of you know system where you have an MCP server and client setup. So it's like it's truly the thing
+1:21:50
+is people who are so used to the software sometimes will not agree that they'll say hey this issue is there that issue is there of course there are
+1:21:56
+issues it's it's there is no doubt about it but the thing is the world is moving in a direction where um people are
+1:22:03
+embracing AI more and more uh there are even terms like AI native I don't know what it even means but people keep on
+1:22:09
+saying that from different companies when they have meeting with us we want to become AI native uh team but uh
+1:22:15
+whatever it is they want to build internal tools which also has AI capability so that you can interact with
+1:22:21
+it in natural language just like how I interacted with Blender in natural language. Can this produce an output as good as a
+1:22:29
+5year experienced Blender uh professional guide? Maybe not. But
+1:22:34
+that is not the point, right? In future it can uh it depends on how you set up the client. But the server is perfect in
+1:22:40
+the sense that the server is having perfect access to every single functions that Blender has to offer. Just like how
+1:22:46
+the blender UI is offering you functions with a with mouse button clicks or with keyboard um uh presses. Just like that
+1:22:54
+this blend the MCP server is perfect. Now the question is you as an AI engineer can you define can you design a
+1:23:02
+perfect MCP client which can interact with the server and get something which is truly valuable. I think that is where
+1:23:09
+a lot of skill is in in these days and uh there is a lot of opportunity to disrupt many industries in this Okay, I
+1:23:15
+mean this is just one example. Um, okay. Then I want to show you one more thing
+1:23:24
+that is the idea of just in time instructions. Uh, let me first close my
+1:23:29
+cloud code. It's it's slowing down a lot.
+1:24:08
+Just give me a second guys. I'll just close every single thing and make sure that my system is not slowed down.
+1:24:18
+Oh, the reason why it was slowing down was because this animation was playing because it has to render frame after frame. uh in Blender. So that takes a
+1:24:25
+lot of CPU. Uh that was my I forgot to pause the animation. I should have just
+1:24:30
+paused it. All right. Anyways, now let's come back
+1:24:36
+to the session nodes. So this is the basic architecture. MCP client will be
+1:24:42
+desktop or web app or I mean cloud desktop or cloud code or web app and it can access the server. Communication
+1:24:49
+will happen in uh uh JSON format. uh the basic communication but through h stdi
+1:24:54
+or http protocol and then server will have access to bunch of tools. Those tools will uh execute the task and then
+1:25:01
+the results are again sent back to the client. Uh there is one idea which I skipped
+1:25:07
+earlier uh which is this just in time instructions. So just in time instruction the idea behind this is I
+1:25:13
+think Anthropic only pioneered this Anthropic or Shopify I forgot the company but basically what they said is
+1:25:19
+um if a tool has instruction associated with it uh about okay once this tool is
+1:25:26
+uh once you have the results from this tool this is how you can utilize the
+1:25:31
+instructions from the tool let's say let's say you have such a description about the expected tool results and
+1:25:38
+let's say those descriptions are quite big. Usually what you do is those
+1:25:43
+descriptions are all written along with the rest of the tool descriptions. If you have 50 or 100 tools, um your system
+1:25:51
+prompt will become massive because all those tool descriptions you are loading into your system prompt and because of
+1:25:56
+this you will have context rot, right? But the approach in just in time instructions is uh if there are things
+1:26:05
+you have to take care of once you have the tool results you don't write those
+1:26:10
+things in the system prompt instead you let the um MCP server itself return
+1:26:16
+something called as jit instructions just in time instructions which will be an additional field among your results.
+1:26:22
+So the rest of the things will be results. Okay. And then there will be JIT instructions. And then uh and there
+1:26:30
+this is two-way also by the way that there could be JIT instructions which are passed along with the tool called to
+1:26:35
+the server. Okay. Uh to the um when you are when the LLM is producing the uh
+1:26:41
+call and server may have an LLM or server may have a um uh inbuilt uh what
+1:26:46
+do you say robust logic which is not LLM based but which is keyword based. So, LLM the server can refer to the just in
+1:26:53
+time instructions and based on the just in time instruction which will be deterministic server can decide what to
+1:26:59
+do with the uh tool results before passing the tool results to the client. That is one thing so that the tool
+1:27:06
+results that are passed to the client will be much smaller um and then the client can have a much cleaner thing to
+1:27:13
+pass to the LLM. And in the opposite way when LLM when the uh server is deciding to pass a
+1:27:20
+particular result to the client it can add deterministic JIT instructions. The
+1:27:26
+reason why I say deterministic is there is no need of an LLM logic there. This instruction can be purely added using a
+1:27:31
+enumerated list. Um yeah can you give some concrete example point how MCP
+1:27:37
+server will provide uh just in time instructions for sure.
+1:27:45
+So this is client and this is server.
+1:27:54
+Okay. Now jit instruction is just in time instruction which will help us the
+1:28:00
+only role of that is only only goal of that is to say to save the context
+1:28:06
+window of the LLM. We don't want the context window to be polluted with a lot of unnecessary
+1:28:13
+uh tool instructions. If there are 50 or 100 tools, we are not the server is not
+1:28:18
+going to use all those tool at once. Even if it's using multiple tools, the the
+1:28:24
+instructions only corresponding to the most important tools of that moment need to be exposed to the LLM.
+1:28:30
+Now, who is doing this? Client is doing this. So, client decides what goes into the LLM. But then LLM is creating a tool
+1:28:39
+call right in a structured format. This will make a tool call in a structured format. So there is one way
+1:28:45
+in which you can add a JIT just in time instruction. the LLM can decide to add a just in time instruction in a specific
+1:28:52
+format which will tell the server that when the server is returning the results
+1:28:57
+and let's say there are 10 tools that are being called right now
+1:29:03
+and let's say one of the tool each tool is returning uh 50 values each. Okay. So
+1:29:09
+there will be 10 * 50 by default there will be 500 items or values that are
+1:29:15
+returned from server to the client. Now when client is getting this much the
+1:29:23
+client is also having to have some logic before deciding out of these 500 values
+1:29:28
+what all things should I pass back to the LLM. Right? So instead what we can
+1:29:34
+do is the just in time instruction created by the LLM during the tool call can be simply hey uh when you are
+1:29:41
+creating u the results just give me the just give me uh instructions uh give me
+1:29:47
+the result regarding um let's say parameter A and parameter B
+1:29:56
+and the way this JIT is constructed will be in such a way that it is something that the server also can understand
+1:30:02
+right this will not be in natural language I mean it will look like it is natural language but this definition will already be there in the server side
+1:30:09
+then instead of the server returning 500 values from this 10 tools maybe it will return 10 multiplied by two 20 values
+1:30:18
+and when these 20 items are now being passed into the client client has a much easier time filling the context of the
+1:30:26
+LLM otherwise client has to implement some other logic to decide out of these 500 what are the most relevant things to
+1:30:32
+be fed uh to be fed into the context. Right now one more thing that is often done is on
+1:30:39
+the server side itself uh let's say this is the result that are passed from the server
+1:30:46
+there could be just in time instructions which are embedded in the results which are passed into the uh client which will
+1:30:53
+say how to interpret this particular set of results. So let's say in the results
+1:30:58
+there are 500 parameters okay and just in time instruction says
+1:31:05
+if you care about only 99%age accuracy consider only the first three params
+1:31:11
+then this makes it very easy for the client to decide okay only first three params are decided then it can truncate
+1:31:18
+and feed the result to the LLM right so this just in time instruction helps at the end of the day in reducing the Um uh
+1:31:27
+LLM's context window size uh not the context window limit but the tokens that fill the context window. Um there is a
+1:31:35
+question client could initiate tool call with LLM. Client client cannot uh can you repeat the
+1:31:42
+question? Client can initiate tool call with the LLM. I mean LLM decides which yeah who creates the just in time
+1:31:48
+instructions on this side. LLM creates the JIT instructions. LLM can add it on
+1:31:53
+uh along with the um uh tool called structure on the server side. JIT could
+1:32:00
+be embedded in the result in a deterministic way. Um there could be JIT instructions which are uh let's say
+1:32:05
+there are if based on if else condition if this is the case JIT is this else if
+1:32:13
+it is case B JIT is JIT is this like for example if there are 500 responses
+1:32:19
+coming from the tool JT should be only top three are relevant if only 10 are coming only um you you know everything
+1:32:26
+can be relevant all 10 can be relevant then who instruct LLM to use JIT
+1:32:32
+that is part of the instructions provided to the LLM uh by the client um
+1:32:37
+depending on how the client is set up. So it's up to cloud code right if we say that we want to follow a schematic uh
+1:32:45
+where just in time instructions are used rather than utilizing the instructions
+1:32:50
+about every single tool available we can do this so one more thing is if there are 100 tools
+1:32:57
+to the LLM you typically don't have to deal should not be dealing with 100 tools right so yes J bit jit basically
+1:33:04
+is a dynamic thing which is added depending on the total number of tools that are needed to be considered
+1:33:10
+If only five to 10 tools are need to be considered, it's not a problem to uh add
+1:33:16
+the descriptions of the uh entire tools operation and how the result structure may look like. You can add all of those
+1:33:22
+thing to the things into the LLM context because the total number of tokens this may consume could be between 500 to
+1:33:28
+1,000 or something like that, which is kind of okay. But if the size of the um
+1:33:34
+context window or number of tokens is humongous like 5k to 10k because of
+1:33:40
+large number of descriptions of 100 to 200 tools in that case you will decide
+1:33:46
+out of these 100 to 200 tools whether we need only five tools or 10 tools or a
+1:33:52
+group of tools. Uh to give you an example in Slack there are tools that are related to channels there are tools
+1:33:58
+that are related to messages. There are tools that are related to um users. There are tools that are related to pure
+1:34:05
+admin related things or like making um uh making people admin or removing members or adding members etc. Within
+1:34:13
+each of these group of tools, there could be 100 different functionalities which are different functions. For
+1:34:18
+example, within a channel, there are many things, right? You can rename the channel. You can maybe change the
+1:34:24
+channel ID. I don't know if it is possible. I'm just making it up. You can um copy the channel ID. You can invite a
+1:34:30
+user to the channel. Now think about this. If you have a group name for the
+1:34:36
+list of tools in the tool description, channels, users,
+1:34:42
+then um uh let's say admin.
+1:34:47
+If the current task that the LLM is talking about in the context has something to do with sending message in a channel and nothing to do with DM
+1:34:54
+DMing a user or something like that then the only tools that the LLM needs to um
+1:34:59
+ask client to you know execute in the server is channel related tools and
+1:35:05
+maybe there are only five tools in this group of channel related tools in the
+1:35:10
+users maybe there are 15 tools in the admin there are 25 tools like that maybe there are 3,000 functions which the
+1:35:17
+Slack has now and with with these 3,000 functions, you
+1:35:23
+should not be loading all of the descriptions of these functions into the LLM's context. Now, how will the LLM
+1:35:29
+decide whether uh I should load the these this group or I should load the
+1:35:36
+users or I should load the admin. One of the way to do that is u bas by following
+1:35:42
+the just in time instructions coming from the um the last tool result from the server. Then LLM will know what the
+1:35:49
+context of the current tool result is. If the user has been added to a um particular channel and a new welcome
+1:35:56
+message has to be sent to the channel. Then the LLM can switch the focus from the group um the group of functions
+1:36:02
+called users to group of functions called channels. Then if a welcome message has been sent then maybe if the
+1:36:10
+LLM has to now notify the admin with some email or whatever then the LLM can switch its context from this group of
+1:36:17
+functions in the channels to this group of functions in the admin right basically it's a way to store save the
+1:36:23
+context window the good thing is in cloud code and modern uh coding agents most of these things are taken care of
+1:36:29
+automatically in the sense that um its ability to manage context window is so
+1:36:34
+good already um we will not be implementing JIT in code right right away because that will
+1:36:41
+be extremely timeconuming I want to show you uh one activity actually let's go
+1:36:47
+through that I will share a link with you
+1:36:54
+so can you open this link
+1:36:59
+so this this is an activity which will show you in a concrete way um what are
+1:37:04
+the schematics um
+1:37:11
+of different tools. Okay. Yeah. So resources and prompts. So
+1:37:17
+resources are the documents that we will come to that actually here. Uh the resources are basically the documents
+1:37:24
+that u um you know that can be communicated between the server and the
+1:37:30
+uh client. For example, um if there are
+1:37:35
+tool descriptions return uh tool descriptions provided from server to client and there are let's say 500 tool
+1:37:42
+descriptions these tool descriptions can probably be stored in a document right
+1:37:47
+in some format uh maybe in JSON format in a structured document format in the on the client side and then client can
+1:37:55
+decide to run a rag on those resources um to feed only the top five tool
+1:38:01
+descriptions into the LLM's context. So to resources is a broader term saying it
+1:38:07
+is not just tools that are there associated with the communication between LLM and the sorry the client and
+1:38:14
+the server because client and server normal communication is what normal communication is simply the tool result
+1:38:21
+that is passed but in the initial handshake which will happen between the client and the server the server is
+1:38:27
+passing a lot of information about all the tools it has at its disposal. Right? So those things can be stored as a
+1:38:34
+resource which can be uh referred to later. If we come back to the this example of getting the transcript. So
+1:38:41
+let's say we are uh executing the the um
+1:38:46
+transcript to summary in such a way that first the uh client gets the transcript from the server. Then that transcript is
+1:38:54
+stored as a resource as a markdown document or something. And then from that resource let's say you are suddenly
+1:39:00
+now asking a question find the paragraph related to um
+1:39:05
+discussion about rag from this transcript then you can actually run a retrieval augmented generation using
+1:39:12
+keyword search or using um embeddings to find the relevant paragraph from that
+1:39:17
+huge transcript because a transcript of a 3-hour video will be long but um that
+1:39:23
+that resource which is stored on the client side can be utilized for feeding the information to the LLM. Now, where
+1:39:30
+did this resource come from? Primarily, it came from the interaction that happened between client and server. Now,
+1:39:37
+prompts are repeatable prompt um uh system prompts which you can use again
+1:39:43
+and again and again. So, in our case, the prompt that is used again and again and again is the button click. So, when
+1:39:49
+we click the button summarize, it is utilizing a particular prompt. If we uh click the button um create lecture
+1:39:56
+nodes, it's again utilizing another system prompt. Right? So when we say there are three primitives to the MCP,
+1:40:03
+the three primitives are the um tools, resources and prompts. It simply means
+1:40:09
+that there are bunch of tools or functions that are defined on the server side which the uh client can access.
+1:40:15
+There are bunch of uh documents which may be exchanged as part of their communication which can be utilized
+1:40:21
+later as a resource. There are several functions that the LLM can execute through client to the server by
+1:40:28
+repeating the system prompt with a button click or something like that. So the resources and prompts are stored on
+1:40:34
+server side or client side. In the current example, it is stored on um it is ideally stored on client side. The
+1:40:41
+repeated prompts are at the end of the day passed to the client. However, in the way we have implemented it, if you
+1:40:46
+remember, LLM was on the server side, which means prompts are on the server side and the resource which is the
+1:40:52
+transcript was passed from the client uh server to the client and that transcript we did not store anywhere because we
+1:40:57
+were using the same transcript to gen uh we were calling the transcript function again and again to um get the uh summary
+1:41:05
+or get the bullet points. But if we are storing it somewhere, it will be stored on the um client side and not the server
+1:41:12
+side. Um let's actually go through this this once
+1:41:17
+uh this function. Uh there is a question can the rack can be wrapped in a tool call.
+1:41:22
+Ah that is a good question I think so. So your question is if there
+1:41:27
+is a function can a rag be implemented within that function right that is essentially what you're asking right? Uh
+1:41:34
+yeah I think so. I mean at the end of the day rag has got not much to do with LLM right? uh
+1:41:41
+rag is purely you have a you have a query you have bunch of documents documents are in the form of vectors
+1:41:46
+query you convert into a vector and then u whichever documents are closest to
+1:41:52
+this query uh you just fetch it so it has got not much to do with llm which means it can be yeah for sure it can be
+1:41:58
+implemented as part of a tool or as part of a function so rack can be uh tool can
+1:42:03
+wrap around a rack for sure um all right
+1:42:10
+Now let's open this document and here I'll just keep the bright mode. Yeah. So
+1:42:16
+here basically what we are doing is this is like a imaginary company. It's called Astro Log. It's a fictional space
+1:42:22
+logistics startup. And then uh we are designing tool schemas. We are designing MCP server
+1:42:29
+configuration and uh we are and react agent loops. Okay react I should explain
+1:42:36
+once just before uh going ahead. So React simply means reasoning and acting.
+1:42:47
+So this React framework was also popularized somewhere in the half of uh 2025. The basic idea is this
+1:42:55
+uh LLM will make a tool uh will create a tool
+1:43:01
+called structure. The tool call will happen. Tool will provide results.
+1:43:08
+Right? Um then the LLM has these tool results
+1:43:13
+as the observation then it can it can think on this. It can have a reasoning layer
+1:43:23
+based on the results. We will see a solid example in 2 minutes
+1:43:29
+and then based on this reasoning it can decide oh should I call another tool. So this is tool number one. This is tool
+1:43:35
+number two. And this is result set one. Reasoning based on result set one. Then this will say results two. Then we then
+1:43:43
+the LLM will again reason based on
+1:43:49
+results two and then the LLM after this results are there then it can provide
+1:43:54
+the user response. Right? So the thought is the part where LLM will reason.
+1:44:02
+Action is the part where a tool called structure is initiated. Observation is when the tool called
+1:44:08
+results are injected into the LLM and then the LLM can reason on top of the
+1:44:13
+results and then finally in this loop at one point LLM will decide this loop can
+1:44:19
+run two times or three times and then only LLM will produce the final output which the user can see. Right? So let's
+1:44:27
+see this in a visual way. So right now what this particular astral company does
+1:44:33
+is um it decide it basically manages the logistics behind let's say space
+1:44:39
+exploration like a fictional thing basically and our goal is to design tool
+1:44:44
+schemas. So tool schemas will be utilized for LLM MCP server configuration and react agent loops and
+1:44:51
+uh all are running on client uh side in the browser. Okay. Now first is tool
+1:44:57
+schema. There are two tool schemas uh for mission search. There is a tool schema um and it's basically to get what
+1:45:04
+are the up ongoing missions or upcoming missions. Crew schedule is if there is a space crew who is traveling for those
+1:45:09
+missions, what is their schedule? Cargo manifest is what is the cargo that is shipped into the space along with the
+1:45:15
+mission. Fuel estimate is okay for this mission uh for the current status for
+1:45:20
+current situation uh what is the estimate of the fuel remaining? How much can this mission last?
+1:45:27
+So let's first just compare the sche two scheas. One is a vague schema and one is a well- definfined schema. I will not
+1:45:32
+show you the well- definfined schema yet. Just look at this vague schema and tell me what is vague about this. What's
+1:45:39
+the issue with this this kind of a schema? This is the schema of which describes that of a tool. Okay.
+1:45:48
+Is there any issue in the name?
+1:45:57
+So name is not in that snake case format we earlier discussed, right? It should be like get mission data or something
+1:46:02
+like that. So in well definfined it will be like this is a good name search missions. Now in the vague schema what
+1:46:09
+is this description? This is the most lazy descriptions. Basically this lazy thing is what we just did when we implemented blender. But here in well-
+1:46:16
+definfined schema the description of the tool will be search missions is the tool name. It will search the astrolog
+1:46:22
+mission database by keywords status etc and returns uh this so and so. And u
+1:46:28
+look at this thing. What is this Q properties Q string query? This is the worst schema ever. But uh actually this
+1:46:35
+property it says uh where is that? Um it's a query query type is string search
+1:46:41
+keyword to match against the mission name destination or crew names. So basically in a well- definfined schema
+1:46:48
+one issue is there will be more tokens that are consumed obviously the number of tokens in this rule schema is maybe
+1:46:54
+1/3 or 1/4 that of the number of tokens consumed in this schema or maybe half of
+1:47:00
+it but this is much more useful to the LLM. Now same thing applies for crew
+1:47:06
+schedule, cargo manifest, fuel estimate. I don't have to show you that. Another thing is this design principle. This we
+1:47:13
+had already discussed. A good tool name should contain a format which looks like
+1:47:18
+this. Verb noun format. So search mission is search is the search is the verb missions is the noun. Okay.
+1:47:26
+Then uh there should be clear description about what we are supposed to do with this tool. So if the tool is
+1:47:31
+to get missions, it should not just say get missions, gets missions. It should explain in a little bit of detail what
+1:47:37
+the uh details of what goes into the tool. It and what comes out of the tool returns matching mission with status
+1:47:44
+crew and destination use when the user asks about mission launches or destination. All right. Then enumerating
+1:47:50
+constraints is uh if we want the LM LLM to consider only certain string values instead of
+1:47:59
+just saying um let's say the status of the mission let's say that is the variable the status can be planned in
+1:48:06
+transit completed delayed aborted technically yes all these are strings
+1:48:11
+and uh but the problem is if we just say bad uh the if you just say type uh it's
+1:48:17
+a string type this is very bad because yes it is true that this is string type
+1:48:22
+type but there are only so many types of mission statuses it's not infinite so
+1:48:27
+LLM the the opportunity for the LLM to hallucinate is minimized when you
+1:48:32
+enumerate the available uh the string inputs
+1:48:38
+then second the next thing is required versus optional so sometimes some tool
+1:48:44
+calls uh will not require all the different arguments right some argument ments are already inbuilt. One example
+1:48:50
+is is if we are using calling an LLM or if you are running um if you are building the
+1:48:57
+let's say backbone of an LLM one argument could be how many layers this LLM has sometimes the number of layers
+1:49:05
+will be by default decided as six layers or 12 layers which means it is okay if
+1:49:11
+you can skip that parameter so it is very important to say what parameters are mandatorily required and what are
+1:49:18
+optional because if to mark everything as required. You are forcing your LLM to come up with some values to this
+1:49:24
+required field which will again force the LLM to hallucinate. So just mark whatever parameters are required to be
+1:49:31
+passed into the tool. Mark that as required whichever is actually optional mark those as optional.
+1:49:37
+Then return descriptions is document. It documents what the tool returns so that LLM knows how to interpret and present
+1:49:44
+the results. So this returns is basically showing what this uh tool or function will return. It will return the
+1:49:50
+list of missions as an array. Inside the array, there will be ID of the mission, name of the mission, where the destination is, status, current status,
+1:49:57
+launch date, the crew who went on the mission, etc. Uh in the bad case, this uh description of the output format was
+1:50:04
+not described. Then low parameter count, keep parameters under five. Combine
+1:50:10
+related fields into objects or usable use sensible uh defaults. more parameter equal to more uh chances for LLM to make
+1:50:17
+error. This is in tandem with what we discuss here. Here also we are constraining the options that LLM will
+1:50:24
+have to choose from. Whereas here we are leaving it open. Then another principle is this just in
+1:50:31
+time instruction and here is an actual example of just in time instruction. So let's say the function that you are
+1:50:38
+calling is calculate fuel estimate and this function will return an output in a
+1:50:44
+JSON format something like this. Uh fuel kilogram is 52 uh 52,500.
+1:50:51
+The cost of this fuel in USD is so much the safety margin is so much. Now when
+1:50:57
+the before this tool result is being passed into the um client you can add an
+1:51:03
+instruction I mean the server can add an instruction saying jit instructions important when presenting fuel estimates
+1:51:09
+always note that 15%age safety margin is already included if fuel greater than 50,000 one that this requires a heavy
+1:51:15
+lift vehicles vehicle present cost in millions example $2.6 6 million not like
+1:51:21
+this uh suggest checking weather at the launch site. So basically this is the JIT instruction that is coming along
+1:51:27
+with the uh this particular uh tool result and this will in the downstream
+1:51:33
+save a lot of I mean not this particular example what I'm saying is in general JIT instructions will save a lot of u um
+1:51:41
+the tokens. Same for this is another example for a different tool. This is a get weather
+1:51:47
+forecast tool. it will return the weather at a certain location. What is the condition? What's the wind speed?
+1:51:52
+whether it is safe to launch or not and then the J associated JIT instruction uh
+1:51:58
+if the if the result is JIT enhanced result right so this is just a just to
+1:52:03
+show you one example of how the just in time instruction is actually added into the result how is it injected along with
+1:52:09
+the result one more thing we can see is uh so this is the whole pipeline you
+1:52:15
+describe what the tools have we saw this in the JSON format lm decides what tools
+1:52:22
+to call whether it is get fuel estimate or decide uh get the weather report
+1:52:27
+right and then after decision LLM will call and then after the call will the tool will return the JSON uh uh format
+1:52:34
+return and then if there is a react loop LLM can reason on top of that result
+1:52:40
+which I will show you in a moment now let's move on to the uh this part so
+1:52:46
+this is how the rough MCP architecture looks like this we have discussed in detail you even if you skip this is okay but basically there is host uh there is
+1:52:53
+a client that the host talks with. So in our case the host is the web app. The client is u basically on the web app
+1:53:00
+itself. Client connects with the server and the server is uh in railway and then
+1:53:05
+communication happens between client and server and
+1:53:11
+let's look at this uh server builder. Okay. So I will first just do one thing. First remove all of this
+1:53:22
+and let's do one more thing. Um so just look at how the uh three
+1:53:28
+primitives for the MCP server looks like. So the three primitives are tools
+1:53:34
+associated resources associated prompt. So let's say the tool is search mission.
+1:53:39
+We are only caring about searching for missions. then that will be added into the JSON which is communicated between
+1:53:45
+the server and the um uh client and then in the resources we can add the
+1:53:52
+resources related to the missions. It could be the a log from the astrolog which is a document that enlists the
+1:53:58
+missions uh active or not and then uh there could be a crew schedule associated with the mission and then in
+1:54:05
+the prompt there could be like a already defined prompt. Uh here the definition of what this mission brief is not
+1:54:11
+mentioned but the system pro prompt could be here are the mission details. Uh here is the resource document based
+1:54:18
+on this create a two sentence or three sentence brief of the mission right and
+1:54:23
+uh this is how the the final JSON format will look like in which all the three things are all the three primitives are
+1:54:29
+embedded prompts resources and tools and this is the initial handshake uh
+1:54:35
+what is shown here initial handshake if you just click this play button you can see client will ask the MCP server to
+1:54:42
+initialize MCP server will respond respond with its own capabilities, tools and resources support. And then once
+1:54:48
+this is received on the server side, the connection is active connection is complete. Meaning now the client is
+1:54:54
+ready to interact with the server to execute tools. And transport is this is
+1:54:59
+how uh this there is one more thing I want to show here. Tool call flow. So tool call flow look like this. Client
+1:55:05
+will ask for a list of tools. Server will respond with the list of tools. Client will call a specific tool or
+1:55:11
+specific set of tools. server will execute the tools and return the results fairly straightforward.
+1:55:17
+And this we have already discussed stdio is the standard input output protocol. U
+1:55:23
+I don't think it's a protocol. It is the way in which um the communication happens between server and client
+1:55:29
+especially when they are running on the same machine. HTTP or SSE or even uh
+1:55:35
+socket websocket happens when there is a network in between.
+1:55:40
+And let's also see this react loop. I just want to show you how the actual thought reason uh um uh action loop
+1:55:49
+looks like. So let's say this is the question. What machines are currently in transit? Okay. And let's just
+1:56:00
+run the step. So the thought the LLM has is the user wants to know about the
+1:56:05
+missions currently in transit. I should search for missions with status as instant in transit not status as uh
+1:56:13
+delayed or not status as aborted or something. Then based on this thought so
+1:56:18
+this thought is basically the reasoning part of the LLM the action that is taken is called the function search missions
+1:56:25
+and the query that is passed is the um I mean the argument that is passed is query should be in transit status should
+1:56:31
+be in transit then after this action you will get some results. So where is this
+1:56:37
+results coming from by the way? Where is this coming from?
+1:56:43
+It's coming from the server, right? MCP server will have these results which are passed into the MCP client and LLM will
+1:56:49
+get access to that. And based on this observation, there will be another thought I found one mission out of all
+1:56:55
+the missions uh it found there is one mission in transit Mars Mars Pathfinder relay. I have all the details I need to
+1:57:02
+answer the question uh and then show the answer. So the final answer which user gets after user
+1:57:13
+there was a um thought part here which is the reasoning as part of it there was an action as part of it there was an
+1:57:20
+observation then that resulted in another thought or reasoning and then finally you have the answer then this is
+1:57:27
+the most basic part but if there is multi-step the LLM can do this more number of times so let's say this is the
+1:57:33
+question can we launch ISS supply delta on March 10th. Check whether the cargo
+1:57:38
+uh check the weather and cargo weight then estimate fuel. So first the thought
+1:57:43
+is user wants to know if M00003 can launch on March 10th. I need to check the weather. I need to get the cargo
+1:57:49
+manifest to calculate total waste and estimate fuel. Then tool will decide first. Okay first get weather forecast
+1:57:55
+weather forecast for Cape Canaveral and this is the date March 10th. Then observation is you get uh this thing uh
+1:58:04
+this is the observation partly cloudy wind speed is so much then the thought is okay weather is good so launching is
+1:58:10
+safe because if launching is not safe you don't even have to call the next function right so if the weather forecast is is very bad you don't even
+1:58:16
+have to call the get cargo function or the estimate fuel function so weather is good launch is safe now I need to check
+1:58:23
+the get the cargo manifest then the action will be check cargo manifest function so this function is now called
+1:58:29
+this function will return the next observation. The observation is for the current mission ID that we are being
+1:58:34
+discuss we are discussing what is the cargo status. Then the thought is cargo's total is 435 kg. Now I can
+1:58:41
+calculate fuel estimate for this particular payload. Then the next action is for this cargo for this particular uh
+1:58:49
+mission. So the destination is to the international space station. What what is the uh expected um fuel consumption?
+1:58:56
+Then the next step is as a result of this action there is this observation which is the result coming from the MCP
+1:59:02
+server and then on this uh result from the MCP server there will be a reasoning
+1:59:09
+loop and then at the end of this reasoning it will say okay mission is safe I can go ahead the fuel estimate is
+1:59:16
+um cargo size is 435 kg weight fuel estimated this many kilog $100,000 so
+1:59:23
+this is how after three loops Right. So first loop first thought action observation loop was this recent action
+1:59:30
+observation was this second was this these three and third was this and only
+1:59:36
+then it ended up with the final answer. Sometimes it can for this react loop to
+1:59:42
+implement we need to call reasoning models or regular LLM models will work. Uh I think for this we'll have to use
+1:59:48
+reasoning model um with its capability otherwise it will the regular models will keep on giving you its output
+1:59:53
+right. it it should have an internal reasoning cap uh capability um otherwise it will keep on relaying
+2:00:00
+its output to the user. There is another one update the Venus atmosphere probe mission to completed status. So here the
+2:00:07
+thing is if it's an aborted mission it should not be changed to completed status. So user is asking something that
+2:00:13
+is impossible not impossible that is something that should not be done. So the thought is in the react loop the the
+2:00:19
+thought is the user wants to update the mission status. Okay, first let me find the mission ID. Then the action is
+2:00:24
+search missions. Then observation will be all the missions are available. The ID I mean the ID is available from the
+2:00:31
+particular mission name. And then I will try to update it to be completed. Then it should write a function update the
+2:00:38
+mission status and mission ID is provided. Status equal to completed. But then uh success is false. Error invalid
+2:00:46
+status transition cannot move the transition uh move the status from aborted to completed. always allow
+2:00:52
+transition from about is none. So basically about mission status cannot be changed. So this is now the observation. Basically it's an error. Um after this
+2:00:59
+there is nothing. Uh so the thought is the thought uh the update failed because aborted is a terminal state. You cannot
+2:01:05
+transition from uh aborted to completed. So cannot update M008. Status uh
+2:01:10
+transition from aborted to completed is not allowed and aborted mission cannot be marked as completed. So basically the
+2:01:17
+agent uh can go through different scenarios and reason and uh tell the user what to do. Now look at the uh
+2:01:25
+token consumption. Obviously the downside of react is token consumption is high. But then in mission critical
+2:01:30
+applications it will be very good to have a react loop. In fact in many cases uh how many of you have used paper
+2:01:36
+banana for making figures? Have you heard of paper banana tool? I think I had mentioned it in the first lecture or something. Basically it's an amazing
+2:01:43
+tool. um uh it's an amazing tool to create uh figures using nano banana but however
+2:01:50
+paper banana paper banana itself came out as a paper by the way
+2:01:58
+uh so this is the paper this is from Google
+2:02:04
+I think it's from Google deep mind if I'm not wrong
+2:02:11
+okay not sure deep mind but uh Google cloud cloud AI research. But this paper
+2:02:16
+what they what they did is they did not build a new model but they built an agentic framework around nano banana to
+2:02:22
+create amazing quality figures. So just um
+2:02:30
+just check this. So basically this whole figure was created using paper banana
+2:02:35
+itself. Uh so this paper was written most of the part using paper banana. If
+2:02:40
+you really want to try the implementation, I have made a um banana.ai.
+2:02:47
+You can just check this link here. You will have to paste the description of your figure and just paste your API key and then then you can generate amazing
+2:02:53
+figures. Um just check this website. But what I'm trying to say is here also they have the same loop. Uh there is a agent
+2:03:00
+who will critique the initial iteration that is created. Uh then there is a thought process where what are the
+2:03:05
+mistakes? what is the difference between what the user has asked and what the generated output is and it will create
+2:03:10
+three outputs. You see this iteration one, iteration two, iteration three and o over each iterations it will try to
+2:03:15
+make the output better and better and better and it's actually very mind-blowing. You don't need actually this website to implement paper banana.
+2:03:22
+If you have a cloud code just give the uh this paper banana
+2:03:28
+github lm research. So just give this link. It's a public
+2:03:34
+repo. just give this link to um uh cloud code and cloud code will figure out how to invoke paper banana using pip install
+2:03:42
+paper banana. So the instructions are given here but you don't have to necessarily uh give this to cloud code
+2:03:48
+directly. You can just tell refer to this GitHub. But basically the point is here also they have uh implemented
+2:03:54
+something very similar to react loop where every single action that is done on nano banana is uh evaluated in the
+2:04:02
+next loop and then it it iterates and because of this the token consumption is higher. Uh it consumes maybe 3x or 5x
+2:04:08
+more tokens than normal but the output is significantly good. So um and then uh
+2:04:15
+this custom query I want to try this uh which missions
+2:04:22
+are scheduled to happen in the next 3 months. I'm just
+2:04:30
+running this. Uh so here an LLM is being utilized. So I have given Gemini API key here and the thought so this is now the
+2:04:38
+actual loop right. So the thought is the user is asking for missions uh in the 3 months. search mission tool is the most
+2:04:43
+appropriate. Then the action is that tool is called observation is all the mission ids are now available
+2:04:49
+and then the thought is I have received a list and then we need to find whichever are from the next 3 months. So
+2:04:54
+in the thought loop it will see that these are from the within the 3 months. This is also from the within the 3 month. Okay. Here one problem that has
+2:05:01
+happened is I have defined the maximum token length uh so that my API the my
+2:05:07
+Gemini API usage is minimized. That's the reason why the output is truncated. But otherwise if I don't uh you know um
+2:05:14
+keep the uh keep the token limit you will see the full output. Um so this is the react loop. One thing
+2:05:21
+we can do is can we come back to this quiz and let's go through the first 15
+2:05:27
+questions. We had skipped this in the beginning. So yeah I will share the code base also to
+2:05:34
+the you mean the versel app as in the versel app for YouTube uh this maker right? YouTube transcript maker right? I
+2:05:40
+will share that. Yeah. So let's do this in the tool life cycle
+2:05:46
+pipeline. Describe decide call return reason which stages most impacted by the schema.
+2:06:05
+So think about where the impact is coming. [clears throat] impact is coming in the LLM's decision right so LLM's
+2:06:11
+decision is what LLM's decision to uh invoke which tool so this is the most
+2:06:17
+impacted part of uh having a poor quality schema
+2:06:22
+uh next is which of these is the best tool name following uh function calling
+2:06:27
+conventions obviously the uh search mission this is
+2:06:33
+the convention I don't see what's wrong with this one also mission search but it just so happen that something I mean
+2:06:38
+sometimes there are certain conventions which emerge uh eventually right now this is the convention maybe tomorrow it
+2:06:44
+will change who knows a tool schema has eight parameters all marked as required what is the most likely problem this
+2:06:50
+will cause so basically all the parameters we are saying all are required none of them are
+2:06:56
+optional this we discussed earlier
+2:07:08
+So the problem is this right you are saying telling the LLM that hey something you have to put something here
+2:07:14
+you can't leave it empty this parameter cannot be left empty which means you are forcing the LLM to come up with some
+2:07:22
+some parameter or something to insert and this will if you are forcing the LLM to do something it will do something and
+2:07:28
+which means hyosination can happen right uh it's not that the tool may execute slower because some parameter default
+2:07:34
+parameters might be already inbuilt in the tool which means even if you don't pass it the default parameter will be
+2:07:40
+will be taken. So it's not about it's not about whether tool will run slow or not.
+2:07:45
+Uh why should tool schemas use enumeration uh enume constraints for parameters like status uh instead of uh
+2:07:52
+free text strings. Same logic if you are providing free
+2:07:59
+text strings you are allowing LLM lot more window of um
+2:08:05
+you know exploration in the sense that LM can can come up with any output but if you say output is from one of these
+2:08:10
+you're forcing it to pick up pick from one of those it'll pick from one of those numm lm from harassing invalid
+2:08:16
+values it will not it will not say get mission status instead of fade and something like that mission status
+2:08:22
+cannot be something like upcoming or something like that so it It will prevent all uh it will prevent LM from
+2:08:28
+coming coming up with random values. What are just in time instructions um in
+2:08:34
+the context of tool use.
+2:08:43
+So we saw that the git instruction earlier was it was part of the tools return value right and that will help
+2:08:51
+the LLM figure out how to interpret and present the result. But JIT can also be in the other way. GIT can also be
+2:08:57
+embedded uh in such a way that LLM can um add it as part of the tool call also.
+2:09:04
+So it is a guidance that is embedded. Uh so somebody has mentioned lazy loading uh a system prom technique that lazy
+2:09:10
+load tool descriptions only when the tool is about to be called. So the thing is JIT comes um
+2:09:18
+it it is it is not to um call the tool or something like that. It is to get the
+2:09:25
+tool description. What are the required tool the the other JJIT which we discussed not the one from the results.
+2:09:30
+If it if the JIT is part of the result um you are looking at how LLM can
+2:09:36
+interpret this result so that the next action can be taken with least context
+2:09:41
+consumption. Right? It's not about um it's not just about uh lazy loading.
+2:09:48
+It's also about uh I don't I'm not sure if lazy loading is the right term.
+2:09:53
+Somebody had mentioned if if B could be the answer. I'm not sure if this is the
+2:09:59
+right way to interpret um the just in time loading a system technique that lazy load tool descriptions only when
+2:10:05
+the tool is about to be called because you need to know what tool to be
+2:10:11
+called in the first place right uh to to get the description. So, JIT primarily
+2:10:17
+allows for that and then using rag you can um get the description corresponding
+2:10:23
+to the tool. If the descriptions are stored elsewhere then
+2:10:29
+you are designing a safety critical fuel estimation tool. Should you put safety instructions in the tool schema
+2:10:35
+description or as JIT instructions in the return value?
+2:10:48
+Where should the It's a safety critical fuel estimation tool. So fuel estimate
+2:10:54
+should never be wrong. So where do you put these instructions? JIT instructions.
+2:11:01
+So you can put it in both. The reason is let's say the fuel value is low. corresponding to that low return value
+2:11:08
+there will be some J g instruction which comes as part of a if else if ladder. So you can have if the fuel value is less
+2:11:15
+than this much put this as the JIT instruction. If fuel value is greater than this much put this as the J
+2:11:21
+instruction. else if fuel values so much put this right. So, so it JIT instruction can be added in the tool
+2:11:28
+results using a deterministic if else if ladder plus you can add some um in the in the
+2:11:37
+tool schema description you can add some guidance about if the value happens to be less than this uh delay the mission
+2:11:44
+until the fuel issue is resolved or something like that that you can add. So the answer is both. If it's a safety
+2:11:49
+critical application in the react uh which is reasoning reason plus act pattern, what is the purpose of explicit
+2:11:56
+thought step before each action?
+2:12:10
+So basic idea is this LLM needs to improve its own context to decide what
+2:12:17
+tool to call next. So when you add a thought part explicit thought part in the in the react steps
+2:12:24
+what happen is you're essentially consuming a a bit more number of tokens right you are saying you're forcing the
+2:12:30
+LLM to think and uh as a result of that thought some tokens are being generated
+2:12:36
+those tokens are added to the window context window and that that the total
+2:12:41
+set of tokens are now um uh create added back into the LLM to decide the action.
+2:12:48
+So what has happened as a result of thought is the LLM has produced an output based on the tool result or based
+2:12:57
+on the observation and then LLM now have a broader context to decide what action
+2:13:03
+to take next. So it on one hand it consumes more tokens but on the other
+2:13:08
+hand the tokens that are generated as a result of the thought is of extremely high value. So those valuable tokens are
+2:13:15
+now added into the context before deciding what action to take next. Right? So it forces the model to reason
+2:13:22
+about what tool to call. Um then another one a weather tool
+2:13:28
+returns launch safe is false. JIT instructions is critical. Do not suggest
+2:13:33
+waiting for weather to clear. Policy requires 48 hour clear forecast. Meaning if the launch safe uh launch safety is
+2:13:40
+false due to weather issue or something you need 48 hour clear forecast. So that
+2:13:45
+is the JIT instruction just in time instruction. An agent without thought um
+2:13:51
+without the thought step in the process will say the weather is bad but you could try again in a few hours. So in
+2:13:58
+this case what has went wrong?
+2:14:09
+So the question is JT instruction clearly says like look at our own
+2:14:15
+reasoning our our reasoning is when we see this J instruction it clearly says you need a 48 hour forecast clear
+2:14:20
+forecast to even decide whether you should launch it's not like whether currently the bad weather is bad you
+2:14:26
+again check whether you can immediately launch it's not like that right so this DI instruction is clear so but then why
+2:14:32
+did LLM not get that clarity It did not get the clarity because as soon as it received this launch launch
+2:14:39
+safe is false. It thought okay it is it is not safe to launch right now which means weather is bad so you could try again in few hours. But that is because
+2:14:46
+of the absence of thought step. If there was thought step it would have it would have reasoned that oh the J instruction
+2:14:53
+says that uh you need a clear 48 hour forecast. So you need to first look at
+2:14:58
+the weather forecast. Now if such a tool exist and then if that tool is giving us
+2:15:04
+a response that till the next 36 hours weather is not good but after that you have a window of 96 hours of clear
+2:15:10
+forecast. So maybe we can check again after 36 hours something like that then it would it would ideally make another
+2:15:16
+tool called before giving the user this response right. So what has happened is the agent skipped explicit reasoning and
+2:15:23
+didn't process the J constraint before generating the output for the user.
+2:15:28
+Another one is an agent tries to update a mission from aborted to completed. This we saw this example and receives an
+2:15:34
+error invalid status uh invalid status transition. Aborted is a terminal state.
+2:15:40
+What should the agent do next?
+2:15:46
+So now this is the observation right? This is the observation.
+2:15:53
+After this observation because it is a terminal state, there is no other action to be performed. The only thing is you
+2:15:59
+reason based on the observation and then based on that you provide the user an output or you say what the user uh
+2:16:06
+should be understood like you should understand that aborted mission cannot be changed in status.
+2:16:12
+Then uh a few questions about MCP just six more questions in the MCP. What are the
+2:16:19
+three primitives? This we have already discussed. Tool, resources and prompts. Very easy.
+2:16:24
+Um then in MCP who decides when to invoke a tool versus when to include a resource?
+2:16:34
+I don't think we have discussed this.
+2:16:41
+When to invoke a tool is decided by whom.
+2:16:46
+Is it the client or is it uh just just the when you can answer instead of ABCD
+2:16:52
+you can just answer who is who is deciding when to invoke a tool
+2:16:59
+it's the LLM right so LLM see think about this
+2:17:04
+when we were building a 3D model in Blender the only instruction that I gave is make a spring mass damper now the LLM
+2:17:13
+has to decide should I put a spring first or should I put a this thing uh you know add color to the spring, should
+2:17:18
+I add a camera, should I add lighting, right? So these are all different tool calls.
+2:17:25
+We did not explicitly say that. Right? Cloud code also cannot say that. Cloud code is not the in the brain. The brain
+2:17:31
+is ultimately the LLM. Now think about this. The order of the tool called is very very important. The order in which
+2:17:37
+tool tools are called will decide the final output. And who decides this
+2:17:43
+order? LLM decides the order. It's not the client. Which tools should LLM know about? That
+2:17:50
+is decided by the client. So here model decides when to uh call tools. The
+2:17:56
+client application decides when to include the resources. The resources and where is where are these resources
+2:18:01
+included by the way?
+2:18:06
+Where are the resources included? Client is the one who is included. Including it. to where
+2:18:17
+the resources are finally at the end of the day it's loaded to the LLM's context right part of the resource or full
+2:18:23
+resource so the client can decide hey I need to implement a keyword based rag to
+2:18:28
+fetch the appropriate subsections from the let's say cloud MD file or or let's say from a JSON file to include it in my
+2:18:36
+context right so client decides that before it is passed into the ll LM's
+2:18:42
+context. Then based on all of that, LLM will decide here is my current current
+2:18:47
+context and based on this, these are the tools that I need to call in this order.
+2:18:52
+All right. Next, what transport does MCP use when a server runs as local subprocess similar to u you know cloud
+2:18:59
+cloud code controlling the um uh this uh blender? It'll be stdiodio.
+2:19:06
+Then during MCP initialization, the client
+2:19:11
+sends an initialize request. The server responds with capabilities and the client sends notification/ initialized.
+2:19:18
+Why is this three-step handshake necessary? Meaning why should MCP uh why should the client first initialize then
+2:19:25
+server response and then client sending this uh notification/ initial? Why is this three step needed?
+2:19:37
+And this is called as the initial client server handshake. The reason why this handshake is needed is because if this
+2:19:43
+is not there, LLM has no idea what all tools are existing on on Blender. So my
+2:19:49
+Opus 4.6 has no idea what tools exist on Blender. Maybe some new tools are added.
+2:19:55
+So the initial handshake between my cloud code and blender has to happen so that then the cloud code can tell hey
+2:20:01
+here are the tools and descriptions that the blender has in a in a token efficient way. So basically it lets both
+2:20:08
+sides know. It lets the server know that this um client is communicating. It lets
+2:20:13
+the client know that from the server side you you will have access to these tools. An MCP server exposes 15 tools
+2:20:20
+each with detailed descriptions. What is the main risk of having too many tools?
+2:20:33
+The risk of having too many tools is these too many tools um if the client is not doing a good job of passing the
+2:20:41
+tools in a good way to LLM. uh if with too many actually here there is one uh
+2:20:46
+in my opinion the question should be an MCP client exposes 15 tools from the server that's the better better way to
+2:20:53
+word this but at the end of the day what will happen is LLM will get confused so here we should say something is exposing
+2:21:00
+15 tools to the LLM basically MCP client exposes 15 tool to the LLM with a detailed description where is MCP client
+2:21:07
+getting information about the tools from it is from MCP server so ultimately it is coming from the MCP server only But
+2:21:13
+the better wording of this question would have been an MCP client exposes all the 15 tools it got from the MCP
+2:21:19
+server with detailed description. The risk is model will get confused due to context rot.
+2:21:25
+Uh then this is the last question. In a react trace an agent claim agent chains
+2:21:30
+get weather forecast following that check the cargo following that get the fuel estimate. Each tool result is
+2:21:37
+adding tokens. Why does tracking cumulative token consumption matter?
+2:21:46
+Same thing basically um this as I as I showed you uh see even my result got
+2:21:52
+truncated earlier. So you could exceed the context window. If even if you are not exceeding the context window your
+2:21:58
+context may rot. So this is the issue. So um this is the end of the quiz. Now I
+2:22:05
+want to give you a uh homework. Okay. So now it is Thursday. You have 3 days to finish this. Uh so homework will be uh
+2:22:13
+deadline will be on Sunday late night. So the homework will be about building a model context uh MCP server and client
+2:22:20
+hosting it yourself and sharing the link where I can test the client. The
+2:22:26
+application can be anything. I don't care what the application is about. It can be something simple to something complex. But I will provide a detailed
+2:22:33
+description of this homework uh which you can take a bit of time to work on. on um Saturday. I will really appreciate
+2:22:41
+it if I can already make if you if you make it in such a way that it also allows for Gemini and OpenAI API key.
+2:22:47
+You don't have to give the API key or something I can use my own so that I can test the uh test this. So this exercise
+2:22:54
+will in this exercise if you want to include rag for whatever reason to um
+2:22:59
+you know contain the token consumption to a certain limit you can add that. But my primary thing is what I want to do is
+2:23:05
+I want you to either implement your own MCP or figure out the secondary option is you figure out how to connect uh to
+2:23:12
+an MCP server of an application which you use on a daily basis. Okay, which is
+2:23:18
+part of your job or something like that or and then record like a 5-minute video where you show how you connected the uh
+2:23:25
+how you build the MCP client and how you connected the MCP client to the server and with this what are you accomplishing
+2:23:31
+like what task are you automating the more value added this particular MCP
+2:23:37
+server is the better you don't necessarily have to build the server you can use existing servers others have built from internet from GitHub or
+2:23:43
+anywhere doesn't matter but show the utility of this application show why this is so important and also tell me in
+2:23:50
+what industries can this cause some sort of disruption. All right. So I this
+2:23:57
+detailed homework description I will put in the uh assignment section as part of today's uh session. This is session four
+2:24:04
+right as part of session four material and you will have three full days to work on it. All right. So we will next
+2:24:11
+meet on Monday same time. Tomorrow we don't have a lecture. Uh one more update
+2:24:16
+is uh that regarding the Thursday's build lecture. I will confirm the timing and the date whether we need to take it
+2:24:22
+on Thursday or whether the the duration because it will be a long lecture. Should we keep it on weekend? That I will confirm sometime early next week.
+2:24:30
+So we will meet again next week. You can um u post your discussions and
+2:24:35
+everything on u discord or you can even email me. But please don't forget about the assignment. I will post the
+2:24:41
+assignment and I'll put a reminder on discord. But uh I I really hope you all will get time some time to uh work on
+2:24:47
+it. It will not take you more than something like this. Uh let's say max to
+2:24:52
+max 3 hours. Uh so you can split it such that 1 hour each day. If you can spend on Friday, Saturday, Sunday that that
+2:24:58
+will also be more than enough. Sometimes it won't be even costing you 3 hours. But just try this activity to build a
+2:25:04
+very useful uh MCP server client framework where you think it can add
+2:25:10
+tremendous value to some industry, right? or to your own workflow. Uh and
+2:25:15
+you can share one of the two things. Either you can share a loom video recording. Uh these descriptions I'll
+2:25:21
+post or you can po you can give me a link using which I can just test it out.
+2:25:27
+All right. So thank you so much again for staying back in a in a long lecture.
+2:25:32
+Um have a good weekend um Saturday, Sunday. We will get back again on
+2:25:37
+Monday. Uh quick question. Does MCP result count part of output token? MCP
+2:25:42
+result meaning from the does everything from the server is that counted as part of the tokens? It is not because client
+2:25:50
+is ultimately deciding what goes into the LLM's tokens, right? So that is
+2:25:55
+under the control of client. So uh thank you so much. Please build. This weekend is a build weekend. So I am really
+2:26:01
+expecting something mind-blowing. Uh I I I really hope I can find some gems among you who will build something and truly
+2:26:07
+inspire me. If there is something which you build amazingly, we can even collaborate together after this boot camp is over. So please uh put your
+2:26:14
+heart and soul into it and let's see what you can come up with. Anything does not matter. The complexity does not matter. But if you can if the value
+2:26:21
+proposition of what you are showing is something really interesting, we can figure out ways to collaborate. So thank
+2:26:27
+you so much everyone. Let's meet on Monday. And for whatever reason, if you need a little bit more time for this
+2:26:32
+exercise, just drop me an email. I'll be happy to respond to you. Thank you so much. See you next week. Bye.

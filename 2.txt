@@ -1,0 +1,2728 @@
+0:00
+Good morning everyone. Um, can you see me, hear me and see my screen? All right. If you can just confirm that'll
+0:05
+be great. Awesome.
+0:12
+Thank you so much. So, let's get started. So, yesterday we discussed about the six different layers that
+0:19
+constitute a context that we provide to large language model. So, today we are
+0:25
+into lecture two. Today we'll be looking at one particular part of that which is system prompt. So primarily system
+0:32
+prompt in modern um context engineering for example if you are using cloud code
+0:37
+it is primarily defined through cloudmd file. So we will be spending most of the
+0:44
+time today figuring out what is the most sort of scientific way to structure this
+0:49
+markdown file so that you can get the best output out of your LLM. Now just to reiterate the structure of
+0:56
+this uh boot camp. Yesterday the six elements of uh the context was system prompt, user instructions which is
+1:02
+primarily what is um optimized in prompt engineering, then tools which will come
+1:09
+as part of MCP, then memory or state, then rag which is for dynamic fetching
+1:14
+of data from your knowledge base and then conversation history. We briefly touched upon these and we saw the
+1:20
+importance of each of these elements through the exercise and today we are primarily focusing on this one part
+1:26
+which is system prompt and tomorrow we will move into rack and day after tomorrow we will move into uh tools or
+1:33
+MCP um so there is one question from Ankit uh how is memory different uh than
+1:40
+conversation history aren't they the same so conversation history is a lot more um less persistent whereas the
+1:47
+memory part or state is more persistent. That's the primary difference. So to give an example,
+1:53
+uh volume, I don't have a volume increase provision, but is my volume. All right, my mic is as close to um me
+2:01
+as possible. Um can you hear? Okay, awesome. So to to
+2:06
+go back to the example of memory versus conversation history, let's say we are
+2:11
+building an agent to respond to one single email in that particular thread. So in that thread you are conversing
+2:17
+with one person and let's say the thread is such that already 25 exchanges have
+2:23
+happened in the thread right. So that history of what has happened in the thread which is the 25 conversations
+2:29
+corresponding to the current conversation that will form part of the conversation history. However that will
+2:36
+not necessarily be part of the entire email agent's memory or state. It will not be a persistent memory. In
+2:42
+persistent memory, the following things will be there because uh in persistent memory, your email uh preferences or the
+2:49
+way you have replied to your emails in the last one year will be there. The way you respond to technical queries versus
+2:55
+non-technical queries will be there. Those things will be um concisely mentioned by taking let's say 10,000 or
+3:03
+5,000 different email exchanges that happened over one year. There is no particular reason these six elements are
+3:09
+put in this particular order. This is not the order. The order is what we discussed yesterday in the context
+3:14
+initially what goes just to refresh your memory what is what is the first part what is the middle part and what is the
+3:21
+last part if you can recollect what we discussed yesterday.
+3:26
+First part is first part is the uh system prompt which forms the rules
+3:33
+guard rails etc. Last part is the user prompt or user instructions. everything
+3:39
+in between will form rag uh output from tools uh things related to memory or
+3:45
+knowledge etc. And just to reiterate on Ankit's question um yes so short-term
+3:51
+memory conversation history is sort of you can think of it as short-term memory the six layers of context you can
+3:57
+actually expand to more layers because sometimes people like to add one more layer called agents
+4:03
+but I'm not doing it because uh in my opinion agents is already have most of
+4:09
+these things which are mentioned here is already part of agent so I don't want to define one more additional layer called
+4:14
+agent right But you can think of conversation history as um not exactly
+4:20
+as memory. This if you call as state is a which is a better word. This you can call as some sort of session memory.
+4:29
+And this you can call as state and state is defined based on knowledge base uh as
+4:35
+well as what is stored in the memory markdown files or memory txt files or XML files. Right? So the order in which
+4:42
+it appears in the context is what really matters. Not the order in which how I have written here. The order in which it
+4:47
+appears in the context is in this way. System has the highest priority because guardrails and rules are set here. User
+4:54
+also has very high priority. And why do we put it at two extremes? Why don't we then put system and then user? If user
+5:01
+has very high priority, why why are we not putting it second? Because of the because to minimize lost in the middle
+5:07
+effect. Because in the lost in the middle effect people um or let me just admit some people from the waiting room.
+5:14
+In the lost in the middle effect what happens is um the most prominence given
+5:19
+by LLM is to the starting and ending of the context window. Whatever is there in the middle of the context window there
+5:25
+is a slight lost in the middle effect. Whenever the context window size is bigger, right? So if an LLM has 1
+5:32
+million or 2 million as the context window size um try to keep it try to
+5:37
+keep the actual context window context length as 50k to 100k tokens.
+5:43
+Um so now let's look at system prompt and how we construct the cloud MD file if you were building using uh cloud
+5:50
+code. So the cloud MD file typically have five components which you will be able to dist uh identify when you look
+5:57
+at the cloudmd file in detail. So we will look at that in detail but usually the five components are the identity of
+6:05
+what you are doing with your uh cloud code or what you are doing with your with what you are building. So for
+6:12
+example if you are building an email response agent who the model is it will
+6:17
+not say something like you are a senior code reviewer. You don't have to give like a anthropomorphic
+6:23
+definition. It need not sound like a human. However, you should mention what
+6:28
+this tool or what you are building is all about. This is an email responding agent or this is a this is my personal
+6:36
+uh digital clone for responding to Slack uh Slack messages or you can also say
+6:42
+this is meant for um maintaining a website which automatically updates
+6:48
+whenever new things happen in the AI space. So who the model is simply it
+6:53
+does not mean who the LLM is. Okay, please don't get confused by seeing the word model. It simply means whatever you
+6:58
+are building um and whatever you are defining in the cloud MD file, what is
+7:05
+that meant for? It is meant to be used as a um agent or it is meant to be used
+7:10
+as something for updating your website or it is meant to be used as something which will respond to you on your behalf
+7:16
+or schedule meetings on your behalf. Then rules are
+7:22
+how you should execute certain things. For example, never use um you know never
+7:29
+respond about refund policy without looking at the policy document or never
+7:36
+um use camel case, use snake case or um
+7:42
+never store the points scored by a student. if this has got something to do
+7:48
+with a school or something. Never never store the points scored by a student in more than two decimal points. So these
+7:55
+are sort of like dos and don'ts which will come as rules and it will set the guard rails for the uh large language
+8:03
+model to give you the output. So this is of the highest priority. If you look at
+8:08
+these six things uh five things identity, rules, format, knowledge and rules. Even if you have extreme shortage
+8:16
+of um context uh number of tokens in the context, rules will be the last thing
+8:21
+which you will remove because rules will set your guardrail. You might remove the rest of the things a little bit but
+8:26
+rules will be the final thing which you will remove. Then con the format of how
+8:31
+the LLM should respond is very important. Sometimes LLM is supposed to respond to you in Python code format.
+8:38
+Sometimes it is supposed to respond to you in a natural language if you are um
+8:44
+using it as a chatbot. Right? And sometimes LLM is supposed to create files for you which could be like JSON
+8:50
+files or something like that. So uh and and apart from all of this often there are other format related um u
+9:00
+specifications mentioned in cloud.md. For example, let's say you are constantly using an agent to build and
+9:06
+uh redeploy a website whenever changes are happening. Which means for a website deployment, you may follow certain u uh
+9:14
+code like npm rundev or npm run build you will do or npm rundev you will run.
+9:24
+So if these are the commands that you are using to um build it can go in
+9:31
+format as well as in knowledge. So sometimes as I will ask you some
+9:36
+questions the boundaries between knowledge and format is a little bit fluid. It might confuse you what is
+9:42
+knowledge and what is format. Sometimes the boundary between rules and for uh
+9:47
+knowledge is also a little bit confusing. Knowledge is more about um
+9:52
+what you do or what you are trying to accomplish. Rules is more about how you
+9:57
+do it. So in one line you can say knowledge describes what reality of the
+10:02
+application or what the reality of your agent is. Rules literally control their
+10:08
+behavior. You rules define how they should or how they should not behave.
+10:14
+And finally tools will define in the uh in the cloud.mmd file tools will define
+10:20
+what all tools or what all functions or what all libraries uh your agent or your
+10:26
+large language model can get access to or what all um li libraries will be
+10:32
+referred to when the context is constructed for the large language model. Okay. So now to make all of this
+10:39
+solid what we can do is this we can do together uh and this will mostly help
+10:44
+you if you work if you have cloud code. So you don't have to necessarily do it right now but if you do it along with me
+10:50
+that will be even better. So just go to this website.
+10:57
+So this is the uh landing page for cloud code and they will give you this uh
+11:03
+um line of code to run in your terminal. just copy it and run it in your terminal and that should install cloud code for
+11:10
+you. And to log into cloud code, uh let me just switch to my
+11:17
+can you see my VS code right now? Can you just can anyone confirm if you are seeing my VS code and not the mirrorboard? Okay, thank you. So now I
+11:25
+have created like an empty working directory here. I will just delete everything right now. So it is completely empty. Nothing is there. And
+11:32
+this is my working. Let me also delete this.
+11:39
+So right now in my terminal if if you look at what is there this is the per present working directory llm context
+11:45
+engineering and if I try to list the items it's basically empty. ls will list all the files in this working directory
+11:51
+and it and nothing is there. It's it's fully empty. Now the way you use cloud code you can use it in two ways. Uh if
+11:58
+you have installed cloud code you can simply type cloud claud it should open within the terminal the
+12:05
+chat box for talking with cloud. Okay. And here you can uh type anything u not
+12:12
+to get you responses but to take actions. So here you can say create an
+12:17
+empty um
+12:24
+file called uh cloud.md then it should create a cloud md file
+12:30
+which which will look empty. Um so basically this agent has control over everything that is there in your working
+12:36
+directory. So ideally you will invoke these agents uh I mean cloud code agent within the working directories where you
+12:43
+have uh trust. So now you see to take the action it is asking you your permission. So then it's asking do you
+12:50
+want to make this edit to cloud.md? Yes or yes allow all edits during this session? No. So often what you will
+12:57
+notice is that when you are using cloud code constantly you have to keep giving permissions even within this session if
+13:03
+you are performing a different task it will again ask you permission right which is a little bit annoying um it is
+13:10
+a guardrail of course so if you are building something very sensitive you keep the guardrail on you you do it this
+13:15
+way so I'll just give permission yes and you see a cloudmd file is created
+13:20
+which is empty but let's say you are building something very big if you're building something very big. It's very
+13:26
+very difficult to keep sitting in front of the system and keep on giving permission for every minor um things
+13:32
+that cloud code is building. So to prevent that you can check this GitHub
+13:38
+repo. It's not that popular. This GitHub repo is not extremely popular but however what it provides is um something
+13:46
+where which can help you bypass constantly giving these permissions. So they give you the line using which you
+13:53
+can install this uh CCO. Uh they call it as a thin protective layer for cloud code. U I don't know why this is not as
+14:00
+popular as it should be but it's very very helpful for building something that will take a lot of time. So once you
+14:06
+have CCO installed you can invoke cloud code in a slightly different way. Let me
+14:12
+just show you that. So I'll just exit this session /exit.
+14:18
+So now I'm back to my terminal and yeah you can also do cloud allow dangerously skip permissions but CCO is a better way
+14:25
+to do that. So here instead of typing cloud you will type CCO and then again
+14:30
+it will open cloud code but with uh skip permissions enabled but I think there are some guard guardrails present as
+14:37
+well. Okay. So now if I ask it to do something um it can make changes in your
+14:44
+folder. So now let's say uh I want to create a cloud.md file for a rag chatbot
+14:51
+that I'm building. So I'll just give minimum instruction. Okay, I am let me make sure that my context is completely
+14:56
+clear. So I just cleared my context with /clear. So my context is fully empty. So if I say /context
+15:04
+uh
+15:11
+I think slashcontext should help me visualize the context. if I'm not wrong. Yeah. So this is the visualization of
+15:17
+the context. So total I have 200k tokens out of which 9 percentage is gone. And
+15:23
+here it shows where those uh tokens are gone. In system prompt some tokens are
+15:28
+gone. This is not the system prompt where I have defined cloudmd. Cloud.md is literally empty. But this is within
+15:34
+the system prompt because cloud code uses a lot of agents. Right? This 200k
+15:39
+tokens are not um consumed just based on what I give but it is also consumed by
+15:46
+cloud code agents which which cloud code helps uh deploys whenever you uh try to execute a task. So this 18k tokens are
+15:53
+by default consumed not because I have done something but because cloud code has already deployed certain agents and
+15:59
+that will consume some context. Now we will track this context usage visualization as we go ahead. So now
+16:06
+what I'm going to do is I will say I want to build a
+16:13
+rag chatbot make
+16:19
+cloud.md file for this. So as you know this is the worst kind of prompt I can give as a
+16:25
+user. I'm being extremely lazy. I am not that first of all you don't have to directly make cloudmd file because you
+16:31
+are not really good at doing that but you can give detailed instruction so that cloud itself can create the cloudmd
+16:37
+file so here this is my oneline instruction I want to build a rack chatbot make cloudmd file for this so
+16:43
+this is too vague it's too useless and let's see what claude will now do
+16:54
+so last time when I tried this what claude did because it had no idea what my preference preferences as a user is.
+17:02
+So it asked me for my preferences like would you like to use lang chain uh would you like to use chromma for the
+17:08
+database etc. Right? But uh I don't know what it is going to do right now. Let's
+17:13
+wait and see. I think it's directly writing. I'm not
+17:20
+sure why my preferences are not asked. Perhaps the preferences which I had
+17:25
+Yeah. Yeah. So um there are so many inherently defined skills in uh in a dot
+17:32
+skills folder which is installed globally and from there there are lot of
+17:37
+uh slash commands slash init or if you are working on project road map development you can define commands like
+17:43
+/prd using which you can invoke project road map development but here they have
+17:48
+already directly created the cloud MD file. Let's look at the structure of this markdown file.
+17:56
+So here it says project overview and in the project overview it says
+18:03
+retrieval augmented generation chatbot that answers users questions by retrieving relevant context. So this is
+18:09
+out of the five elements that I showed you in the in the mirror board
+18:15
+identity rules format knowledge and tools. What do you think this is? This project overview is what
+18:25
+is it identity? Is it knowledge? Is it rules? This is sort of like identity right
+18:30
+here. We are not saying identity as per you are a programmer or you are a chatbot uh with these the these human
+18:37
+characteristics. That's not necessarily the case. You don't have to say give such human form. But identity is
+18:43
+basically what this project is all about. This project is all about a rag based chatbot for responding to whatever
+18:50
+queries. Then there is something about uh text stack and it it mentions the programming
+18:57
+language large language model to use embeddings uh vector database uh
+19:02
+framework API etc. Out of the five things mentioned here what do you think this text stack is more close to?
+19:12
+Is it tools? Is it knowledge? Is it format? Is it rules?
+19:19
+Out of these, it's definitely not identity, right? Identity is already mentioned over here. So in my opinion,
+19:27
+text stack is a combination of two things. So first of all, in this project, what would you what do you think would be the tools? Tools will
+19:34
+ultimately be um the packages libraries which you will use or
+19:40
+if there are functions which are written what what you will use or APIs that you will use those are at the end of the day
+19:46
+tools right so in the text stack when you say that it's cloud API you are saying this is one of the tools that you
+19:52
+should use when you are saying chromadb it is another tool lang chain or llama index these are all defining certain
+19:59
+tools but at the same time it's also providing knowledge Right? It's saying uh the large language model should be
+20:05
+Python. LLM should be cloud-based. So that is the reason why earlier I said
+20:10
+sometimes the boundary between um knowledge and tools or sometimes the
+20:16
+boundary between rules and knowledge are very thin. But here essentially you will find a combination of tools as well as
+20:22
+knowledge. What about this? What about this project structure which is the src folder of the project in which different
+20:28
+subfolders are there. In each subfolder there arepy files that will be the format, right? What is the format in
+20:35
+which we are structuring this project. Then
+20:41
+um let's now look at another part. Um,
+20:49
+how about how about this retrieval quality
+20:57
+out of these five identity, rules, format, knowledge and tools, this is definitely not identity, right? This is
+21:05
+also definitely not out format and uh this is not necessarily tools
+21:11
+because we are not not necessarily talking about tools or APIs here. So it's again a thin boundary between uh
+21:18
+rules and knowledge. Here you can think of rules as the following. Whenever you
+21:23
+say how to do something, it's about rules. Whenever you say what to do or or
+21:29
+what the thing should look like what your um what your tool what abilities
+21:36
+your tool possess those are knowledge. So when you say start with cosine similarity it's coming closer to rules
+21:44
+but it's arguable right you can one can also argue that oh this can also be considered as knowledge but generally
+21:51
+speaking as a thumb rule if you say hey never use um as a chatbot never say I
+21:57
+don't know if you say something like that somewhere in this markdown file that is coming as part of rule it's not
+22:03
+a knowledge but if you are saying whenever there is any mention about
+22:08
+refund. Look at the refund policy document there. Again, it's a combination between rule and knowledge.
+22:15
+Uh so just look at this. How about this prompt engineering system prompt defines
+22:21
+this retrieve context is injected. Instruct the LLM to in general is this is this closer to rules or is this
+22:29
+closer to knowledge? Is this saying how to do something or is
+22:35
+this saying something like how things should be? This is more closer to knowledge like in
+22:41
+the sense that system prompt define chatbots rules on consent. This is not this look at this line. This line is not
+22:46
+saying how to do something. It is just talking about what the reality may look what the some specifications about the
+22:54
+chatbot looks like. Right? Retrieved context is injected with source with with source attribution. This is again
+23:00
+not like it's not mentioned as a rule. It's mentioned as a knowledge. Okay. Some students are waiting to join. Let
+23:06
+me just
+23:14
+uh actually there is no one in the waiting room. Currently it's empty. All right. Um
+23:21
+now what else? Let's look at format. We identity we discussed rules format
+23:26
+knowledge tools. Yeah. So I think this and how about this develop commands.
+23:32
+What are these in your opinion?
+23:41
+Is this uh you can see that there might be a thin boundary between uh knowledge
+23:46
+and tools. In my opinion, this is more about knowledge because here we are not explicitly saying
+23:52
+um these are the tools that are used but in fact there are three things coming here. One is format. the format not of
+23:58
+the output but the format of how to uh run the server or how to put the server into uh local deployment. Um so some
+24:07
+format is being specified but some knowledge is also there because this section of the cloud MD file gives your
+24:15
+large language model knowledge about the development commands. All right. And
+24:21
+what about this? Where does this come? environment variables.
+24:30
+Is this a rule? This is not rule. This is not identity. This is not um let's
+24:37
+say tools. This is knowledge. This is knowledge about environment variables. Either you provide it here itself or you
+24:43
+put I mean you usually don't provide it here but you are saying that environment variables will look something like this in the env file. So usually the way you
+24:51
+store env files are create you create av and uh you have something like this.
+24:57
+Let's say these are the APK uh sorry not APK API keys and you put the API keys uh
+25:05
+here right. So this is how env is structured and usually you will also have agit ignore
+25:13
+so that you are not and then you should mention env file in the g ignore and uh
+25:18
+only then you should en you will ensure that env files are not pushed into the u
+25:24
+github okay there is one thing this is very confusing how to put various components into what bucket exactly it's
+25:30
+not it's not a sharp boundary between um what is a rule and what's a knowledge
+25:35
+and As I always say uh LLM context engineering is not physics. It is u more
+25:43
+thumb rules more things which have which has evolved because big companies have experimented a lot and things have been
+25:49
+figured out. Uh because community has built um guidelines and suggestions. So
+25:56
+there is a there's a sort of a boundary between it's not a it's not a hard boundary between what can constitute
+26:02
+knowledge and what can constitute rules. That's also one reason why in the website I have mentioned the art of um
+26:08
+context engineering not the science of context engineering because it's not strictly a science but right uh do we
+26:15
+need to force everything into these buckets when they don't fit so well so this is the exa great question uh sul
+26:21
+that is the reason why I showed this example just tell me look at the uh command which I had given in my command
+26:27
+did I mention anywhere how the cloud MD should be structured the only command
+26:32
+which I gave was I want to builder a chatbot for this make the uh cloud.md markdown file right but the way cloud
+26:39
+itself constructed it is in such a way that you uh your markdown file ended up
+26:44
+having structures which follow each of these sub elements now I will show you
+26:49
+another way in which you can construct the markdown file in an even better way okay so let me switch my workspace so
+26:57
+this is another workspace which I uh recently built as part of building the
+27:02
+uh AI development ments tracker. So I'm building a website for tracking the developments which are latest happening
+27:07
+in the AI space on GitHub archive huggings hugging uh phase then um uh
+27:15
+x.com and LinkedIn and Reddit. So what I did here was I knew that for this
+27:21
+project markdown file is extremely important. So I did not want to make it myself directly. I also did not want to
+27:29
+um give a oneline or twoline commands in the terminal to create it. So what I did was um just look at this document
+27:36
+ideas.md. So in this ideas empty what I did is the I just added my requirements in long
+27:45
+natural language text right uh you can see the ideas right I hope I'm showing you the correct uh tab I hope the tab
+27:52
+switching has worked for you okay so in this ideas so my my usual workflow is I
+27:57
+use this software called uh whisper flow the spelling is this w i s r fellow w so
+28:04
+if I press my function key on on my I use a MacBook so if I press function key it is activated then what my speech will
+28:10
+be converted to text so usually I have a lot of requirements in my brain I have to somehow put it as fast as possible
+28:17
+onto some document so I just put all my ideas in this ideas MD but this is
+28:22
+highly unstructured I did not want cloud to use this unstructured ideas MD to
+28:28
+create a structure structured uh cloudmd file so what I did is I I asked cloud to
+28:34
+first create a version two of ideas v2.mmd which is a structured version of id.md.
+28:40
+Now this may look very similar to cloud.md but I did not explicitly ask my
+28:45
+um ask cloud code to create a cloud md file but rather I asked to convert id.md
+28:51
+into a little bit more structured format with subheadings. So this hash or double hash are all subheadings. How do you
+28:57
+know? Uh I have installed a plug-in. I'll just show you this in the preview. So this is how the markdown file if I if
+29:02
+you have any markdown preview uh extension installed on VS code. So I have installed this extension called uh
+29:12
+I forgot the name of that uh yeah this one. So this extension I have installed on VS code uh markdown preview enhanced.
+29:19
+So if I'm on a markdown file all I need to do is um so if this is id.md I want
+29:25
+to see as a proper preview I can just plus command shift v then it will open
+29:30
+this preview in this nice way. But here you see this is very unstructured. But the ideas v2.md that cloud code created
+29:38
+is much more structured with headings and subheadings. Let me just show you that.
+29:45
+See this is this is much more structured. Then what I did is this id the problem is this ideas v2.md probably
+29:53
+will not follow this structure which is ideal for cloud. MD. So then what I did
+29:58
+is I asked in my terminal uh to keep track of what is there in
+30:04
+idsv2.mmd and then use ids v2.mmd to create the cloud md. So Ankita asked you created
+30:11
+id.md to v2 with clouds. Exactly. I use cloud to convert into the structured v2
+30:16
+format and then using the v2 format I use cloud.md and that's the reason why in the first part of the cloud md in the
+30:24
+identity uh of the model it says it's it refers to ideas v2.mmd so ideas v2.md
+30:31
+pro provides the full context of what this project is and then rest of the details like uh and this project
+30:37
+overview is also identity but then the rest of the section text tag or uh this
+30:42
+project structure will give the structure Text tack will give idea about the tools that I will use. Uh it's also
+30:47
+part it's also partly knowledge then you will also see uh the development phases.
+30:53
+So this is sort of like knowledge because I am going to develop this tool in different phases. First it will be a
+30:58
+single user minimum viable product. Then I will uh are you using cloud code in VS code? Yes, I am using cloud code in VS
+31:05
+code. Um so I mean I have a cloud code extension in VS code but right now I am
+31:11
+not using that. I'm using it in my terminal only. So this cloud code extension also you can get from here. Go
+31:16
+to VS code extensions and type cloud code. This you can install. But I personally have not used this cloud code
+31:23
+extension as much as I'm using it in terminal. Um so in uh VS code you can
+31:28
+open terminal by pressing command J. So command J means it will close. Command J means it will open. So this is my
+31:34
+terminal right? And to open cloud code here you can either type cloud or you can type CCO if you have CCO installed.
+31:41
+Right? So this is this is a a better workflow to create cloud.md files with
+31:47
+the help of cloud itself. And um but instead of directly creating the cloud
+31:53
+MD with uh very minimum instructions like what I did here for this rack chatbot I barely gave any instruction
+31:59
+and because of that reason I'm pretty sure this cloud MD like whatever I build after um beyond this cloud.md will not
+32:07
+be very good because I have not given anything about my preferences right um
+32:12
+can we compare this to the plan mode in cursor where you speak uh and keep planning and once the plan is ready the
+32:18
+agent start looking. Yeah. So, cursor or uh GitHub copilot that main difference
+32:23
+is the way in which uh these coding agents handle the context. So, um I
+32:30
+haven't I have used cursor a little bit but the most amount of time I have spent are on copilot. Uh so till cloud code I
+32:37
+was spending time on copilot and then after that I switched to uh cloud code and once I switched to cloud code I have
+32:43
+never used anything else. So yeah, just to reiterate Ankit, so first you took note of your raw raw thoughts. Yes. And
+32:49
+then used uh a v2 version, I mean another version to structure my raw thoughts into a structured version and
+32:55
+then use that into cloud code. Yes. Exactly. All right. So now let's go
+33:01
+back. So, Anthropic has this idea about what should be written in cloud code and
+33:07
+that is uh written in a I think there is a nice article about context engineering
+33:14
+anthropic. There is a very nice article just I will share this again in the course dashboard but this is a short
+33:21
+article which I recommend everyone to read. This was again sometime in the end of last year. Yeah, September 29, 2025.
+33:28
+Effective context engineering for AI agents. this article had become very popular. It's actually not that long but
+33:33
+there are um many uh sub articles which are linked within this article. So just
+33:39
+go through this article at least once. Okay. Uh so anthropic has this suggestion of uh idea of right altitude.
+33:46
+So the right altitude simply means when you are giving examples in cloud code of
+33:51
+what to do or what not to do oh link I have not pasted.
+33:57
+Yeah. Uh did you get the link? Okay, just a second. My
+34:04
+vaccom is not loading. Yeah. So the principle of anthropics uh cloud code
+34:11
+construction is you should neither be too high in your instructions and nor be too low. And what is too high and too
+34:17
+low? Too high means too vague. Too low means too specific.
+34:26
+So if you are looking at something that is lying on the ground when you are standing on the ground you see all the
+34:33
+minor details of it. So you you should not be writing in cloud code something like if a user says how much if a user
+34:40
+asks how much reply our plans start at $9.99 per month for basic. Can anyone
+34:45
+tell me why this is not a good idea? Why can't you add something like this in cloudmd file?
+34:54
+Like why exactly is this a problem
+35:01
+the the problem is because it is too specific this what if your pricing changes next week many changes can
+35:09
+happen to your products or pricing anything can happen and claw.md is one such files that will almost not change
+35:17
+once you finalize the lifespan of claw.md file is months so if your project development is weeks or months
+35:24
+throughout that time span your cloud.md file will almost remain constant. So for example this cloud.md which I initially
+35:31
+built for building the AI developments tracker it has not changed from the first version because the the basic
+35:38
+ideas which I had in my mind they haven't changed in this ideas.mmd although I have mentioned some specific
+35:45
+things like uh um where is that I think I had mentioned yeah for example
+35:51
+I had mentioned that you have to check github repo x.com linkedin these are specific what if some other platform
+35:57
+also I need to track right so claude.md should ideally mention look at some
+36:03
+platforms like this uh or or track some people some famous people who are
+36:08
+working in AI but then later if some changes need to be made just provide a
+36:14
+provision for that so cloudmd should never say these are the the buckets that I am always looking at it should never
+36:20
+say something like that it should say broadly look at social media sites with LinkedIn as an example Reddit as an
+36:26
+example or com as an example, right? Uh so there is one question um if we update
+36:33
+the ideas incrementally then will will idea v2 and claude also update. Um no
+36:40
+not by default automatically it will not get updated. I have to explicitly say that. So my entire goal is I don't want
+36:47
+the cloudmd files to keep on changing. It's not a dynamic document that this document acts as the foundation. Now
+36:53
+I'll give you one example when something change uh as Rakkesh has asked if what if some rule change if some rules change
+37:00
+of course it has to reflect in the cloud MD right because rules are like guard rails or it's it's it should be loaded
+37:07
+in every single API call because rules should never be broken so if you if you want something to be never broken you
+37:13
+have to load it in your cloud MD now I have another question right now my cloud MD for this is how
+37:20
+many lines uh 300 or 400 lines or something like that. Yeah. 250 265
+37:26
+lines. Okay. What if this cloud MD file was let's say 5,000 lines?
+37:36
+5,000 lines and let's say each line consists of 10 words, right? And then this will be or 10 or eight words and
+37:41
+then this will be 5k 50k words. 50k words is approximately equal to one. If
+37:47
+we say one word equal to one token, it's 50k tokens. Now just tell me do you think the entire
+37:56
+cloud MD is loaded at once into the context?
+38:05
+Is the entire cloud MD always loaded into the context?
+38:11
+So there are two issues here. Okay. First of all, cloud.md should not be 5,000 lines. It should be something like
+38:17
+200 to 500 lines, not more than that. That's the first thing. And even then let's say each line is like 5 to 10
+38:24
+words. This can be anywhere between um maybe 2k to or 1k to uh 3k
+38:33
+uh words which is 1k to 3k tokens approximately one word is I mean I mean each token is 3/4 of a word
+38:40
+the so that is one thing this we should follow. Second thing is cloud.mmd is not entirely loaded all at once. Okay that
+38:47
+is something we should understand. What is usually done is parts of cloud.mmd which are the most important are always
+38:53
+loaded. The remaining parts are loaded as and when is needed and how do you do that? So which parts will always be
+39:00
+loaded? If there are parts which mention about rules that will always be loaded into the context for every single API
+39:06
+call but which are the parts which may not be loaded always. So let us look at this cloud MD. Um let's say we are
+39:15
+working on phase one. Do we have to load this phase 2 description or do we have
+39:21
+to load something which describes phase three if there is a phase three it need not be loaded. So what is usually done
+39:27
+is uh to pick the relevant sections from cloud code either we can use rag so
+39:33
+cloud.md is converted into um uh chunks chunks are converted stored in a vector
+39:39
+database and then users query along with the rest of the uh context is converted
+39:44
+into vectors and then those vectors are compared against the embedded vectors and then relevant portions from the um
+39:52
+or relevant chunks from the cloud MD are fetched and they are passed into the
+39:57
+final context. That is if you want to use rag there is an even simpler app approach right even
+40:04
+simpler approach is just using keyword. So if you are currently working uh in phase one using keyword matching you can
+40:11
+figure out that a section that comes under this triple hash. So that's the reason why this markdown document format
+40:17
+is very useful because anything that comes under this heading this triple hash means it's a heading of style let
+40:23
+me show you of this style phase one single user MVP so anything that comes under this
+40:29
+heading is one section so then if I use keyword matching I can just simply load
+40:34
+this section fully when I'm working on phase one I can ignore everything else right so this is how you ensure that
+40:41
+your context is not every single API call is not unne unnecessarily costing you a lot of money if cloud.md has lot
+40:48
+of details which you don't have to use every single time right uh there is a question cloud code internally must be
+40:55
+doing rack we did not have to do it exactly exactly we don't have to internally imple we don't have to explicitly implement it it's already
+41:01
+implemented uh internally so these are some examples of too high or too vague commands and too low or too brittle
+41:08
+commands so if it's about customer pricing be helpful with pricing questions extremely vague but uh if If
+41:14
+you mention the exact pricing like 299, $29.99 or $9.99, it's also too uh too
+41:21
+specific. What you should ask is when when what you should write is when asked about pricing, check the pricing
+41:26
+database first. If no exact match, suggest the closest plan. Again, look at this. Handle errors gracefully. Very
+41:33
+vague. If you get orders, if if get orders order function return 404 uh order not found, please check the order
+41:40
+number and try again. This is again too uh too specific and too brittle because this is not the only error that can
+41:46
+occur when the get error get order function is called when a tool fail calls uh tool call fails uh explain what
+41:53
+happened in plain language such as one alternative right so this uh right altitude is something like you are
+41:59
+neither too specific and nor vague I know one thing which I often use in a vague way I I sometimes say do not
+42:05
+hallucinate then I myself keep thinking I am talking about context engineering and I'm writing the most vague
+42:11
+thing which you can ever write. Right? So I'm sure all of us have some habits like that. It's completely useless. It
+42:17
+doesn't matter if we say don't don't hallucinate. It's not useful at all. So um so just keep this in mind when you
+42:24
+are constructing any sort of instructions for the uh large language model in the context. So now we already
+42:31
+discussed some of these things about system prompt organization. So actually there are two formats in which system
+42:37
+prompt can be organized. So ideally claude apparently prefers this is not something which I have tried myself and
+42:43
+tested. I don't have results to show but based on my reading what I have understood is that cloud typically
+42:48
+prefers XML documents with these tags. So anything under the identity section will be coming under this opening and
+42:54
+closing tag. So this is the identity opening tag, closing tag, opening tag, closing tag. Right? This is one option.
+43:01
+Second option is the markdown file. And in general the general consensus is that
+43:07
+although such a preference is mentioned in certain documentation the difference between using an XML document and using
+43:13
+a markdown document so cloud.md document is not at all uh remarkable or not
+43:20
+really perceivable and for some reasons many other models typically prefer uh
+43:25
+markdown files. So uh okay there is one question is cloud.mmd the right file
+43:30
+name or agent.mmd I'll come to that they are two different files. I'll come to I'll come to what's the difference between cloud.md and agent.mmd.
+43:37
+So the the format that in my opinion which you should use is not XML. Just go
+43:42
+with markdown file so that it's a little bit more universal and it there is no perceivable difference in the quality of
+43:47
+output. And this is also structured. The hash will tell that everything coming under h everything after hash in the
+43:53
+same line is a heading. Everything coming under that is coming under that heading until you encounter another hashed statement which is another
+43:59
+heading. If there are double hash that's the next hierarchy of heading. If it is triple hash that is the next hierarchy
+44:05
+of heading. So the same thing which you can construct using this XML document, you can also construct using markdown
+44:10
+document. All right. Um then there is another idea which uh usually we don't
+44:17
+follow that much is start minimal and then keep adding into the cloud.md document. I'll show you one example of
+44:23
+what it means. So let's say we are building a customer support agent. Okay.
+44:29
+uh what I earlier mentioned was okay there is one question uh I was planning to read that XML is preferred at that is
+44:35
+one additional thing to remember yeah yeah it's not it's not uh it's not at all something which will break your
+44:40
+model or anything um you can follow continue using cloudMD or markdown files
+44:46
+so one thing which I rarely follow but which is something that is preferred is
+44:51
+building the cloud MD file in a sequence of few steps so what they say is if you
+44:57
+define all the rules at once.
+45:02
+What may happen is if you have 10 different rules which you have defined or 20 different rules, what may happen
+45:08
+is rule number one and rule number 20 may contradict each other. It is
+45:14
+probably it can happen when you when you tell so many constraints some of the constraints might be contradictory. So
+45:20
+what is the general um way of constructing the cloud autom file is do not mention every single rule mention
+45:28
+one or few at a time. Then after mentioning a few at a time try building
+45:33
+and see what are the issues in your u in your development and then based on the
+45:39
+issues build the cloudmd file until a point where you see you you are satisfied with it and then once that
+45:46
+level is reached use that cloudmd file as your file for the rest of your uh
+45:52
+building process. So this is an example. This figure is showing you an example. Let's say we are building a customer
+45:57
+support agent for shopco a random company name. And you will start with a minimal prompt. Minimal prompt is
+46:03
+something like this. You are a customer support agent for shopco. That's it. A minimal prompt. Then this prompt will
+46:09
+introduce some failure. The failure might be on a return policy. The model might hallucinate. Model might
+46:14
+hallucinate saying something like um uh hey uh as a customer you are eligible
+46:21
+for return. here is the return after one day or after 30 days. But then you will realize that oh that is not ideal. The
+46:28
+model has to look at the policy document before taking a decision. Then what do you do? You add one additional sentence.
+46:34
+Use the provided tools for actions. Do not guess. If you just added do not guess. It will not be very helpful. You
+46:40
+have to say you and this is a very simplified prompt. Okay. Obviously the cloud. Mmd will not be simple like this. It will say which tools you should look
+46:47
+at if you want to look at the policy document. So use the provided document. uh provided tools for actions. And if
+46:54
+you have any doubt about uh return policy, look at the return policy document. Do not guess the return
+47:00
+policy. And then you will run again. And then when you run again, this time it
+47:05
+may approve a refund. Uh this is another failure. It may approve a refund outside the window. Then you will say, okay,
+47:12
+this is the first initial prompt, minimum prompt which you had already given. Then this was the second prompt which you had added. Use the provider
+47:17
+tools for actions. Uh do not guess. And last thing which you have added is returns must be done within 30 days
+47:23
+window. Then again when you run you may say like process damaged item as a standard return. Then you will have to
+47:29
+add something like damaged item require different routing. So the good thing about doing something like this is you
+47:37
+are less likely to add something contradictory in your own basic uh the
+47:42
+base document. Whereas if you add everything like what I have done here uh it may end up you may end up
+47:48
+contradicting yourself which is very likely. So I have already read my cloud.md for my AI development tracker
+47:54
+website uh throughout and I hope there is no contradiction here because I have read through this once. So the the least
+48:01
+which you can do is either iterate and build like what it's what um the start minimal then add policy says or build
+48:09
+the cloudmd file and don't be lazy read through it once properly. Okay. Make
+48:14
+sure that there are no contradictions. Make sure that rules are not contradicting each other. Sometimes user
+48:20
+preferences may may contradict the rules like uh to give an example the rule may
+48:26
+say the refund should be done uh the refund window must be within 30 days but then uh in the user preferences the user
+48:33
+might have said something like if a customer is asking for a refund um always check the legitimacy of the case
+48:40
+and always if it is legitim legitimate provide the refund but then that will the model will get confused the model
+48:46
+will not know what to do I mean it will take an action but then It's not clear, right? Should it follow the refund
+48:51
+policy or should it follow the user's instruction? So, you should construct this in a sequential way. We will do
+48:57
+this in one of the exercises today. And these are some of the configuration files that other platforms use. So, in
+49:04
+cloud, cloud.md is there. You can you might have one question if you are using uh let's say codex can cloud. MD work?
+49:11
+Cloud.MD MD is not by default referred to in Codex but you can create similar markdown files which Codex uses or in
+49:19
+cursor you can use cursor/ rules in GitHub copilot also copilot instructions.mmd uh you can create this
+49:26
+I am yet to come to uh agents.mmd I am yet to come to okay so this uh we will
+49:32
+see um so Shamim is asking anything for Kimmy so Kimmy you are asking specific
+49:37
+to the Kimmy model is that what you're asking Kimmy K2 or something like
+49:44
+Um so by default it's not we're not talking about models right. So here in in claude
+49:50
+it's mostly anthropics models but in cursor you can use different models in copilot you can use different models in
+49:56
+winurf also you can use different models. So if you are using these uh model agnostic uh coding platforms then
+50:04
+I I'm pretty sure it does not change it's not it need not be kim specific. However, if you are if you are using
+50:10
+claw.md uh ideally it is best suited for anthropics models. It's not best suited
+50:16
+for kim or quen or other models. Right? So if you are using those models and for coding agent you are using cursor or or
+50:23
+uh let's say vinsurf or uh copilot then for sure I don't think you need to make any extra changes. You can follow
+50:29
+whatever the uh general um rule is. If you want to store something in copilot
+50:34
+instructions.mmd I'm not an expert in this but I am an expert in this and this I can talk about that more uh github
+50:41
+copilot I have used extensively but I have realized that one one thing that the the way in which copilot handles
+50:48
+context is not as good as uh cloud code handles context. Um in cloud code it has
+50:56
+it has a global context because there is a there is a file which it installs something like uh dot /
+51:07
+cloud okay this is something like a global f file but then there is also a
+51:13
+file which is local which you will see after you install like /cloud. So I can
+51:18
+show you my cloud file if it is there in this
+51:28
+for example this is my docloud file okay and this is my agents file so inside okay I'll come to the dot agents in a
+51:34
+little bit uh why is there nothing related to gimminy same um because the coding agents see you have to understand
+51:41
+two differences coding agent is different LLM is different right Gemini is a Gemini has different LLMs Kim is
+51:48
+LLM Gwen LLM uh Opus 4.6 is an LLM. So right now the cloud code is not an LLM.
+51:55
+Cloud code is a coding agent which is built on top of LLMs uh by anthropic.
+52:00
+You can use Opus, Sonnet or Haiku any LLM uh within the within the suite of LLMs provided in um Anthropic. Now the
+52:09
+question is there are two questions here which LLM is the best and which coding agent is the best. So in my opinion
+52:16
+right now among the all the existing coding agents cloud code or codeex are the best. Rest of the coding agents you
+52:23
+can try but I'm not sure how advanced they are compared to these two also for fair reasons. These two companies are
+52:28
+like I think openai is now $800 billion and anthropic is I think somewhere close to 350 billion or $400 billion. Of
+52:35
+course they have a lot more resources than other companies to build. Um uh I
+52:41
+don't know whether Google offers something as good as these but uh my
+52:46
+opinion is if you if you want to use other large language models um and not
+52:51
+anthropic or not open AI models yes go ahead with uh vinsurf or copilot or uh
+52:57
+cursor does not matter but if you are anyway going with anthropic models or
+53:02
+open AI models go with codeex or go with uh cloud code.
+53:07
+Now,
+53:13
+so you might have a question like what is universal? If cloud.md is not
+53:18
+universal, what is universal? One thing that is universal is this agents.md. So it is emerging as a universal standard
+53:25
+simply because uh Linux foundation has pionated and they are mainly open source. So agents.md structure is the
+53:31
+following. I will show you one example uh in my
+53:37
+document. So here there is a dot agent and inside this docu agent. I don't have agent.md here but I have skill.md.
+53:45
+So what these define is these are sub aents with different skills. So agents.mmd earlier somebody has asked
+53:51
+had asked what's the difference between uh cloud.md and agents.mmd. You can have so many different agents.
+53:59
+MD folders which define what each of the sub aents do. So if you have agent
+54:04
+number A which performs a broader level task. Uh let's say you are writing a research paper. Okay. Let's say you have
+54:11
+a research paper writing agent with with its own agents
+54:17
+MD file which orchestrates your entire research activity.
+54:23
+Um but you could have a sub agent inside this which has only ability to write. So
+54:30
+you will have a writing agent
+54:35
+who will have its own agent agents.m MD file and what will happen is now this
+54:41
+agent is the way you your folder structure is defined will be such that for your overall research your agents.m
+54:48
+MD will be here inside this you will have a folder called uh let's say writing
+54:54
+inside the writing folder you will have its own agents.md uh file what will happen is you will
+55:00
+have defined bunch of instructions in this agents.mmd right and you will have another set of instruction in this
+55:06
+agents.mmd what has happened is this and this both will be utilized in the context and whatever is mentioned in
+55:13
+this specific instruction if it is conflicting with this for whatever reason whatever is mentioned in this um
+55:20
+uh in the in the in the lowest point of hierarchy that would be utilized for example this agents MD is utilized only
+55:28
+while writing Right? So when you are writing something that is mentioned in this agents.m MD and something that
+55:34
+mentioned in this agents.mmd if they are kind of conflicting or something instructions provided by this is used
+55:40
+but if nothing is conflicting instructions provided in both are used. So agents.mmd you will define multiple
+55:46
+because you will have multiple sub aents for executing one single task. You could have a sub aent for writing. You could
+55:52
+have a sub aent for making figures. You could have a sub agent for executing code or going to run ppod and executing
+55:58
+the code. You will have a sub agent for analyzing the files, right? Uh and maybe
+56:03
+there could be another agent which orchestrates both of this writing the code as well as analyzing the results. You could have an orchestrator sub
+56:10
+agent. So agent is like a if you think of it, it's like a tree. There is a master agent which orchestrates
+56:15
+everything. Under this you could have uh four different agents with its own context. And under maybe this agent
+56:23
+there could be two other sub aents with its own context. And these agent MD just
+56:28
+like claw MD will define what this agent is supposed to do. Right now what is the
+56:35
+difference now between agents agent.mmd and skill.md? I will show you the skill.md. Let's go to a skill for this
+56:43
+frontend patterns. Okay. So I will show you the skill.md file for this.
+56:50
+So this will define the skills that the model should have in natural language
+56:55
+when it comes to front-end development. So here it simply talks about what are
+57:00
+some preferences. So you can you yourself can create the skill.mmd by saying I prefer modern styled website. I
+57:07
+don't like thick fonts. I I generally like to use thin uh thin font which are elongated. Or you can say something like
+57:14
+uh use next.js instead of ReactJS. You can mention all these preferences here to create the skill.md. You can also
+57:21
+pref you can also mention no preferences. Still skill.md can be created by uh cloud code. One more
+57:28
+option you have is this uh skills.sh or something. There is a website
+57:34
+which is like a marketplace for many different skills. There was one more website uh which I was frequently using
+57:40
+to download skills directly from internet
+57:45
+place for agents. Uh
+57:52
+I'm not sure if it is this. Yeah, this one. So this is also another good one. So if you want to find a skill while
+57:58
+building let's say to give an example um let's say you are making an agent for
+58:05
+making figures using paper so maybe or you for for a powerpoint presentation so then you can search PowerPoint here and
+58:13
+it should ideally load I'm sure there are some skills that are written uh for PowerPoint specific so automating
+58:18
+PowerPoint.md so see this is a markdown document let me just verify
+58:24
+so this is a markdown document which you can directly install using this npx skills command or you can download and
+58:30
+add it manually to your uh uh to your workspace or uh if you are using manos
+58:36
+agent you can directly run this but basically this the good thing is here you will see stars and upwards uh
+58:42
+knowing how popular this particular skill is so if you look at some skills like front end you will see that large
+58:48
+number of upwards are there or stars are there uh where do I go back.
+58:57
+So this link I will just share uh in the chat once just check this. So this is
+59:02
+one way in which you can you know directly get the skills which other people have defined. There is one more
+59:09
+GitHub repo which I want to show you uh which will be very very helpful to you. It's called everything
+59:16
+cloud code. So this GitHub, this has I think 50K
+59:22
+stars or something like that. Uh yeah, 69K now. So this GitHub was created by I
+59:28
+think somebody uh I think I'm referring to the correct GitHub repo, somebody who won a hackathon and yeah, so this was
+59:36
+created by some person and now it is maintained by I think more than one people. Um basically one thing you can
+59:43
+do is in any GitHub any uh cloud code project you can install this and then
+59:48
+what will happen is this everything cloud code will get installed inside your working directory as you can see
+59:53
+here. So this I did not create myself I uh took it from this get github repo I
+59:58
+forged it and then or I directly used this command rather um there is this command mentioned to install the plug-in
+1:00:04
+and that plug-in will appear in your uh working directory. Now the usual convention is my working directory is
+1:00:10
+actually this AI developments uh tracker. It is not everything cloud code. So the usual convention is your
+1:00:16
+dot agents and docode everything should ideally be over here inside the
+1:00:22
+immediately inside the working directory not inside a subdirectory but I have explicitly mentioned in my markdown
+1:00:28
+files that the skills and agents everything can be found inside this subdirectory. I have mentioned it
+1:00:34
+explicitly because of which if any skills are needed uh cloud cord can refer to these skills API design or
+1:00:41
+article writing back end or any skill right but otherwise by default cloud will look at dotcloud folder dotcloud
+1:00:49
+file over here itself uh which will be like a hidden folder you will not be directly seeing it uh if you open it in
+1:00:55
+a uh finder where did you mention this in cloudmd I think it is mentioned let me just check
+1:01:03
+where it is saved. Uh I think it is not stored in my cloud MD related to this
+1:01:10
+particular project. I think it is saved that that preference is stored in my global cloud.mmd file. So there are two
+1:01:16
+cloudmds any project will refer to. One is the project specific cloud MD. Second is the global cloud.mmd which will apply
+1:01:23
+to all the projects. So some skills you may want to apply to all the projects. For example, if it's a web development
+1:01:29
+skill, why would you restrict it to just one project? It can be applied to all the projects. So, you can appi you can
+1:01:35
+install it in such a way that it is applied to all the projects. Um the the best way to do that is in my case I have
+1:01:42
+one folder called uh I'll show you on my mirrorboard.
+1:01:50
+So, I have one folder called AI agents which acts as my parent working
+1:01:56
+directory. Okay, inside this I have different projects. So inside this I may have a project called u uh let's say LLM
+1:02:03
+context engineering or I may have another project called AI developments tracker. So in this AI agents folder I
+1:02:11
+will have a dot cloud.md uh file which will define my preferences and a folder
+1:02:18
+inside which there will be a um cloudmd file. Similarly inside this also dotcloud will be there inside which
+1:02:24
+there will be cloud MD. Now this cloud MD and whatever
+1:02:30
+skill.m MD I'm defining inside this working directory is specific to this working directory. So if I define some
+1:02:36
+writing skills or email skills or whatever it will not get universally applied but whatever I apply in my
+1:02:43
+master directory master working directory will get applied universally for all the projects. So some skills if
+1:02:49
+if some writing preferences or something you are mentioning I don't want my writing preferences to be mentioned in
+1:02:55
+uh all my projects I want it to be project specific. So I will not mention any writing related skill.mmd files in
+1:03:01
+my in my uh master working directory. I will only mention it in my uh project specific working directory. So these are
+1:03:08
+just conventions you guys can um figure out if you want don't want to follow that convention and still getting some
+1:03:14
+get something useful out of it. Okay, this we have covered anatomy of okay, by the way, agents.mmd and cloud.MD should
+1:03:20
+follow similar things. In agents.mmd there will be very explicit mention of the tools. Uh in cloud.md also there are
+1:03:27
+broad mentions of the tools but in agents. MD because agent is literally meant for uh accessing tools and
+1:03:34
+executing certain functions. Agents MD will have a lot more emphasis on specific tools.
+1:03:40
+Um this is one diagram which [clears throat] I wanted to show to show you the order in which things may
+1:03:46
+disappear from your context. So think about output from rag. Okay, output from
+1:03:53
+rag is extremely dynamic. It does not appear um after your after two or three
+1:04:00
+iterations of API calls of uh the LLM because rag output depends on the current context. So rag output will live
+1:04:08
+only for a few seconds whatever output you get. So that that um contribution of
+1:04:14
+rag output to the context is very shortlived. On the other hand as I mentioned earlier
+1:04:20
+cloud.md or agents aents.md literally will be there unchanged in
+1:04:25
+your working directory from weeks to months. Uh so in my case okay uh there is one question cloud cloud code will
+1:04:31
+leverage both agents.mmd and cloud.md. Yes, exactly. It has both. Sometimes you
+1:04:37
+should notice, you will notice that when you are running a big project, cloud code will automatically spin sub aents.
+1:04:42
+Sometimes you can define your own sub aents and sometimes it will it will spin its own sub agent. Now, can I ask you a
+1:04:48
+question? Will sub agent have its own context window or will it utilize the context
+1:04:53
+window which is same as its parent uh the parent agent who spun the sub agent? Will they share the context window or
+1:04:59
+will it have its own context window?
+1:05:04
+So just think about it. Why are we first of all? First of all, what is an agent? An agent has its own ability to call
+1:05:11
+make its own API call to the LLM. It has its own ability to access files separately and produce the outputs that
+1:05:18
+purely depend on its own context. So a sub agent ideally will have its own
+1:05:24
+context window. it will make a separate API call and think about it each API to for each API call we are providing the
+1:05:30
+context right the and and which means if a if an agent is a pure
+1:05:36
+uh paper writing agent that agent why should that agent share the context with a uh coding agent it's not needed so the
+1:05:44
+the whole idea when we say agents are being uh this we will discuss more in detail when we comes to the tool section
+1:05:50
+which is day after tomorrow but when we are spinning new agents the idea is that that agent should have ability to
+1:05:56
+execute its own API call of the same LLM right and handle its own context window
+1:06:01
+so that that agent's actions are not polluted by what is happening globally in the project so globally if the if the
+1:06:08
+research is progressing in a certain direction that should not affect a particular agent's ability to analyze a
+1:06:14
+particular result right so sub agents will always have its own context window but some items will be shared between
+1:06:20
+the context window because for example cloud.md will always be there accessible to every single agent. Then if there are
+1:06:28
+things like specifications of features, so I had mentioned my feature specifications uh and then it created
+1:06:34
+certain skill.md files based on my feature specifications, right? But those skill.md files kept on getting modified
+1:06:41
+as I asked for more and more features or more and more uh different skills my AI
+1:06:46
+news tracker should have. So the lifespan this is very correct actually uh hours to days is actually um
+1:06:53
+something that I have observed in my execution. The skill.md file may stay for hours some skill.md file will stay
+1:06:59
+for days but it can get heavily modified as we ask for more and more specification and more and more skills.
+1:07:06
+Uh implementation plan is ours today. So implementation plan there is one thing
+1:07:11
+here this implementation plan um there is a broader level phase one phase 2
+1:07:16
+implementation plan mentioned in uh cloudMD so here if I go back to AI
+1:07:22
+developments tracker this cloudMD has a phase one implementation plan then phase
+1:07:30
+2 multi-user implementation plan right so this was remaining constant throughout but however I created
+1:07:36
+different set of markdown files called app feedback back v1.mmd. So here what I did is in natural language just by
+1:07:43
+speaking I created these instructions based on what the app is looking at currently. So this app feed feedback
+1:07:49
+v1.mmd will spin off its own different phases. So then uh it will decide okay I am in phase one right now but I have to
+1:07:56
+implement phase 1 a phase 1 b phase 1 c. So it's a new implementation plan and
+1:08:02
+the the life of that new implementation plan will depend on what your current feedback is. what features are you
+1:08:07
+focusing right now etc. again it's it's uh time span is hours to days and then
+1:08:13
+as I keep on giving different feedback at different levels of my product development no app feedback.mmd is not a
+1:08:20
+skill uh skills are usually stored in skill.md app feedback v1.md is my own document which I created you know why I
+1:08:27
+created because if I'm giving this much feedback I might as well store it somewhere rather than giving it in uh terminal because if I give it in
+1:08:33
+terminal after some time it's gone but this way all my preferences and all my
+1:08:38
+all my feedback is stored in in these markdown files. Sometimes my feedback in
+1:08:43
+v1 may conflict with some something in v5. But later once my product once my
+1:08:48
+building is completely done I I'm planning to ask cloud code to create a
+1:08:53
+master feedback document using all my five feedbacks documents and that feedback do so to create the master
+1:09:00
+feedback document I need all my feedbacks which I have given in all different stages. Right? So that's the only reason why I created this MD file.
+1:09:08
+uh what are we achieving with uh with separating everything uh so actually yeah I think this was a mistake on my
+1:09:14
+end I I don't think separating the everything cloud code is a good practice ideally what we should do is just have
+1:09:20
+all these folders within the working directory so that is better right uh we are not achieving anything I think by
+1:09:26
+separating this was the only reason was because when I installed uh when I uh you know installed the plug-in it ended
+1:09:33
+up installing it in this way and then uh I went ahead creating my uh cloud.md and
+1:09:39
+then I realized that oh my cloud and dot aents are actually inside a subdirectory now should I move it back or should I
+1:09:45
+continue building then I continued building but I ensured that cloud is referring to the dotcloud in this uh
+1:09:51
+subfolder and agents in this subfolder right but we are not achieving anything by se separating these two
+1:09:59
+um oh there is actually one more file which I think you should know about there is
+1:10:05
+another file called soul.md This is something which uh if you have
+1:10:10
+been reading on x.com many people talk about uh soul do the difference between
+1:10:16
+your output when you have a soul.md versus when you don't have a soul.md is night and day. It's it's highly it's
+1:10:23
+highly highly different. So in cloud code I don't specifically use soul.md because my uh cloudmd itself is doing
+1:10:30
+the function of uh uh you know uh soul.md. But in general if you are working on open claw or other frameworks
+1:10:37
+just uh remember to put a soul.md and put what your agent is supposed to be
+1:10:43
+like the details of that in the soul.md the difference is extremely humongous.
+1:10:49
+Okay one last thing uh then we can get into the exercise is about uh
+1:10:54
+classification tasks uh reasoning task or some other structured output task. Okay. So three
+1:11:00
+tasks I have mentioned here because in cloud.md it's a good practice to mention some examples.
+1:11:06
+So let's say you are performing a classification. Let's say you are building an email classification uh into
+1:11:13
+whether your whether an incoming email should go into your primary inbox or whether your incoming email should go
+1:11:19
+into the rest of the inbox like social updates uh or anything else. Now this is
+1:11:24
+a sort of like a binary email classifier. Now for this classifier to
+1:11:29
+work in cloud.md, it will be very beneficial if you add three different examples, three diverse examples. So
+1:11:36
+when I say diverse, show one example of an email that actually belongs to the primary inbox. Show another example of
+1:11:42
+an email that actually belongs to social inbox or update inbox. Um or if it's
+1:11:48
+about a product review, show one example of product uh positive review, one example of negative, one example of
+1:11:53
+neutral. basically just giving total up to three examples covering diverse set
+1:11:58
+of uh cases. You can give more examples but in general there is a huge diminishing
+1:12:04
+return because if you add more examples those examples are now consuming your context window. It is loaded uh
+1:12:11
+frequently. You don't want that. But if your task is a very simple classific classification task this is this is
+1:12:17
+enough. But if your task involves quite a bit of reasoning, so a reasoning
+1:12:22
+example is whether you want to approve refund or whether you want to approve uh some sort of returns, something that
+1:12:29
+involves policy etc. You should provide some reasoning example. So this is the reasoning example. Customer ordered
+1:12:36
+laptop 45 days ago and the reasoning for the output is 45 days is greater than
+1:12:41
+the 15-day window which means uh it's not eligible for return, right? Return or refund. So now this is not like input
+1:12:50
+and output. So this is input, reason and output. And you can give two or three
+1:12:55
+such examples. If you need uh your agent to execute a complex task. Now what if
+1:13:02
+your agent requires a specific format of response like JSON or something like that? The best thing is you yourself
+1:13:08
+provide some example of what kind of uh format you are expecting. provide a
+1:13:13
+provide some sample JSON objects in your uh cloud code so that it can follow that. Uh one good example here is of of
+1:13:21
+the format is in my project you can see um
+1:13:32
+so here this folder structure we don't have to explicitly mention this format.
+1:13:41
+Yeah. See this folder structure, we don't actually have to explicitly mention this format because this is something that most LLMs already know.
+1:13:48
+But by giving this format, we are kind of reinforcing the structure of this whole project that I want to follow. And
+1:13:54
+I'm I'm reinforcing that apart from cloud.cloud.md, ids v2. MD is there.
+1:13:59
+Which means if I am referring to ideas v2.md at the top of the document, my
+1:14:04
+cloud code will not get confused now not knowing where this ids v2. MD is it already knows because I'm providing the
+1:14:10
+structure right um there is one question these examples can be specified in
+1:14:16
+agents.mmd each sub aent instead of defining in cloud.mmd so some two or three examples you have to mention in uh
+1:14:22
+in cloud.md and this example I mean it can depend on the task by the way if your if the only task that your cloud
+1:14:29
+code is doing is building an agent for responding you can mention this in cloud MD but if these things are part of one
+1:14:37
+sub aent task. So within an email within an email response uh agent let's say one
+1:14:43
+agent is uh assigned explicitly to classify the email another agent is
+1:14:48
+assigned explicitly to produce response for an email. If such sub aents are there in that case yes you can mention
+1:14:54
+the examples in agents.agent.mmd rather than in cloud.md. All right. Um,
+1:15:01
+okay. Now, we'll move on to the exercise very quickly, but I just want to show you one example of a p poorly designed
+1:15:07
+cloud.mmd. And I want you to tell me why is this poor? Uh, you are a fullstack developer, a fullstack engineer. This is
+1:15:14
+this. So, I'm mentioning the identity sort of, right? Um, I'm mentioning some sort of uh uh rules. I am mentioning I
+1:15:22
+mean these are some rules. This is in the boundary between rules and knowledge. I'm mentioning some structure. But what is in general the
+1:15:28
+format problem with this whole document?
+1:15:34
+You can see that it's a little bit vague, right? Because it's not leveraging anything about the markdown structure. This might as well be like a
+1:15:41
+cloud txt. There is no difference because it's not leveraging the fact that there are headings or subheadings.
+1:15:48
+Uh it's it's neither in XML format and uh the details are completely vague. You
+1:15:54
+should see this one. You should design the architecture properly. What does this mean? This doesn't mean anything.
+1:16:00
+This this is exactly the kind of instructions that maybe 95% of the people actually give. Right? It's like
+1:16:06
+me telling the model don't hallucinate. So this is a very very vague instruction. A better designed thing
+1:16:11
+will be you will have headings subheadings and within subheadings if there are further subheadings that
+1:16:16
+should be given and the technology stack make it explicit if you want explicitly
+1:16:22
+next.js to be used instead of ReactJS. If you want to use uh tailwind CSS instead of something else and deployment
+1:16:28
+if you want to do inversel not in railway mention that right and then this if you do your your issue is that cloud
+1:16:36
+MD file may become bigger but it will save you a lot of pain downstream and in any case cloudmd file is not going to be
+1:16:43
+entirely fetched all at once right so this is an example of poorly designed
+1:16:48
+and well-designed cloudmd now let's move into an exercise so I will share
+1:16:54
+uh link with all of you and here just paste the API key. I don't
+1:17:02
+have the API key yet.
+1:17:07
+So I have created my own wault for storing my API keys just for quickly referencing. So I'll use one of these
+1:17:14
+Geminina API keys.
+1:17:26
+All right. So now here is the we have three tasks here. First task is we will
+1:17:32
+uh sequentially construct a cloudmd file.
+1:17:37
+Okay. Uh sequentially construct meaning we will define the pro identity, we will define the uh rules, we will define some
+1:17:44
+of the um knowledge, we will define examples etc. Yes, I will share the
+1:17:50
+collab notebook also. So, this is the corresponding Google collab notebook. But as usual, I will since many people
+1:17:55
+are like product managers and coming from uh low coding background, I will go through the interactive website.
+1:18:05
+So, this is the Google collab. Again, you will need anthropic, openi, I mean uh open anthropic or gemini API key.
+1:18:11
+Just uh you can store it in the env file over here. So this key icon you see you click that and here you can add the
+1:18:17
+secret key. Uh so either if it is a Gemini API key just add it here and just enable it like this by clicking this uh
+1:18:24
+button. This is the best way to store the API key in uh for usage in Google
+1:18:30
+Collab. So here this is the task. Okay. We need to create a student grade calculator.
+1:18:37
+Let me just annotate. So this has to follow a certain
+1:18:43
+structure. So when I'm building this calculator, I don't want to use uh fraction format.
+1:18:50
+I don't want to store numbers as.3. I want internally uh Python to represent
+1:18:55
+it as 3x 10 or whatever the fraction is. So Python has to follow decimal format instead of for following floating point.
+1:19:02
+Then certain uh constraints like use a lookup table uh to assign letter grades.
+1:19:08
+So letter grades like A, B, C, D. um and then uh return results as grade reports
+1:19:15
+or then use if you want to export the final grades of the students into a CSV file format uh use CSV.riter not string
+1:19:24
+concatenation. So some there are some specific details I want to follow while building this. So don't don't get hung
+1:19:30
+up on the details. It's not important. What is important is how the difference look like when you use cloud.mmd versus
+1:19:37
+when you don't use cloud.md. Okay. So let's let's see that. So firstly, if you
+1:19:42
+don't have cloud.md, what would be your prompt? Your prompt will be asking a simple user
+1:19:50
+prompt asking LLM to write a grade calculation function uh which takes uh
+1:19:56
+students marks and then it should produce a grade score, right? So it'll be like a very simple one or two or
+1:20:02
+threeline prompt. But if in presence of cloudmd you are providing more details. So what I want you to do is uh you I
+1:20:09
+don't want you to just manually type these things. I have made your life a bit easy. You have a solution button here. Just click this solution. It
+1:20:16
+should automatically populate the project overview, project structure, etc. So project overview is this a
+1:20:22
+student grade calculator that computes weighted final grades, assign letter grades and exports results in CSV format
+1:20:28
+so and so. Okay. Project structure is the folder structure of your project. So in your src there will be a
+1:20:33
+calculator.py Pi inside which there will be a calculate final grade function. There is a models.py and so on. So this
+1:20:40
+is the uh details of the project structure folder structure of the project. Then some conventions or rule
+1:20:48
+which are provided in our problem statement I'm adding here. All grade uses decimal format uh not floating
+1:20:54
+point. Then uh determine the grades by using the grades cutff and use the lookup table. then uh return the grades
+1:21:01
+in grade report CL uh data class CSV export using CSV writer etc. Similarly
+1:21:07
+in testing requirement uh I have mentioned some details some of which are knowledge some of which are rules. Um
+1:21:16
+and one thing I notic is that like some things are repeated multiple times like uh do not use floating float grade for
+1:21:23
+grade calculation use decimal uh use decimal for precision. This is already mentioned in the I think in code
+1:21:30
+conventions themselves. But this is how the full claw.mmd will look like. If I
+1:21:35
+add each of these sections, project overview which is identity, project structure which is the structure that
+1:21:41
+defines the output. Code conventions will define some sort of rules and knowledge. So here is the boundary
+1:21:46
+between knowledge and rules. Testing requirements uh will again define
+1:21:52
+uh knowledge and rules and tools. Where are my tools? Uh here some tools are
+1:21:57
+defined. This grade cutoffs is uh like a tool. Then uh a data class. This is
+1:22:03
+usage of a tool. Then CSV.WRiter is again mentioned of a specific tool. And
+1:22:09
+here also some rules are mentioned. So in this important patterns you will see a combination of uh rules, tools and
+1:22:17
+knowledge. And this is purely this section is what common mistakes to avoid is what is it knowledge or is it rules?
+1:22:26
+This is purely rules. Right? So this markdown file will be passed along with if cloud MD file is used, it will be
+1:22:33
+passed along with the prompt to the LLM. Okay, LLM which LLM is used. I'm I'm will be using Gemini uh Gemini uh I
+1:22:41
+think 2.5 Gemini flash 2.5 flash. So now let's run
+1:22:47
+the code with and without markdown file. I hope this works. I hope it does not hit any API limit or something.
+1:22:55
+Did you guys manage to run this with your API? Um if you got any output it it compares the output at the end. So I
+1:23:01
+want to show you that also. If you if any of you manage to get the output just show me a screenshot. Um it should score
+1:23:08
+show a score out of 25 in the absence of markdown file. How does the output uh
+1:23:14
+quantitatively look like in terms of a score? How does it look like in the
+1:23:19
+presence of markdown file?
+1:23:27
+So this markdown file is consuming four 439 tokens. Okay. Can you add input field for cloud API? Yes. Uh so you have
+1:23:34
+Sharam you have an anthropic API key available to you. I I can add a anthropic option also. The only reason I
+1:23:41
+did not add is because I don't have an anthropic API key at the moment. I use cloud code but I don't have anthropic API key. Uh okay. So Amit David. Okay.
+1:23:50
+10 10 out of 25 versus 25 out of 25. For some reason, my API call is taking too
+1:23:55
+long. I don't know why. Okay. Glad to know that you guys are getting it fast. Uh so I think mine is
+1:24:03
+running a bit slow. I have no idea why it is so slow. Okay. Okay.
+1:24:09
+So one issue that happened earlier was when I I I had deploy deployed this on Versel and uh Okay. So see now this is
+1:24:16
+the score breakdown. Um so this time for calculating these scores I am not using
+1:24:22
+an LLM as a judge for this I am simply using um keyword based matching my requirements and then the output will
+1:24:29
+have uh set of keywords. So this is the output with cloudmd provided okay output
+1:24:35
+is much longer and much detailed and this is the output without cloudmd. If you want to see how the prompt provided
+1:24:41
+to the llm looks like you can scroll down and click this view the full prompt sent to the LLM. So this is the prompt
+1:24:47
+sent to the LLM in the absence of cloud.mmd. It's too small. It's too vague, not at all specific. So there is
+1:24:55
+no doubt that the LLM will not be performing as good. In this case, the consumption of tokens is like extra 439
+1:25:02
+tokens are being consumed. There is a question did we ask cloud to generate cloud.MD from natural language? You mean
+1:25:08
+in this case? In this case, I have already what I have done is uh this show solution button, right? I have already
+1:25:17
+uh hardcoded a good cloudMD structure that was created using I think uh Gemini
+1:25:23
+itself not cloud code and then I just enabled this button click so that with a button click you can add the different
+1:25:30
+subsections of the cloudmd into these uh into these project structure testing requirements parts and then the whole
+1:25:37
+cloudmd file is basically a concatenation of these different subsections which is what you see here
+1:25:43
+and then The prompt in the presence of cloud.md will look
+1:25:49
+over here at the bottom very long and here the user message will come at the
+1:25:54
+very end. So this is the user message write a python function with so and so
+1:26:01
+everything before that is what is there in the cloud MD. So here basically the
+1:26:07
+prompt that we are passing to the LLM is concatenation of two things concatenation of uh stuff that are put
+1:26:13
+into the cloud MD and conc with that concatenated with things that are there in the user prompt. So when you are
+1:26:20
+hitting Gina API are you just passing the content from cloud.mmd as the prompt. Exactly. So I'm passing this
+1:26:25
+whole thing as the message to the llm. This whole thing uh the cloudmd info
+1:26:30
+plus the user prompt. User prompt is write write a Python function calculate final grade that computes weighted
+1:26:36
+average of the scores uh from the scores dictionary and weights dictionary determines the letter grade and returns
+1:26:42
+the result. Uh that's it. There is no mention about uh the specific format of CSV export or anything. I'm just saying
+1:26:49
+I need the result in a CSV format. So um may I know if we can access the lab
+1:26:56
+as lifetime? Yeah. Yeah, you can access the lab lifetime. Only thing is you'll have to use your own uh API your own API
+1:27:02
+key. Now let's move on to the next slide. This is just to show you the difference when you use cloudmd and
+1:27:07
+without with and without cloudmd. It's obvious right? I mean if you don't provide enough enough details of course
+1:27:13
+your output is not going to be really good. You already know that. So uh but this is just to show it quantitatively.
+1:27:19
+We can now move on to phase two. So in this phase two let me just refresh.
+1:27:28
+Okay, I think most of you got higher scores in the second case, right? With cloud.mmd, you got probably 20 or 25.
+1:27:34
+The scores will vary, of course, it's an LLM, but I think most of you might have gotten higher score in general um when
+1:27:42
+you used cloud MD instead of not using. Now here this is a this is a different
+1:27:47
+example, okay? Uh we are not talking about the student uh exams anymore. we are talking about uh oh one more thing
+1:27:54
+by the way guys uh some students had messaged me yesterday saying uh the timing of the lecture is a little bit long uh because in the US time zone now
+1:28:02
+it's uh late night 11:00 p.m. or something in some some of the time zones in the US. So one thing I must say
+1:28:08
+already that I think most of the lectures might take more than 1 hour simply because some topics we have to go
+1:28:14
+a little bit deep. So what I'm planning to do is um I will try to finish as much as possible by oh it's 1:30 a.m. Okay.
+1:28:20
+Oh my god. I I don't know what time zones you guys are in, but hats off to you. Uh if you are trying to work or
+1:28:27
+study at 1:30 a.m. Amazing guys. Um yeah, so it's like it's a problem with
+1:28:32
+many different time zones. Bunch of the folks are from EST, bunch of the folks are from um uh central time zone, IST,
+1:28:39
+uh UK. So it's like a bit bit of a challenge. But that's the reason why I'm putting the recording as much as fast as
+1:28:45
+possible. So that in case you want to drop off and uh you know uh watch it next day morning, you can do that. Um
+1:28:53
+okay. So here the issue is this. We have a chatbot and that chatbot needs to be
+1:28:58
+chatbot's response need to be graded on 10 different questions. So these are the 10 questions. Okay, I want my I want to
+1:29:05
+return my laptop. This is the order ID. So if this is the question that customer is asking ideally chatbot should not
+1:29:12
+immediately give a response right ideally this is the grading criteria. So chatbot should f first ask first say
+1:29:18
+that let me look at the order first and then let me look at the return policy then looking at the
+1:29:25
+um then guessing the return policy right so this is one thing second thing is
+1:29:32
+what's the price of new MacBook Pro uh then it should not hallucinate it should look at the price table or something and
+1:29:37
+then come back then I'm I'm going to sue you if you don't fix this right now should deescalate the situation and so
+1:29:44
+and so these are some issues which uh you are are going to ask the chatbot and ask chatbot should be responding and
+1:29:50
+based on this instruction we are going to grade the chatbot's response. Now let's see when we are building the cloud
+1:29:57
+MD file sequentially like one after the other what will happen. So first is uh
+1:30:03
+round one which is a minimal prompt. So you can click this show solution to add a minimal prompt in uh cloud.MD MD you
+1:30:08
+are. So this is just the identity. If you are a customer support agent uh on uh for cloud store an online electronics
+1:30:15
+retailer help customers with orders, returns etc. Be friendly and professional. Right? And let's see how
+1:30:21
+this how the minimal identity prompt will help you uh score help the uh
+1:30:28
+chatbot score for the 10 queries. So 10 queries are done. If you want to see the
+1:30:34
+scores go back and scroll down. So in the 10 queries actually it has scored
+1:30:39
+pretty well. Um so I want to return my laptop. Hither I can definitely help you with returning your laptop to start the
+1:30:45
+process. You will have a couple of options. Okay. You know why this output is only partly displayed here?
+1:30:53
+Any idea why this is the case? You can only see it so much, right?
+1:31:01
+because I have manually defined a cap uh for the maximum token limit for each response. So that chatbot will not give
+1:31:07
+a paragraph response. So that is the main reason. So so the input plus output should you know should not exceed a
+1:31:14
+certain uh limit. There might be one problem which I may have to fix here because in round four we are adding more
+1:31:19
+details. But let's see let's see what's the case. So for two questions it's not answering uh in the correct way. Uh but
+1:31:25
+for the rest of the questions it's kind of following our guidelines. Now in round two we will add one more detail
+1:31:32
+which are critical rules. So in round one it was um uh simply talking about
+1:31:39
+the empathy factor and uh the identity factor. In round two I have mentioned
+1:31:44
+certain critical rules. So these critical rules will hopefully help the chatbot to take better decisions. But
+1:31:50
+let's see because I have capped my number of tokens whether the output is becoming weird or not not so good or
+1:31:57
+not. See, it's only 8 out of 10. So, you know what we should do here to make the output better or to make the scoring a
+1:32:03
+bit more fair. What I should ideally do is I should increase the number of tokens from whatever the cap is right
+1:32:10
+now to maybe uncapped. So, that I will do. And in the last part, I will jump to
+1:32:16
+R4 because I also want to show you one quiz. So, here if you click show
+1:32:21
+solution in round four, three things are added. You are a customer support agent.
+1:32:27
+These are the critical rules. This is the tone in which you should speak. And if there are specific issues that the
+1:32:34
+customers are facing, this is how you should reroute. Right? So these things three things are explicitly mentioned.
+1:32:40
+And when you run again, the problem might happen is that the input tokens plus output tokens are forming the
+1:32:46
+context window. But here with the edge cases also added, the chatbot is scoring 10 out of 10. So all the questions are
+1:32:53
+being addressed really really nicely. So um we did not we skipped the round three
+1:32:58
+but I urge you to try the round three also and just let me know what output you got. So ideally you should see in
+1:33:04
+round one with minimum uh so in round one we just had minimum prompt in the
+1:33:09
+cloud MD in round four you had all the different instructions as you go from round one to round four your score
+1:33:16
+should ideally increase of course sometimes it may decrease I have noticed that when you go from round one to round two sometimes or round two to round
+1:33:22
+three sometimes the score decreases from 8 out of 10 to uh 7 out of 10 not able
+1:33:27
+to see R1 and R2 options. So to go to R1 and R2, you mean after running. If it is
+1:33:32
+after running, just click it once more and then scroll down. Um if you want to
+1:33:37
+progress from round one to round two, you have to finish round one, right? Um there might be some issue in the logic
+1:33:43
+of button uh enabling or disabling, I will just fix it. If there is an issue. Um the third example which I want to
+1:33:51
+show you, there is there is an interesting quiz also which I want to take you through. But the third example is adding few short intelligence. So few
+1:33:58
+short intelligence in in this case we will start with no examples some static examples and dynamic examples. So static
+1:34:05
+example simply means if you are providing three examples of what is a good behavior to the LLM
+1:34:14
+like this. So into the context you provide example
+1:34:19
+number one example number two. Okay round one four out of 10. Three out of
+1:34:25
+10. Four. Oh that's super weird. I I will have to check why that is the case.
+1:34:31
+And can you guys tell which LLM are you using? Uh which model are you using? Is
+1:34:36
+it Gemini or is it OpenAI? GPT4. Okay. Hm that is weird. I don't
+1:34:44
+know why. Maybe it is because of the truncation of the output. Okay. I can do one thing. I will increase the uh I just
+1:34:50
+first ensure that there is no truncation of the output and I'll increase the limits and then hopefully you should get better response. So ideally what you
+1:34:57
+should get is something like in round one very kind of low score six or seven out of 10 and eventually as we add more
+1:35:03
+details into the uh MD file the chatbot should be able to handle questions in a better way. But of course the scores
+1:35:10
+itself show that you know LLM factor itself is coming in but it should not be
+1:35:15
+as bad as three out of 10. Okay. Shrihar is sharing. Okay. Shrihar score is
+1:35:20
+something similar to what I am getting. I'm also getting something very similar. Shihara, are you using uh Gemini or
+1:35:27
+OpenAI API? Okay, I'm I'm not sure why this issue
+1:35:33
+is, but I I'll have to investigate it. But this is ideally what should happen like as you add more details, your your
+1:35:39
+chatbot should become better at responding. Um so now talking about the examples,
+1:35:46
+let's say we ask five questions to our chatbot. Okay, I want to return my monitor. Order number is this. I bought
+1:35:52
+it 10 days ago. This is my this is the first question second question third fourth and fifth and we can run with no
+1:35:59
+examples provided meaning no example of how to respond to a query is provided in the markdown file then what will happen
+1:36:06
+so we are now running five queries and let's see the score
+1:36:18
+okay so let's go back to baseline in baseline This is the first question. This is how
+1:36:24
+the first question was and this is how the response was. Empathy was not so great action. It was not actionable but
+1:36:31
+it did not it did not guess and it stayed on the topic. If you want to see the full prompt that was actually passed to the LLM, you can click this. The
+1:36:37
+system prompt is this. You are a customer support agent uh on an online retail uh seller. Help the customers
+1:36:44
+with their uh questions. And then the user just give the first user prompt which is this. I want to return my order
+1:36:50
+number 3301. Okay. So this is the full prompt which we are passing into the LLM
+1:36:55
+and this is the full response which LLM gave and this response scores out of
+1:37:00
+four u you know uh rubrics on which we are scoring the LLM only two are it it's
+1:37:07
+working only for two then uh my package was supposed to arrive 5 days ago uh
+1:37:13
+still still not did not arrive same thing the system prompt will remain the same user prompt will vary here also
+1:37:20
+system prompt will remain the and user prompt will user prompt will vary and please note that these are
+1:37:26
+different API calls. Okay, so for different API calls context window will be different. Now in static uh okay to
+1:37:33
+click this I have to first run the baseline. Okay, this is one issue I should fix. I should be able to freely jump from baseline to static.
+1:37:40
+Okay, baseline 2.4 out of four.
+1:37:45
+Okay, so baseline is almost done. Then let us run to static
+1:37:51
+examples. Okay. Now this is static example. So static examples are in different category. There is examples in
+1:37:58
+returns category, in shipping category, product category, complaints category, account category and in all. So if you
+1:38:04
+are picking three examples, would you pick all the three from returns or or all the three from shipping or all the
+1:38:10
+three from products or would you would you pick it from different sections? If you are only allowed to pick three, you
+1:38:16
+should ideally pick such that diversity is maximized. That's how LLM can have
+1:38:21
+maximum uh knowledge about different situations it may encounter. So ideally if you are picking one from returns do
+1:38:28
+not pick one from returns again. If you're picking one from shipping do not pick from shipping so on. So here three
+1:38:34
+are picked one from returns one from shipping and one from complaints. And then we can run static uh basically run
+1:38:41
+static meaning in the prompt which we send to the LLM. Three things will be there. System prompt will be there along
+1:38:47
+with examples. Then user prompt will be there which is the sentence right. So now this these are the scores. Uh I
+1:38:55
+should have displayed the system prompt button here also just to see how the prompt look like but the prompt will look like the following. System prompt
+1:39:01
+is you are chatbot for this be empathetic and helpful. Following that the example will be concatenated. Then
+1:39:08
+after that uh you will have uh the user query which is the question like this.
+1:39:14
+Now here um I have not run the dynamic yet I
+1:39:19
+think. Oh I have I have to go to the static just a second. Okay guys so here you can
+1:39:24
+see 2.4 out of four average. So already yes I am displaying the scores here. So
+1:39:29
+in static these are the scores that I got in uh no example I got two out of
+1:39:35
+four average score. Here it is 2 4 out of four slightly better. And this is the full prompt. This is the system prompt.
+1:39:43
+Then uh examples of good responses. Example, example one, example two, example three. Um I am not sure if this
+1:39:52
+is supposed to be user. Okay, because user is not giving the example. I think this might be a mistake in the internal
+1:39:59
+coding of how I'm displaying how I am constructing the full prompt. Ideally the example is part of the system prompt
+1:40:05
+itself. It is there in the MD file. user is just giving this
+1:40:10
+uh the customer prompt I want to return my monitor order 3301. Okay. So but look
+1:40:15
+at the total prompt that is appended. It is appended appended thing about the identity plus static examples plus what
+1:40:24
+the customer is asking right and then the full response is over here. And you
+1:40:29
+can score the full response on four these four rubrics. And in dynamic, let me check my score.
+1:40:36
+In dynamic, I scored 2.8 out of four. So, I got two out of four, 2.4 out of
+1:40:41
+four, 2.8 out of four. How are the scores calculated? Uh, uh, good and bad,
+1:40:46
+etc. Do you have API call? No, I don't have this time. I don't have a judge LLM for API call. I am simply doing keyword
+1:40:53
+matching. So, keyword matching meaning in my baseline here. Uh, where is that?
+1:41:00
+uh or I think in the phase two I had mentioned how the responses should be right in phase two I had said uh when
+1:41:06
+you are crafting the response for uh uh returns always look at the return
+1:41:11
+document do not directly give a solution so that the keywords in that command is
+1:41:18
+matched with the the keywords in the solution in the LLM response and then
+1:41:24
+based on that a score is constructed and using that score I can say whether
+1:41:29
+empathy factor was uh you know maintained or not whether actionable actionable response was provided or not
+1:41:36
+whether guess was made or not or whether on topic whether it stayed on topic or not the even better way to do this is by
+1:41:43
+using an LLM as a judge but then often it is not needed uh it's also expensive here it's not expensive here anyway I'm
+1:41:50
+running four examples but here anyway it's not an LLM judge it's a keyword matching yesterday we discussed about the LLM judge uh I'm curious to know if
+1:41:58
+any of you got a graph that looks sort of like this. Ideally, with more more examples which are dynamic, you should
+1:42:05
+have uh better score. And what are the dynamic examples that we fixed? Look at this. When my question is about the
+1:42:10
+returns, most of the examples are about returns. Two examples are returns. One
+1:42:16
+is about complaint. Whereas uh when I forgot my password and reset the email,
+1:42:23
+then I don't know why this was part of the I don't know why these two examples are provided. It's anyway showing 0%
+1:42:29
+semantic match but these two I don't know why it's appearing. So ideally nothing like this should appear. Maybe
+1:42:34
+it's because I'm forcing the LLM to pick uh three examples. Uh this also is not
+1:42:40
+rag here also I'm it ideally it will be rag but here what I'm doing is keyword matching. So there is no vector
+1:42:46
+database. I mean keyword matching also you can call as some sort of retrieval of course but uh here I'm not using a
+1:42:51
+vector database. Here I'm purely matching the keywords in the query with the keywords in the examples and based
+1:42:59
+on the matching of the keywords in the query and keywords in the examples I am I am picking which are the best dynamic
+1:43:05
+examples that suit the current situation and those dynamic examples along with the query and along with the system
+1:43:11
+prompt I'm passing to the LLM and then LLM is producing the output. So right now um
+1:43:19
+the scores are like this for me. I think many people might have gotten something similar. Did anyone get the reverse
+1:43:25
+score? Okay, David, did you get reverse? You got best score in no example and worse score in dynamic. Is that the
+1:43:32
+case? Uh, Sri Hersa got okay. I have no idea
+1:43:39
+David why it happened. Uh, it's amazing how LL how variable LLM's output can be.
+1:43:44
+Sriha seems to be getting very similar to what I'm getting. Um, this is the
+1:43:49
+ideal. Okay, I'll tell you one more thing, one more experience from my uh me running these examples at different
+1:43:55
+examples many times. One thing I have noticed is the LLMs of today are incredibly good even in the absence of a
+1:44:03
+good system prompt. Okay? And because of that, it's very hard to come up with
+1:44:08
+examples which actually show your point. In general, if you use an LLM thousand times, you will form a mental model in
+1:44:15
+your brain that okay, I need better better cloud. MD or better system prompt for um getting better output but it's
+1:44:22
+very hard to show that exact same thing for one example when you pick one example LLM can behave in such a way
+1:44:28
+that sometimes the response it gives is gives is already good even in the absence of static or dynamic examples
+1:44:34
+maybe that is why David you are getting um the opposite of result like your dynamic case is the worst and baseline
+1:44:41
+is the best I I I am very curious to further look at why that is happening
+1:44:47
+Uh if no relevant examples are there in case of dynamic uh how and what would be the output? So in dynamic case there are
+1:44:53
+relevant examples. Uh you mean okay in dynamic case if zero examples are provided in the example database how
+1:45:00
+would the output look like right in that case output will look very similar to what the base output may look like in
+1:45:06
+the case of baseline. uh in the case of baseline LLM if in the system prompt we
+1:45:11
+have mentioned like if some policy or something like that is asked don't hallucinate look at the document and
+1:45:17
+then it looks at the document no examples are provided then hopefully it may not hallucinate maybe it will reply something like um unless specified it
+1:45:25
+may reply something like I'm not so sure what the um what the detail about this particular query is or something like
+1:45:31
+that uh it depends on what other details have you provided in the system prompt
+1:45:37
+uh [snorts] phase 4 is just uh just looking at all of this in in one um one frame but we
+1:45:44
+don't have to go through that we can go through I just want to show you one last thing okay this is a page which I have
+1:45:51
+created just to show you how the cloud MD file sections are retrieved so I asked you a question earlier right in
+1:45:57
+cloudMD is the whole MD file passed as part of the prompt into the LLM or only
+1:46:03
+sections are passed actually only sections are passed so Here let's say my cloud.md file has 1,300 tokens. Okay,
+1:46:12
+1,300 tokens divided into 12 sections. So section about authentication, database, API design, logging, error
+1:46:18
+handling, etc. And how will these sections look like? It will look like things coming under subheadings.
+1:46:24
+Correct? Now if the task that the LLM is supposed to do right now is about uh
+1:46:30
+let's say unit test for user uh service can you tell me out of these subsections
+1:46:36
+which subsections will I be utilizing? Which subsections will be retrieved to be passed into the large language model?
+1:46:43
+Is uh let's say database convention needed probably not testing standards
+1:46:48
+might be needed. um unit test maybe in the testing if error I don't know if
+1:46:54
+error handling is is needed or not performance guideline is not needed naming convention is not needed deployment and devops is probably not
+1:47:00
+needed right so only out of these 12 section maybe four sections are needed so let's click this retrieve relevant uh
+1:47:07
+docs see only four sections are needed testing standards oh actually naming
+1:47:12
+conventions is coming into the picture here maybe because something about the testing is provided here also so this
+1:47:19
+naming convent mention is now contributing 110 tokens. Each of these are roughly 110 tokens. So now look at
+1:47:25
+the total number of tokens that are consumed. Instead of 1300 tokens, it's roughly 100 multiplied by four. Around
+1:47:31
+400 440 tokens are being consumed, right? And only these four subsections
+1:47:36
+will be now passed into the context. Uh similarly if we are asking about react
+1:47:43
+form component then uh maybe what we need is front- end
+1:47:48
+architecture we might need an API design if the form input is passed into some database something about database might
+1:47:56
+be needed uh logging and monitoring I'm not sure if we need security practices yes so let's let's run this and see what
+1:48:03
+all sections will be probably used front- end architecture is the most obvious okay error handling probably
+1:48:09
+will be used in most of these because in every case some error can happen you you need some uh error handling mechanism.
+1:48:14
+API design if the form is uh the whatever you input you are putting into
+1:48:19
+the form is sent as a JSON into an API uh API function data validation is
+1:48:25
+needed. So again only four sections are being used. So then you can actually run
+1:48:32
+the cloud code with the full context as well as with just the selectively
+1:48:37
+retrieved context. Do you think in this particular example any any difference will happen? Okay. Again there is a
+1:48:44
+question who is selecting the sections. Sections are again as I mentioned earlier like uh in the cloud MD file I
+1:48:51
+said if I'm working on phase one I will select only phase one based on keyword matching. So I can select it based on
+1:48:58
+two things. Uh so sections based on sections from cloud. MD can be based on rag or it can be based on keyword
+1:49:05
+matching. If it is rack, I have to chop the se uh the cloud.md or agents.mmd
+1:49:10
+into uh chunks. Chunks need to be show stored in vector database. Then user
+1:49:16
+query also needs to be converted into a vector. Then those vectors are compared using cosine similarity or uh some some
+1:49:22
+ukidian distance or uh just dot product and then com when you compare the
+1:49:27
+vectors you may have top three or top five. Then you may reank it and then you will figure out which vector is or which
+1:49:34
+vectors are closest to your user query and what are those vectors. Those vectors are chunks from your document.
+1:49:40
+And what are the chunks? Maybe the chunks are different sections. So chunking the how the chunks look like
+1:49:46
+will depend on the chunking strategy. But if your chunking strategy is such that it's based on sections, this will
+1:49:51
+be one chunk perhaps this will become another chunk and so on. Which means each vector there will be one vector
+1:49:57
+corresponding to each chunk. So if top one vectors are are being used for uh when you are saying hey now let us
+1:50:05
+implement phase one then in phase one the chunk corresponding to phase one is the vector corresponding to whatever
+1:50:11
+whatever this chunk looks like right so phase one will be converted to a chunk that will be stored as a vector and when
+1:51:13
+U
+1:51:26
+uh sorry guys, my Wi-Fi just got cut off. Uh can you hear me right now? Am I
+1:51:32
+am I audible? Is my network okay? Okay, so where I left off is I was discussing
+1:51:38
+about about the chunks. So the way this
+1:51:43
+retrieval happens in rag is it will rag will find the most appropriate chunk corresponding to the user query and
+1:51:49
+those chunks will be passed uh as the um system uh prompt. Now my question is in
+1:51:56
+this particular case the output difference between using the full claw.md file versus only the selectively
+1:52:02
+retrieved items are not going to be that different simply because the number of tokens here are anyway minimal. 400
+1:52:08
+versus 1,300 is not going to make any difference. But if you if your cloudmd
+1:52:14
+file was so big such that you had 50,000 tokens in that then it is difficult.
+1:52:19
+This selection is automatically handled by the coding agent. You mean nicl is this handled automatic
+1:52:28
+or handled? We don't. Now let's move on with uh
+1:52:36
+10 minutes on this directly. You can just answer the pen in
+1:52:41
+the chat.
+1:53:06
+Uh, okay. Do you guys hear me properly now? I just need to test.
+1:53:17
+Yeah. Yeah, it is being recorded. So, nothing will be lost. But I'm not sure how my internet speed is.
+1:53:26
+Let me just test with test it once. Okay, not too good but not too bad. So
+1:53:32
+let's move on to the quiz. Uh this is the first question. Actually there are 25 questions. It may take few minutes
+1:53:38
+but anyways I think this will be fun. So which system prompt instruction is at
+1:53:44
+the right altitude for handling customer pricing questions among this? Just answer with ABC D A, B, C or D.
+1:53:51
+The problem with A is A is too vague. So it's too high. B is too uh too uh
+1:53:57
+specific. D is also vague. So C should be the correct answer. Right.
+1:54:02
+Then a system prompt has five components. Identity, rules, format, knowledge, and
+1:54:09
+tools. You're building a support chatbot by but running low on token budget. Which is the component you should cut
+1:54:14
+last? Which which should you remove last? So this we discussed in the lecture.
+1:54:20
+Rules are guard rails. we should not remove it. Rules should be removed last. Format, identity, knowledge. If it comes
+1:54:28
+to choosing between these, you have to always keep guardrails, right? So rules
+1:54:33
+you should remove last. Then in cloud MD or agents.mmd file,
+1:54:39
+which section typically the highest value per
+1:54:44
+token? This is not something we explicitly discussed in the lecture, but I'll be happy to see your thinking process. So which among this is the most
+1:54:51
+important most important value per token
+1:55:02
+uh a project overview project structure code convention common mistakes.
+1:55:09
+So this is actually very confusing. The best thing is providing common mistakes to avoid. You know why? Because when you
+1:55:16
+are using cloud code to build something, the best
+1:55:27
+is direct.
+1:55:33
+Avoid the you get the model going into loop and producing something which is completely wrong and then you having to
+1:55:39
+provide feedback again to get back. Oh, why is it in?
+1:56:10
+Um, do you hear me? All right, I'm temporarily on my phone hotspot, but I'm not sure how good this is. I'll just
+1:56:16
+switch on my camera for the time being just to save some save some bandwidth. I think there is some power issue here.
+1:56:23
+All right, let's go on to the next. In the five layer context stack, which layer is always loaded into every single
+1:56:30
+LLM call out of these uh four
+1:56:40
+screen is not shared. Oh, let me do once more.
+1:56:50
+All right. How about now? So out of these four, which one is the most uh most common one which is almost
+1:56:57
+always loaded into the stack? It should be layer 1. This already we
+1:57:04
+discussed. But again please note agents.m MD or cloud.mdr are not entirely loaded. Its parts are loaded.
+1:57:11
+Then using few short examples uh you are using few short examples for classification. You have a budget of
+1:57:16
+five example. What happens to accuracy as you go from three to five examples?
+1:57:26
+marginal improvement diminishing returns kick in hard after three. So this
+1:57:32
+actually there is no proper consens consensus on this uh in some documents
+1:57:38
+it also says if you add too many examples what may happen is so three if
+1:57:44
+if for example I I I'll tell you a situation let's say there is positive neutral and negative example if
+1:57:51
+something is uh if you are giving one positive one neutral and one negative you are already providing three right
+1:57:57
+three with diversity now if you provide two more that two more what if those two more are positives then you are somehow
+1:58:04
+giving model some information which may not be in the right way the diversity is lacking so it can also decrease the
+1:58:11
+model's performance so C or D can technically be the answer marginal improvement is for sure is the case but
+1:58:18
+uh in this case people always say um I mean this don't um take this into
+1:58:23
+account in general when you read articles you will see that models will confuse get confused when you are adding
+1:58:29
+few more examples which are uh not diverse enough. If all the five examples
+1:58:34
+are diverse, it's okay. If three examples are positive, neutral, negative, then two more examples you add
+1:58:41
+such that they are positive. Now you have three positive examples, one neutral and one negative. Not the best
+1:58:47
+because the diversity suffers, right? So answer can be C or D.
+1:58:52
+Then you have 15 customer support examples in a bank. A user asks about a damaged project. product dynamic
+1:58:59
+selection picks three most uh most similar example. Why does this beat static selection? This we already have
+1:59:05
+discussed.
+1:59:11
+So why is three dynamic example the best instead of uh three static example?
+1:59:22
+So if it is about shipping then we don't have to pick example related to u
+1:59:27
+something else right so you don't you should not be wasting your tokens the
+1:59:32
+problem with three static example is that in every single call you are using the same static example it's not good uh
+1:59:38
+the actual problem is that in staticam uh the main reason is in static example you are paying more in the form of
+1:59:45
+tokens in the form of API call for irrelevant context so that is the main
+1:59:52
+issue in dynamic selection adds variety prevents the model from overfitting. It's not about overfitting or anything.
+1:59:57
+Yes, dynamic selection adds variety for sure. But it's not just about overfitting. That's not the main issue.
+2:00:02
+The main issue is static example keeps keep on getting loaded always. This is something which we have not discussed.
+2:00:07
+So I will just skip for the time being. Um
+2:00:13
+okay, how about this? Anthropic recommends start minimal and then add for system prompt. A colleague argues
+2:00:18
+it's faster to write a comprehensive prompt already, like writing a cloud.md file, the full file already, without
+2:00:24
+having to write it one by one. What's the issue with this?
+2:00:32
+The problem is that the rules which you define in the beginning are not the rules that you come across based on your
+2:00:39
+experience. You are speculating some things might be the rules and you may or may not end up writing a good cloud.mmd
+2:00:45
+file. Right? So this is the main issue but if you are already clear of what exactly you want to build and you have
+2:00:53
+thought about it a lot in then in my experience you can write cloud.md in one
+2:00:58
+shot also but in general if you have no idea what you are building and if you don't know where you will be going after
+2:01:04
+five steps it's better to start with minimal minimum cloud.md file in
+2:01:09
+agents.mmd files can be nested in subdirectories this we discussed example repo/root in the root and then in the
+2:01:15
+src/appi How does this hierarchy work? Only the deepest is loaded. Then root is
+2:01:21
+always used. Subdirectory is ignored. Tools pick whichever agents MD is closest. All agents MD are concatenated
+2:01:28
+with deeper files adding to or overriding parent rules.
+2:01:36
+Clearly this is a confusing question. Everybody's answering different things. So if A was the like let's think about
+2:01:43
+different scenarios. If only the deepest agent MD is loaded. The problem is bunch of rules defined in the parent. There is
+2:01:50
+a reason why we are calling it as a rule. So clearly A is not probably the answer, right? I can just click it. In
+2:01:55
+general, what happens is all MD files are considered. But if there is a rule in the in the later part of hierarchy
+2:02:02
+which is kind of uh uh different from the rules defined in the earlier top
+2:02:08
+level of hierarchy. The later agents MD files are being used. the the rules mentioned in the later agents.mmd files
+2:02:14
+are used. Why? Because if an agent is writing something related to API calls, the rules mentioned here will override
+2:02:21
+in case if there is a conflict, the rules mentioned here will override the rule rules mentioned here. So, but all
+2:02:28
+the rules everything mentioned here as well as here will be used.
+2:02:33
+Then which few short pattern should you use when the model needs to apply multi-step
+2:02:39
+policy? Example, determining refund eligibility based on order date, product type, condition, etc.
+2:02:46
+Um, cuz this is a complex, this sort of like a not an easy classification or
+2:02:52
+something, right? It's complex. So, you will have to give chain of thought. You give the problem, you give the reason,
+2:02:58
+you give the solution and this you provide in the examples. Then your system prompt is 5200 tokens.
+2:03:05
+According to best practices, what what should you do?
+2:03:12
+system prompt. You can think of it as u
+2:03:19
+oh prefix suffix. Let's go back. Um which uh which few short pattern should
+2:03:26
+you use when the model needs to apply a multi-step policy? Input output pairs prefix suffix show the output uh to
+2:03:32
+structure output structure to complete prefix suffix is what we discussed the third type of uh example. So if you want
+2:03:38
+a JSON file uh show the full output like uh if this is the request this is how
+2:03:43
+the JSON file should look like. Prefix suffix is just a complex word to describe the structured output format uh
+2:03:49
+which you are expecting when you are expecting code output code or some other format. If you have a specific writing style or something uh for a
+2:03:56
+documentation for your company you have to provide that specific style. Uh chain
+2:04:01
+of thought is when you want to want your model to make a decision regarding something which is which is complex. Input output pair is mostly used when
+2:04:08
+you have uh some classification very simple task uh 5200 tokens. What's the best
+2:04:15
+practice?
+2:04:24
+Would it be compressing or would it be like splitting cloud.md
+2:04:30
+and system prompt plus uh having a dynamic um rag based retrieval? Of
+2:04:36
+course, it'll be rag based retrieval. Uh this is what we discussed earlier. So it should not be that every single thing is
+2:04:44
+uh put in persistent memory or it should not be that every single thing is uh dynamic. You need persistent memory as
+2:04:50
+well as you need drag. Then you are selecting three few short examples from a bank of 20. Which
+2:04:56
+selection principle matters the most? This we already discussed. We need diversity, right? So let's go ahead.
+2:05:03
+Okay. You build a chatbot and it has great response. It scores 9 out of 10. But after deploying after a month, the
+2:05:10
+accuracy drops to 5 out of 10. You haven't changed the prompt or anything. What might have happened?
+2:05:21
+Is it about model uh silently updating the weights or real users ask different
+2:05:26
+questions than your test user prompts are was overtrained on tests production
+2:05:32
+latency uh causes the model to generate slower. So it's not about model weights
+2:05:37
+or anything model might still remain the same. uh it's more about um when a customer is having long long
+2:05:43
+conversation with the chatbot over few weeks all those things might be stored right and then the longer the conversation just like charg when you
+2:05:50
+are chatting in the same um chat window your context is getting rotten because
+2:05:55
+oh let me check B is also possible real users ask different questions than your test set
+2:06:02
+sure I mean yes ideally when you are building a chatbot you would already consider real users data for example
+2:06:10
+when we are building an email response agent I'm already taking real responses into consideration but you are right in
+2:06:16
+the sense that a new question coming in the email can be can be completely different from what we have seen already
+2:06:23
+um I'll just switch on my camera for a moment if my bandwidth is getting slowed down just let me know um
+2:06:32
+then in the start minimal and then add your round one chatbot hallucinates Order
+2:06:38
+details. What is the correct round two fix? Meaning in the round one, minimal things are there. In round two, what else will you add?
+2:06:46
+Will you add us add something like never hallucinate or make up information? Will you add five few short examples? Will
+2:06:52
+you add something like if something is about order retail have a function called? So you will go you will go with
+2:06:59
+C, right? Fairly straightforward. Okay. How about this? Your cloud MD is
+2:07:05
+1200 lines. So my cloud MD was 260 lines. So 1200 is almost 6 6x the size
+2:07:11
+of that. What would you do in this case? Um
+2:07:17
+keep it more context is better or should you not do it?
+2:07:25
+Lost in the middle is definitely a risk right? Uh we discussed this earlier and uh higher API cost will also be there
+2:07:32
+because you are passing the same set of 1200 lines in every single. So A or B or both can be the risk. The highest risk
+2:07:38
+is more than even if you are let's say not so worried about the cost. Lost in the middle is the biggest risk because your quality might degrade. Chatbot
+2:07:46
+keeps hallucinating on the orders. You add the rule never hallucinate. It doesn't help. Uh what's the issue with
+2:07:51
+this? It's basically very vague. Uh so it's like a too high too high altitude.
+2:07:57
+uh don't hallucinate is a vague term with no example or or no it it doesn't
+2:08:03
+say anything to even a human right we we have no idea what does it mean you have
+2:08:08
+three few short examples all showing positive sentiment classification you add two more positive I think this we
+2:08:14
+had already discussed in uh one of the earlier questions what happens to accuracy will it stay the same will it get worse
+2:08:21
+it can stay the same it can get worse also right A or D can be the Uh answer
+2:08:28
+no effect few short examples only influence the few categories uh the exact categories shown in them. Um the
+2:08:35
+model already knows other okay it stays the same. The model already knows other categories from it training data. Okay.
+2:08:41
+A does not training. It's not about training data. It improves slightly more
+2:08:46
+examples help more uh help always get model calibrate regardless of category. It gets worse. Model overindexes the
+2:08:54
+positive. Let's try with D. D is the correct answer. The the thing here is
+2:08:59
+like here all the issues are there. Sometimes the model can be the chatbot can become worse because you are giving
+2:09:04
+more uh useless examples. Sometimes it can get better depending on the context.
+2:09:10
+Um okay, how about this? Which layer of the context t has the highest impact?
+2:09:26
+Which has the highest impact on your output quality?
+2:09:41
+Okay, the question is a little bit tricky. Let's go with C and see what it says. Uh there could be. So what is
+2:09:47
+tricky about this is but teams most often skip or underinvest in the reason why teams underinvest is because people
+2:09:52
+want to build very soon right people are so fast like they don't want to wait until a proper cloudmd is constructed
+2:09:59
+but however teams also usually under underinvest in uh providing good examples this this I know from
+2:10:06
+experience so uh it can be layer 1 or layer four both but uh what always gets
+2:10:14
+loaded is something from cloudmd Our agents.mmd is almost always loaded which
+2:10:19
+means it answer can be a layer 1 or layer 4. We're almost at the end. Uh when a
+2:10:26
+system prompt says be formal and professional or a2 let's see a layer five dynamic
+2:10:32
+tool results. Uh one thing is rag if your chatbot requires rag I know that people spend
+2:10:38
+time on it uh in the sense like if you are building a tool which for which you know the rag is needed that part people
+2:10:45
+generally work on but people are too lazy to give examples from their past um
+2:10:51
+you know interactions with uh with the humans or with other people through your email system or through your chat system
+2:10:58
+the humanto human communication example that part is where people are a bit lazy I have seen
+2:11:04
+uh we have worked with many different companies building rag based chatbot. So in general I mean yes any any of this
+2:11:11
+can be an answer because this this is vague but uh layer 4 is something where
+2:11:16
+people are a bit lazy. When a system prompt says be formal and professional what few short but a few
+2:11:23
+short example demonstrates casual friendly tone which does model typically follow.
+2:11:30
+This is a tricky question. The system prompt says this but the example says this. So what type of tone will be
+2:11:37
+followed by the model?
+2:11:44
+It's a little bit tricky question. So in general what happens is if you
+2:11:49
+provide examples example is uh is something where the human is showing how
+2:11:56
+I want things to be in a more concrete way. uh what you define in system prompt
+2:12:02
+is not a in in this case in system prompt of B format formal and professional is not some concrete
+2:12:08
+thought of the human it's a it's a vague set of words that describe a concrete example right so in general what happens
+2:12:14
+is if you provide system uh a few short example it always has a very high uh
+2:12:19
+priority however this also depends on the example again uh I will reiterate
+2:12:25
+this is not physics large language model output is just like you are it's like psychology ology or something I don't
+2:12:30
+know what to call it but um because it's not physics sometimes when you run you
+2:12:35
+might also end up with a case where system prompt is given higher priority right but these are based on general um
+2:12:43
+generalized large number of examples or statistics static few short selection weighs about 30% of the tokens yes also
+2:12:52
+vary from model to model as you yourself have seen in this data in the experiments we conducted today static
+2:12:58
+fus short selection waste about 30% of the tokens on irrelevant context. What what technique does dynamic example
+2:13:04
+selection use to fix this?
+2:13:10
+So in dynamic example what we do is um we use rag to retrieve the appropriate
+2:13:17
+um appropriate examples or appropriate sections from the cloud md file. Right?
+2:13:22
+So we can just go with a. So this is straightforward almost the last three
+2:13:28
+questions. You wrote a compression comprehensive 800 token system prompt covering 20 different scenarios but only
+2:13:35
+score 6 out of 10. Then a colleague starts with three lines and iterates to 400 tokens. So instead of 800 token you
+2:13:41
+have 400 tokens scoring 9 out of 10. What could be the issue? This we discussed earlier. You want to start
+2:13:47
+building slowly and then build on top of each other. Otherwise the rules which you have provided might um contradict
+2:13:55
+each other right because in the beginning when you are giving it in one shot you are speculating a lot of things without experience.
+2:14:01
+Um and then you need to aggressively reduce your system prompt to 400 tokens. What
+2:14:07
+is the component you can can you most safely remove first?
+2:14:14
+What would it be?
+2:14:21
+It cannot be a right. A is a is unsafe to remove. Rules are very important.
+2:14:26
+Um let's see what what says if it is format u whether the model's output is
+2:14:32
+format issue. Identity. Identity is the safest to cut first. Model can often
+2:14:38
+infer it from uh the its role from the rules, examples, conversation etc.
+2:14:43
+format can default to natural language if you don't provide the format uh properly in the sense that if you are
+2:14:49
+expecting JSON format you have to tell that it it should be a JSON format um
+2:14:55
+otherwise most often the default format of uh LLM is natural language and
+2:15:00
+identity identity is like what you are it is usually provided as you have seen in our cloud MD markdown files uh it's
+2:15:08
+in one paragraph right then identity token is less compared okay that's A
+2:15:13
+very good very good thing. Yes, for sure. For sure. Identity is much smaller in terms of token consumption compared
+2:15:18
+to format. Yes, in general if you are cutting if you are asked just hey cut one of these then maybe you want to cut
+2:15:25
+identity. If you are to say cut one or two but maximize the amount of tokens
+2:15:30
+that you are eliminating from the context then maybe you will cut identity and format.
+2:15:36
+This you will not do in practice by the way. Okay. In in practice your your claw.md file will not become the
+2:15:43
+bottleneck. Bottleneck will be something else. Mostly it might be tool descriptions or stuff like that. You have confirmed your chatbot suffers
+2:15:49
+context rot performance degrades which fix directly addresses the issue.
+2:15:55
+Would you increase the model's context window? Would you reduce system prompt or would you reingject key system
+2:16:02
+prompts or would you add few short examples?
+2:16:12
+It's again a little bit tricky. Uh we know some things reduce the system prompt under 100 tokens is a little bit
+2:16:18
+aggressive in my opinion. Um because 100 tokens is like 100ish words. It's like a
+2:16:23
+small paragraph. Uh I don't know if that will do the best. Increase model context
+2:16:28
+window is not under your control. Let's try with C. C is not the correct. Periodically
+2:16:34
+reinject key system prompt. I mean uh here we we don't have to believe the answer that this uh you know MCQ app is
+2:16:41
+giving. Okay. Um it can be either of these. In my mind it's not D that much. I'm clear. It's too small. 100 tokens is
+2:16:48
+too small. Increase model context window. No it's not a solution. Maybe uh
+2:16:53
+we can reingject system prompt but then reingjecting you have to decide when you have when you are going to reingject how
+2:16:59
+much of the system prompt you are going to reingject but in general if the performance is degrading uh what I have
+2:17:05
+done in my email chatbot I have sometimes seen the performance degrades then what I added is I added some
+2:17:11
+examples as part of system prompt which will also help me as a rule. So some rules were something like uh never refer
+2:17:20
+to some links before 2025 November. So
+2:17:25
+this was something which I uh explicitly added after my I I noticed that some performance is degrading. So there it's
+2:17:33
+a it's a clear example because some which link is before 2025 and which link is after 2025. the model knows but I I'm
+2:17:39
+explicitly saying hey before this date if you are referring to the links don't do that refer to the newer links so such
+2:17:46
+uh that was an example of D but then it it could be a also uh last question common mistakes to
+2:17:53
+avoid section is considered the highest value section in cloudmd why does telling the model what not to do work so
+2:17:59
+well models have built-in negativity bias it encodes tribal knowledge from code
+2:18:06
+reviews that model cannot discover by reading codebase. Negative rules uh are shorter and more
+2:18:14
+token efficient than equivalent positive rules. I'm not sure if she C is true or not. I have not read this anywhere. I
+2:18:19
+don't know. Uh model uses elimination strategies. Knowing what to avoid narrows narrows down the solution space
+2:18:25
+more efficiently here again B or D could be answer in my opinion. Um let's try D
+2:18:31
+and let's see what uh the answer that this MCQ app is saying. It says D is a
+2:18:37
+better answer. It encodes tribal knowledge. Let's read the description. The model can learn code patterns,
+2:18:42
+naming conventions and project structure by reading the source files, but it cannot learn never use raw SQL here.
+2:18:48
+Always use query builder or don't use floatingpoint uh financial calculations. That knowledge only exists in the
+2:18:54
+developers heads and code review commands. Antiatterns encode this tribal knowledge. So by tribal knowledge it
+2:19:01
+means the knowledge of the humans who came before cloud code. Options A and D
+2:19:07
+sound plausible but are now but are not how models work. Uh option C is factually correct. D I don't know what's
+2:19:13
+the wrong what's wrong with D. D sounds correct in my opinion. Model uses elimination strategies. Knowing what to
+2:19:18
+avoid narrows the solution space more efficiently than knowing what to do. I I will this is arguable whether it is D or
+2:19:23
+C. uh more most of the time it requires more evaluation to choose the option or
+2:19:29
+approach. Uh I did not understand the question. Most of the time it required more evaluation to choose the option or
+2:19:35
+approach here. What do you mean evaluation? Ranganadin if you can elaborate. I did not fully understand.
+2:19:44
+Um let me check if any other questions are there.
+2:19:50
+Will these MD files Okay. Will these MD files have any role? Once the app is deployed, will this MD
+2:19:57
+file reset until the app is dep
+2:20:04
+very very good question think about it in my production okay uh when I'm
+2:20:09
+deploying my email tool in production I don't have anthropic API so I am not using cloud code at all right I'm using
+2:20:17
+openAI API or Gemini API so the way files are referred to in production
+2:20:23
+environment ment is very different from the way files are referred to when you are in development mode because in
+2:20:28
+development when you are local hosting your your files reside locally you could still use cloud code or even if you are
+2:20:35
+not using cloud code the way uh the files are referred to are much different so before you move from development to
+2:20:42
+production you have to ensure that the files which you have created markdown files or txt files or whatever it is it
+2:20:48
+is uh it is explicitly mentioned in what folders it will be provided provided and
+2:20:54
+that should be passed as a prompt into whichever LLM you are using. So this is one issue which we are also facing. Uh
+2:21:01
+we have not perfected the way in which uh how to make production better. So what we do is if we built internal tools
+2:21:08
+for our internal purposes which is not customerf facing. What we do is we always use it in development mode. We
+2:21:13
+don't push it to production. That way I don't have to make any changes. So what do I do? I have a I have an Amazon I
+2:21:19
+mean AWS EC2 instance and on that EC2 instance I have bunch of agents everything is in development mode. I
+2:21:25
+will put it in um local host. Whenever I have to use I will use it through the local host. I don't put it into
+2:21:32
+production because into production I have to optimize a few more things regarding how the different uh MD files
+2:21:39
+are referred by OpenAI's LLM or by uh Google's LLMs. If cloud md sections are
+2:21:45
+not fully loaded then is that cloud agent that picks the important chunks required to feed LLM? Yeah, it is cloud
+2:21:51
+agent who picks the important parts based on drag or keyword match. Uh it is mostly based on keyword match. Rag is
+2:21:57
+rarely done. Uh who will decide or define? So unless we explicitly define that it should be based on drag, it
+2:22:03
+should it's almost always based on keyword match. Uh would you be able to share collab link or vers link to people
+2:22:09
+on free plan when you upload the video into the portal? uh the links are exclusively uh for the engineer students
+2:22:16
+and the industry professional uh plan students. Uh will these then what else is there? I
+2:22:24
+think most of the questions are covered some uh if you have any other question which I have not addressed or if you
+2:22:29
+want to know details about anything else just drop an email at hello@ viswara.com we will get back. I I'll take couple
+2:22:36
+more question. Do you think it is better to split cloudmdt into multiple files like skill.mmd and knowledge.mmd? Hm I
+2:22:43
+don't I haven't seen that done yet. The thing is see you we are all discussing
+2:22:48
+about context engineering right now in March of 2026. I'm pretty sure maybe onethird of the
+2:22:56
+things that we are discussing today may not be relevant maybe 5 months down the line. Right? So, so maybe something
+2:23:02
+might evolve where the way cloudmd is handled is completely different. Maybe it's it's split into different files.
+2:23:09
+It's all the things that we are discussing right now are the things that are working at the moment, right? Um
+2:23:15
+it's not it's not some universal forever unchanging uh structure of uh giving
+2:23:21
+information to agents that
+2:24:07
+Uh, sorry about that. I think my power issue came back. Okay. How about uh how about now? Do you hear and see me? All
+2:24:14
+right. Okay, awesome. Um, so just do one thing.
+2:24:20
+Um, just try the quiz once yourself. Um, specific homework for today. One thing
+2:24:26
+you should try is this. Try installing claude if you have. Try taking the $20
+2:24:32
+subscription at if not for forever at least for now or even API. Anthropic API if you can. My credit card is not
+2:24:39
+allowing me to take the anthropic API. That's the reason why I don't have it. But uh if you have API, you can just put
+2:24:45
+$5 or something in credits. Um and then try making cloud.md file yourself with
+2:24:52
+minimum instructions in one case with more instructions in another case. So just like how I did id.md converted into
+2:24:58
+cloud.md. Try both approaches to build a very basic application. The very very basic application could be any website
+2:25:04
+which performs a certain task or it could be like um uh a certain file
+2:25:10
+structure or or like a compiled PDF document something like that and see the quality difference in the output. In
+2:25:16
+general when you are working on uh any app using cloud code first half an hour
+2:25:23
+or 45 minutes most likely you will spend such that your cloud MD file is perfect. only after that you will be spending
+2:25:29
+your time on rest of the files. Uh app or tool for voice to text is whisper
+2:25:35
+flow w i uh flow. So all right everyone I think we can wind up here today. Um so
+2:25:42
+starting at uh 8:30 or 900 a.m. in IST will be a bit difficult because there is
+2:25:48
+auling conflict there for me. But let me figure out what else is the solution. The other solution is for those of you
+2:25:55
+from the US with uh crazy hours like 1:30 a.m. 2:00 a.m. I'm wondering if uh
+2:26:03
+lecture should be split or not. But then it will prolong the whole program. That's the other. Let me think about
+2:26:08
+what could be a good solution. We don't have class on Friday. Okay. Daylight start. Daylight saving starts.
+2:26:14
+Okay. It already started or is it about to start? The daylight saving. Okay. Started,
+2:26:20
+right? So if it had not started, was it better or worse?
+2:26:28
+Okay. All right. Um yeah, I know that for Indian folks this
+2:26:34
+is the best timing. Um but yeah, um I'm sorry guys, it's it's like a crazy
+2:26:39
+cohort like everyone from different parts of the world is there. Uh so what I would say is like um you can drop off
+2:26:45
+the call as as like whenever you wish like no hard feelings like and then I will post the recording as soon as I can
+2:26:51
+and then we will uh resume the next day. Yeah, 8:00 a.m. I I wish it was a bit earlier. The only thing is I have a um
+2:26:58
+unchangeable conflict till around 9:15 a.m. IST. So the latest I can start is
+2:27:04
+like around 9:15 a.m. That's the only only issue otherwise I would have kept it a bit earlier.
+2:27:10
+Uh yes the link to the day one app I have changed uh I have put it on the on the website now um it's it's a different
+2:27:17
+link all right then everyone thank you so much we will meet again tomorrow so
+2:27:22
+tomorrow we will discuss rag and tomorrow we will be coding a rag based uh chatbot or rag based um you know pdf
+2:27:30
+uh chunk fetching application almost from scratch um so this time we will we
+2:27:35
+may use cloud code a little bit I'm primarily thinking of coding it in uh Google collab So let's see I I'll I'll
+2:27:41
+decide uh later today. But tomorrow we will study about RAG. Day after tomorrow we will study about MCP model context
+2:27:47
+protocol. Thank you so much everyone. We will meet tomorrow same time. Friday we don't have lecture. So day after
+2:27:54
+tomorrow is Thursday. Then after that we will meet on next Monday. All right everyone take care. Bye.

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" role="img" aria-labelledby="t d">
+  <title id="t">A stable prefix turns into a cache hit</title>
+  <desc id="d">Two API calls share the same prefix (system prompt and tool schemas). The provider reuses the KV-cache computed for that prefix on the second call, billing only the new suffix at the regular rate while charging the cached prefix at roughly one tenth of the normal price.</desc>
+  <style><![CDATA[
+    :root{--bg:#FAFAF7;--surface:#FFFFFF;--ink:#1A1A1A;--muted:#5C5C5C;--primary:#5B7FBF;--accent:#D98E5F;--success:#5C9E78;--alert:#C66B5E;--grid:rgba(26,26,26,0.06);}
+    @media (prefers-color-scheme:dark){:root{--bg:#161512;--surface:#1E1D1A;--ink:#F1EEE8;--muted:#A6A29B;--primary:#8BA8E0;--accent:#E8B088;--success:#7FBF9B;--alert:#D88880;--grid:rgba(241,238,232,0.08);}}
+    .bg{fill:var(--bg);}
+    .surf{fill:var(--surface);stroke:var(--ink);stroke-width:1.5;}
+    .prefix{fill:var(--primary);fill-opacity:0.18;stroke:var(--primary);stroke-width:1.5;}
+    .cached{fill:var(--success);fill-opacity:0.22;stroke:var(--success);stroke-width:1.5;}
+    .new{fill:var(--accent);fill-opacity:0.22;stroke:var(--accent);stroke-width:1.5;}
+    .ax{stroke:var(--muted);stroke-width:1;fill:none;}
+    .arrow{stroke:var(--muted);stroke-width:1.5;fill:none;marker-end:url(#a);}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:18px;fill:var(--ink);}
+    .h{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:13px;fill:var(--ink);}
+    .l{font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:12px;fill:var(--ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--muted);}
+    .mono{font-family:'JetBrains Mono',Consolas,monospace;font-size:11px;fill:var(--ink);}
+  ]]></style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" stroke="none"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="800" height="360"/>
+  <text class="title" x="32" y="34">Prompt caching: same prefix, new suffix</text>
+
+  <!-- Call 1 -->
+  <text class="h" x="32" y="76">Call 1 (cold)</text>
+  <rect class="prefix" x="32" y="86" width="380" height="48" rx="6"/>
+  <text class="l" x="44" y="115">system prompt + tools (4 600 tok)</text>
+  <rect class="new" x="412" y="86" width="170" height="48" rx="6"/>
+  <text class="l" x="424" y="115">turn (5 900 tok)</text>
+  <text class="s" x="32" y="152">All 10 500 tokens billed at full input rate.</text>
+
+  <!-- KV cache box -->
+  <rect class="surf" x="600" y="86" width="170" height="48" rx="6"/>
+  <text class="h" x="612" y="108">KV-cache</text>
+  <text class="mono" x="612" y="126">stored 5 min</text>
+  <line class="arrow" x1="412" y1="110" x2="598" y2="110"/>
+
+  <!-- Call 2 -->
+  <text class="h" x="32" y="200">Call 2 (warm, ≤ 5 min later)</text>
+  <rect class="cached" x="32" y="210" width="380" height="48" rx="6"/>
+  <text class="l" x="44" y="239">same prefix → cache hit (4 600 tok @ 10%)</text>
+  <rect class="new" x="412" y="210" width="170" height="48" rx="6"/>
+  <text class="l" x="424" y="239">new turn (5 900 tok)</text>
+  <line class="arrow" x1="685" y1="134" x2="685" y2="206" />
+  <text class="s" x="32" y="276">Prefix billed at ~1/10 the rate. Latency to first token drops correspondingly.</text>
+
+  <!-- Legend -->
+  <g transform="translate(32,308)">
+    <rect class="prefix" x="0" y="0" width="14" height="14" rx="2"/>
+    <text class="s" x="20" y="11">cold prefix</text>
+    <rect class="cached" x="120" y="0" width="14" height="14" rx="2"/>
+    <text class="s" x="140" y="11">cache hit</text>
+    <rect class="new" x="220" y="0" width="14" height="14" rx="2"/>
+    <text class="s" x="240" y="11">new tokens (full rate)</text>
+  </g>
+</svg>

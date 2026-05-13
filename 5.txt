@@ -1,0 +1,2956 @@
+0:00
+just confirm if uh my voice is audible, you can hear me, you can see the screen, all these three things. Okay, thank you
+0:07
+so much. So, good morning or evening everyone depending on where you are and uh let's
+0:15
+get started with uh session five. So, in the last week we discussed about six layers of context. We discussed about um
+0:24
+what is the system prompt constituting. We discussed about rag in detail and also MCP model context protocol. Today
+0:32
+we'll be primarily looking at uh two things. One is the compress part of the
+0:38
+WIC or WSCI architecture. W is a right s uh
+0:43
+then isolate select compress. Uh so these are the four parts. Select part is
+0:49
+rag. Write is creating the memory persistent memory or short-term memory also creating scratch pads uh using
+0:56
+task.md and compress is something where you have a context window which is getting
+1:03
+populated as you keep using the large language model and then you want to retain certain information and you want
+1:09
+to remove noise. So compress is an operation which can b basically do that
+1:14
+and in cloud code for example the way it is done is using the / compact command and isolate is something which you'll be
+1:21
+very interested to learn about because here we will discuss about sub aents. So if you have ever used cloud code or any
+1:27
+other agentic uh coding platform you will see that sometimes it will automatically spin sub aents for
+1:34
+different tasks. Sometimes the tasks are in series, they are serial tasks and sometimes they are parallel tasks and
+1:40
+you know that it speeds up the execution by a lot. So we will discuss how exactly is context window constructed in these
+1:47
+cases. What happens to the context window when you compress? Uh is there loss of information? If yes, how do you
+1:53
+mitigate it or do you even want to mitigate it? And if you are isolating
+1:58
+the context what does that mean uh in terms of what happens to sub aents. So
+2:05
+sub aents have isolated context and some part of the context is alo also shared. So we will see how uh from a from the
+2:12
+perspective of context window how these concepts um work.
+2:18
+So just to reiterate a right part is something where we decide or we tell the
+2:24
+model that if you are working on a subtask create uh individual task MD files and these
+2:33
+task MD files will have to-do nodes and those to-do nodes will make sure that for each task the model is at any given
+2:40
+point of time focusing on the subtask. So if the model is at the same time building front end and back end
+2:46
+separately or let's say you are conducting you are working on a research agent where one agent is running certain
+2:52
+certain experiments another agent is running some um uh literature review or
+2:58
+finding the gaps in literature or something like that. Then they can have their own short-term memory. They can
+3:05
+have their own subtasks and then those tasks will be finished separately independently.
+3:11
+And select layer is selecting what you need into the context window from
+3:16
+outside the context window. So from outside meaning it can be from a database vector database. It can be from
+3:22
+a just a file system and retrieval augmented generation selects things out
+3:27
+out of the context window to be considered to the context window. And uh
+3:33
+in the WSCI framework compress and isolate is what we will be looking at today. Okay. And uh this isolate part is
+3:41
+where we will discuss about sub aents. And this is something that we have discussed many times. The reason why we
+3:48
+want to compress is um twofold. One is when you are compressing the uh in the
+3:55
+next round of iteration the agent is getting smaller number of tokens in the API call and um oh the screen is blank.
+4:04
+Do you all all of you are seeing the blank screen?
+4:09
+Can anyone confirm if you see the screen or if you're okay thanks so
+4:17
+uh so what I was saying was the reason why you want to compress the context is because you need to uh reduce the number
+4:23
+of tokens that are going um into each LLM API call. So let's let's say I have
+4:29
+a question. Okay, this we will discuss in detail after a little bit. But
+4:34
+basically say we have um one agent
+4:41
+and just let me just uh stop some background
+4:47
+processes. My computer is becoming a bit slow. Just give me a second.
+5:20
+All right. So I hope you everyone should be able to see the screen now. So you
+5:25
+have one agent and let's say this agent is um
+5:31
+making a API call. Can you tell me the cost of your large language model usage?
+5:36
+What is it dependent on? Is it dependent on the number of API calls you make or is it dependent on the number of tokens
+5:43
+which you consume? Let's say to one LLM you make 300 API calls to another one
+5:49
+you uh make 20 API calls. All right. In the first case you consume let's say
+5:55
+10,000 tokens. In the second case you consume 200k tokens. In which case do you think you end up paying more?
+6:05
+you're basically um build based on token consumption um for for input as well as
+6:11
+output. So it doesn't matter if an agent is spinning sub aents who can make their
+6:18
+own separate API calls as long as you are managing your total
+6:24
+um token consumption in the form of an optimized uh context window really well. So it doesn't matter that you give your
+6:31
+um sub aents ability to make its own API calls as long as the context window for that sub agent is very minimized uh it's
+6:38
+it minimum number of tokens. So for two reasons you need to compress. One is of course to minimize cost. Second is to
+6:45
+minimize the rot of the context because imagine you have only one agent for doing every single task. That agent will
+6:51
+basically let me just uh allow certain people into the meeting room.
+7:00
+Yeah. So if there was only one agent doing all the tasks for a project, what
+7:05
+will essentially happen is that agent will uh eventually experience context ro. So beyond certain point uh there is
+7:12
+too much information in the context window to process. Right? This we have discussed a lot of times. So there are
+7:19
+largely four types of compression. First type of compression is the most obvious one or probably the most powerful one.
+7:26
+uh not necessarily the most cost uh optimized one but it is summarizing the context window using a large language
+7:33
+model itself. So what you could do is uh so one of the most popular context
+7:40
+compacting or context summarization uh methods that is used in cloud code is LLM based summarization itself. So you
+7:47
+make another API call to which you pass the context but ask the model to
+7:52
+summarize the context into certain number of tokens. So if the context window size is 200k tokens uh and you
+7:59
+have reached let's say 80k or 100k tokens already you could ask / compact
+8:04
+you could run the operation / compact and then the context can be compacted to much smaller size.
+8:11
+Often these uh coding agents also have 80%age context window uh limit where the
+8:19
+if the context window reaches more than 80%age of its total limit it will start
+8:25
+an autoco compacting operation and which will be based on LLM and which will be much efficient but sometimes if let's
+8:32
+say in the next output in the next iteration of API call the output created is so big that context window exceeds
+8:38
+95%age of its capacity even more aggressive trimming will happen meaning
+8:44
+some parts of the context window will be aggressively deleted. All right. So we will discuss this also in a interactive
+8:50
+way when we are getting into the lab exercise. Uh do we have any easy way to calculate
+8:56
+tokens for large uh context? Yes. Yes. So at the end of the day context will be
+9:02
+uh having two types of things. Structured inputs from u JSON files or other file formats and natural language
+9:09
+inputs. on an average um one word is equal to one token. So that is one way
+9:14
+to see um I mean for hand calculating if you want to hand calculate how many tokens have you consumed just count the
+9:20
+number of words otherwise charg itself has a context um um token size
+9:27
+calculator. You can just Google charg or openai uh token length calculator. They
+9:34
+provide a window into which you can paste whatever input you have or whatever text or whatever your context
+9:39
+window looks like that you can copy paste and it will tell you exactly how many tokens are you at right now. And in
+9:46
+cloud usually the context window size is 200k tokens which means if you are at
+9:51
+around 160k tokens some you are in in some sort of not yet in the danger zone
+9:56
+but you are at a at a zone where you would want to perform some compaction.
+10:02
+So the way I work is in cloud code the auto compaction happens whenever the
+10:08
+tokens have reached 80%. Meaning if it reaches around 160k tokens you will see
+10:13
+that auto compaction automatically starts which is based on LLM. So uh it will make another API call and that API
+10:20
+call will um semantically compress the current context into much smaller
+10:26
+section. I will show you the details of what are we compressing. There are tool results. There are system prompts. what
+10:32
+exactly do we compress and what exactly do we not compress and what are the after effects of this that we will see
+10:38
+uh but often in my execution what I do is I do two things one is if I'm
+10:44
+completely switching from task A to task B where I don't want any relation I
+10:50
+don't want to be any memory from task A task A to carry to be carried forward to task B I just put the operation / clear
+10:57
+and I have noticed in many type of tasks this provides significant improvement in the output quality. Especially if your
+11:04
+quality you observe is to be degrading, you have to do a /clear operation. If there is a clear distinction between two
+11:11
+task and they are not they are not sharing anything in common. However, if the task is slightly distinct and
+11:19
+you think that lot of the things that are accumulated in the context window so far is because you have been carrying
+11:26
+out a large like a long operation and the context window is having a lot of toolled results. Let's say you were
+11:31
+running uh paper banana to generate images and you are having 17 images to generate and then in these images
+11:38
+basically you have provided the descriptions of images but then by the time you are reaching for 15th or 16th
+11:44
+image your context is so bad that the sort of uh images that are generated are
+11:49
+very bad then at that point you can decide okay I don't want to lose the overall context just do / compact and
+11:55
+then um continue generating and you will see a significant step function like a
+12:01
+step function the improvement in quality of the output. So first type of compression is summarization. Second is
+12:07
+called tool result clearing. Can anyone tell me what is tool result clearing? And why
+12:16
+can we simply clear the results of a tool call? Why is not why is it not
+12:21
+problematic or is it problematic? If yes, why? If not, why not?
+12:28
+So and in simple terms first okay let's let's go step step by step what exactly
+12:34
+is tool result
+12:42
+you can refer to the discussion we had in the uh last lecture right so a simple
+12:49
+example is let's say the MCP server is sending some sort of structured result
+12:55
+as a result of operate uh as the result of invoking of a function. So a tool you
+13:00
+can imagine to be a function or it can be an API call which executes certain function or fetches something from the
+13:06
+database. At the end of the day there is some input going into the tool. Tool is providing you some output. Output might
+13:11
+be in a structured JSON format or in any other format. Now you might notice that
+13:16
+in many cases this output will have so many things. It will have just in time instructions. It may or may not have
+13:23
+verbose results like which is like very detailed because often LLM for it to use the tool results it need description of
+13:30
+structure of the result uh plus the result itself. So it will be very big document. Now think about this is the
+13:38
+result of a tool execution is it stochastic or is it deterministic?
+13:51
+Like if you run a function with a certain arguments, okay, do you expect the same result with
+13:59
+if the arguments are the same? Typically functions are such that the result of the function is dependent on only one
+14:06
+thing which is the input or arguments going in which means there is great deal of determinis deterministic nature when
+14:12
+it comes to results. So uh of course it depends on the functions whether function itself has a stoastic nature
+14:18
+but in general the functions if you want to mimic the results of the function
+14:24
+which you got earlier and if you are in such a dire situation that your LLM context window really needs the result
+14:30
+from a particular tool it can simply run the tool uh call once again right so
+14:36
+there is no need of storing the last previous tool called results in the context window continuously
+14:43
+you could simply simply entirely delete the tool result or you can simply compact it into few sentences. The tool
+14:50
+result which may be in multiple lines maybe in JSON format can be compacted into simple natural language two or
+14:57
+three sentence summary. In some cases, if you are aggressively trimming, which is what happens in a
+15:03
+concept called priority based trimming, the tool results have one of the it's of
+15:08
+one of the lowest priorities, which means true true uh tool results will be aggressively trimmed. Trim meaning
+15:14
+entirely cut away. It will not be part of the context. But cloud code does not
+15:19
+use this that often. The most common two compression methods used by cloud code
+15:25
+is um LLM based compaction and tool result clearing. We will see this with an example how it how it visually looks
+15:31
+like uh how the context window visually changes when we um you know uh clear the
+15:38
+tool result. And the last one is so in priority based trimming we just assign um levels of
+15:45
+priority P 0, P1, P2, P3 etc. P3 has P3 is something with
+15:51
+the lowest priority and P 0 is something with highest priority. Highest priority meaning it will be the one to go last.
+15:56
+It will be trimmed the last. Now based on all the things you know what could be P 0. So P 0 is um let's say you have
+16:06
+examples a conversation history um system prompt then tool result then
+16:13
+maybe uh some custom instructions for the agent. What could be P 0?
+16:21
+So one of the highest priority items by default is system prompt. System prompt is the last to go. System prompt will
+16:27
+often have rules, right? So system prompt is definitely not P3.
+16:32
+What could be an example of P3 other than tool results? So tool results, yes,
+16:38
+it can be it can be of low priority. What else could be P3?
+16:52
+So we can define P3 in the following way. Um for example, let's say we had a
+16:59
+conversation history from many context windows uh not context window many conversation uh windows before. So if we
+17:06
+define one conversation window to have x number of back and forths, a
+17:11
+conversation which happened much before can be significantly summarized or
+17:16
+completely trimmed away to preserve the context. If it comes to trimming, by the way, trimming does not happen in cloud
+17:22
+code unless you are at 95%age of your context window filling. If only if
+17:28
+context window has filled 95%age, this will happen. Otherwise, trimming is not done. Okay.
+17:34
+Can you give me one more example of something other than system prompt which
+17:39
+you may not trim uh that I will come to the in this hierarchical compression. Um so in hierarchical compression using
+17:46
+semantics you will decide what has the highest priority and what has the lowest
+17:52
+priority and whatever is the highest priority will not be removed. Whatever is the lowest priority will be removed.
+17:58
+So in hierarchical compression to decide the hierarchy you are using semantic meanings. Here in priority based
+18:05
+trimming you are using rules to decide what comes in P 0, P1, P2, P3 etc. So can you tell me something that can be at
+18:12
+the highest level of hierarchy meaning something that will be removed last which is not system prompt.
+18:22
+Okay. Many people are saying user prompt. Okay. Uh for sure user prompt is something um valid. You cannot delete
+18:30
+user prompt just like that. But my question is let's say user gave a prompt lm gave an output for example and that
+18:36
+output is now add output tokens are now added to the context window. What type of output might come at the
+18:44
+highest level of hierarchy? something which which you should not delete or something like that.
+18:54
+It could be something like an output where after this output the user is supposed to give a preference based on
+19:01
+the output. Right? So for example let's say you are building a website and your phase one is being executed. In phase
+19:08
+one, you have told that you have explicitly told the coding agent that at any point if you feel like you need my
+19:16
+input on um the user interface or user experience or the way you have to
+19:23
+arrange your um cards in the front end or something like that and let's say the
+19:29
+LLM is supposed to receive an input from the user after it produced its latest
+19:35
+output. So LLM might have produced a um let's say a skeletal structure. Now to
+19:42
+add meat to it, a user instruction needs to be provided. And for user instruction to be provided, uh it is very important
+19:49
+that the LLM retains the immediate previous output. Right? So that immediate previous output which the user
+19:55
+has not yet seen or the user is supposed to comment something on should be kept
+20:01
+while doing compression. And how does the LLM know whether something is of such high relevance or something is of
+20:06
+not high relevance? Simply by making another LLM call, another API call in
+20:11
+that another API call. Semantic meaning can be associated to different parts of the current uh context window. Based on
+20:17
+the semantic meaning, you decide the hierarchy and what you do is if uh you are at the top of the hierarchy, 100%age
+20:25
+of the items are retained. If you are in the next level of hierarchy, 70% of the items are retained. If you are in the
+20:30
+next level, 50% are retained. If you are in the last level, only 10% is retained. So if only 10%age is retained, this
+20:37
+could be most likely tool tool called results. So if you are compressing your tool called results into 10 percentage,
+20:44
+it simply means your tool result will become a one or two uh sentence summary.
+20:50
+All right? So this we discussed already. So in LLM summarization if you have a
+20:55
+long conversation history between the user and the um uh assistant you simply
+21:01
+convert it into natural language summary. So structure might be lost. Some nuances may or may not be captured.
+21:08
+But the goal here is most of the information or most of the facts which are there in this conversation should be
+21:14
+ideally captured. And there is something called IRR information retention ratio
+21:19
+which is if you decide that if you can say out in this initial context there are 30
+21:26
+information uh which are which are which can be mentioned in bullet points which should not be removed. If all the 30 can
+21:32
+be recovered even after compression then the IR ratio is 100%age. If only 90% can
+21:39
+be return retained so is the IR. So then basically it's a lossy compression right compression is always lossy sometimes
+21:46
+the loss that happens is something that is not relevant many times you want to make sure that the facts which are
+21:52
+quantitative things are retained uh in tool result clearance this is what
+21:57
+I showed tool result will take you from large number of tokens being consumed to very very few number of tokens being
+22:02
+consumed this we can uh visualize when we come to the implementation part and this is the most common thing which uh
+22:09
+even if you are not using cloud code even if If you're constructing a coding agent yourself, u one thing you should
+22:15
+define is how tool results are cleared or compacted. Um this we already discussed uh when to
+22:22
+remove which are of highest priority. So system prompt is of highest priority never removed. Core instructions to your
+22:28
+let's say which is there in the root folder agent.mmd file uh for the agent instructor agent orchestrator or core
+22:35
+instructions for the uh which are defined in the um cloudmd file. they are
+22:41
+not removed. Tool definitions which may be part of cloudmd file if the number of
+22:46
+tools are less or uh tool definitions that are currently living because rag fetched the tool definitions from your
+22:53
+database are also again not removed. Uh there is a question we are not counting
+22:58
+thinking tokens at all because thinking tokens are not at all included in the context like they are just part of test
+23:04
+time uh scaling but not really included in the context. You mean in reasoning models right? Um so one thing we can do
+23:10
+is yeah uh so yes uh so typically thinking tokens my to my understanding
+23:16
+it is also included in this context window because at the end of the day uh if it is a chain of thought for chain of
+23:22
+thought to propagate you have to have the previous uh output which was produced as part of chain of thought to
+23:27
+be added in the context. Um but one more thing you can do is uh in the last week
+23:33
+we had a brief discussion last week I mean last lecture or last to last lecture we had a discussion about should
+23:39
+you always have reasoning based large language models for uh react to be
+23:45
+implemented there it's not really necessary that you need reasoning based large language
+23:51
+models you can invoke behavior similar to reasoning with non-reasoning LLMs
+23:56
+also just by relaying its output in the form of reasoning. So you you force the LLM to come up with a reason then coming
+24:04
+up with an output uh coming up with a user output um and then go three or four
+24:10
+loops of that before giving the final uh output. Is there any lecture around it? You mean a lecture around uh reasoning
+24:17
+is itself? uh we don't have a specific lecture around reasoning but the basic idea is
+24:23
+that the tokens that are consumed uh during reasoning tokens that are
+24:28
+generated in the output as part of reasoning is also consuming the context window for sure
+24:34
+um then yeah so the current okay first of all let's see this older history this
+24:41
+could be part of conversation or part of uh let's say summary of the task that
+24:46
+are completed you don't need tool results Stale tool results mean tool results which were produced produced
+24:51
+earlier which is not used useful anymore not needed. This compress if needed is
+24:58
+this is very very this is not done always. This is only in extreme urgent cases where you actually have to trim
+25:04
+some uh recent conversation also. So you will clear the recent conversation and
+25:10
+recent tool results only if you absolutely have no space in the context window. Right? Older conversation
+25:16
+history and older tool results are cleared first. Then current task context, current user query and current
+25:23
+action plan. These things are again having very high priority which means this will not be removed. System prompt
+25:30
+is always kept. Um then in hierarchical compression this is what I said hierarchy is decided
+25:37
+based on um semantics. So if hierarchy is of the highest 100% is preserved. If
+25:42
+it is important 50%, um and if it is in the lower part of hierarchy 10 percentage or only 0
+25:49
+percentage is um kept
+25:55
+um this I have already discussed. Okay. Is this how coding agents are
+26:00
+designed today like cloud code? Yes, exactly. So in coding agents you don't have to define how compression works
+26:06
+because these principles are already inbuilt inside the coding agents.
+26:12
+However, coding agents are at the end of the day these instructions wrapped
+26:17
+around an already existing LLM, right? So already existing LLM is Opus 4.6 for example. Around that these things are
+26:24
+built and that is how cloud code is built. However, if you are using openclaw, you might have noticed that
+26:30
+when you install openclaw, they give a long set of um available LLM options. So
+26:37
+in openclaw when Pete Steinber Steinberger was building the open claw
+26:42
+framework he has followed many things that are mentioned over here. However the only difference is there it's not
+26:47
+primarily a coding agent it's primarily a uh agent which can act as a personalized assistance assistant.
+26:55
+Um yeah yeah yeah. So hierarchy based assistance uh trimming is basically this inside the context window instead of
+27:02
+saying hey tool results have lowest priority system prompt have has highest priority or old conversations have low
+27:10
+priority new conversations have high priority instead of explicitly saying that you let an LLM
+27:18
+figure out based on the semantics of what is there in the current context decide which part of the context is
+27:24
+highly relevant. which part of the context is highly not relevant. In the previous one which was
+27:30
+um trimming based on priority, there is no LLM involved in deciding what is recent, what is relevant etc.
+27:37
+Relevancy is decided based on the structure itself. So in the structure if there are tool results which has a time
+27:44
+stamp which is more recent you can decide a cutff tool results from the um
+27:50
+last 10 invocions of the tool invokings of the tool are not part of the uh are
+27:55
+part of the context window everything before that is thrown out of the context window. So you are deciding a cutff
+28:01
+based on just some logic which is predefined. However in hierarchy based
+28:06
+compression it's not trimming by the way it's compression. So you are not entirely removing nothing much but you
+28:12
+decide that this is the hierarchy of different sections of context. If something is at the highest part of
+28:17
+hierarchy, you don't trim it. You keep it 100%age. As you go down in hierarchy, you assign lesser and lesser importance,
+28:24
+which means you summarize it more and more. So higher and higher compressions are applied. So finally when it comes to
+28:30
+the lowest level of hierarchy, you may compress it to 5 percentage or 0 percentage so that almost nothing is
+28:36
+kept. Maybe a one sentence summary is remaining and as you go up the hierarchy you will see everything is retained
+28:41
+pretty much as such. Um so one more thing is when we are
+28:47
+performing compression um it is expensive because you can't keep on compressing. See if you want a
+28:54
+clean context window you could ask then why can't I keep on compressing every single time? Why do you why do you not
+29:01
+do that? Why do you not compress the moment? Let's say you feel like your
+29:08
+context is growing. Why do you wait for 80%age cut off to happen or 95%age to happen?
+29:14
+Why not always compact or why not always clear the tool
+29:20
+results? Always compacting is anyways not good. You will compact all by definition it
+29:29
+means you are losing some information but at the same time you have to call the LLM you have to call some sort of
+29:35
+LLM for for most common type of compaction which is LLM based summarization and that is expensive
+29:42
+right so now imagine it'll be double as expensive because your context window is 200k tokens you are then calling the
+29:49
+comp um LLM for compaction which means another 200k tokens are consumed And that LLM will provide you some
+29:56
+output maybe that is like 10k tokens that 10k tokens are now used to
+30:01
+represent your original context. So apart from your original 200k tokens which were part of the context let me
+30:07
+just draw it. So let's say this is your original context
+30:14
+and maybe so this is 200k
+30:20
+and only 100k is consumed so far.
+30:26
+Now you make another API call to the same LLM or to a different LLM depending on your how your structure is.
+30:34
+Into that LLM you will pass the same context
+30:40
+and provide instruction. So instruction will be maybe this much on how to summarize and then that LLM will produce
+30:47
+the summarized version of this. Right? Summarized version of this may be only these many tokens.
+30:52
+Now look at the cost associated with this to compress this much. You are consuming so many tokens. And then what
+30:59
+you could do is then what you will do is this compressed context window will replace
+31:06
+this 200k. Now this uh if 200k out of this 100k is consumed. Now this compressed section
+31:13
+this will replace our context window right now. So yes you compressed by 90%age. You
+31:20
+went from 100k tokens to 10k tokens but at a cost. The cost is
+31:28
+you ended up consuming these many tokens in a separate API call
+31:33
+plus you will introduce of course as somebody mentioned in the chat latency because uh each time you make this API
+31:39
+call you're waiting for uh the results to come so that you can replace the results with this uh in this compacted
+31:44
+uh context window. So you don't use this very very often. Um okay very good question about how do
+31:51
+you choose the best model for uh compression. So typically for uh compression you
+31:57
+don't need a uh a proper coding based model. You just need a model that is good at um language in general because
+32:04
+llm based compression is basically compressing most of the things into uh summary sentences. So it needs to be
+32:11
+really good at natural language. So even if you are using cloud uh code I don't know how it internally does this
+32:16
+compression whether the model is different or not that I have to check but uh if you were to implement
+32:22
+something like this manually you can use your best model for dealing with your original context window and uh for
+32:29
+compression you can use a lightweight large language model so that at least API call you can minimize latency will
+32:34
+still be there. Um sometimes you can also compress based on
+32:40
+uh some sort of uh keyword based extraction. So you can uh from this context based on keyword you could
+32:47
+extract the required portions and that required portions to be converted into a meaningful format. You can pass it into
+32:54
+a separate API call which means you are not consuming like 120k tokens or something like that. you may consume
+33:00
+like 30k tokens and then that can be compressed into 10k. Um
+33:06
+then so this is the idea of compaction. But there is one more concept that we
+33:13
+need to discuss apart from compacting the context which is splitting the context across different agents who are
+33:19
+performing different functions. Let me just check if there anybody is waiting in the waiting room.
+33:26
+All right. So in cloud code we don't have to
+33:31
+mention explicitly what the compression technique is. By default it will be using LLM based compaction and tool
+33:36
+result clearing based compaction. Um those are the most commonly used. You don't have to explicitly say however for
+33:43
+whatever reason if you want cloud code to use different type of compaction because you you would say hey you are an
+33:49
+auto research large language model. Actually why don't I show you something? Let me
+33:58
+let me open my um
+34:04
+Visual Studio Code. Just give me a second. I'll stop share screen uh sharing the screen for a moment.
+34:55
+All right. So, do do you see my Visual Studio Code right now?
+35:03
+Uh, just if you can confirm with yes, that'll be great. Are you seeing Mirroboard or Visual Studio Code? Okay.
+35:09
+Okay. Thanks. So basically what you are seeing right now is one of my workspaces where I am using a continuous research
+35:16
+agent uh to explore one problem statements that we are working on at the moment on vision language action models.
+35:23
+Okay. So this agent I will just show you this agent. It was uh released by Andre Karpati
+35:30
+uh in last week uh it's called auto research.
+35:37
+So basically what this agent does is and this has blown up by the way in terms of uh number of stars and all last time it
+35:42
+was 30k in one day it has gained 6k 7k more stars but basically what this agent
+35:48
+does is so so he shows in this graph agent will conduct research and it will figure out how what kind of experiments
+35:53
+to done what kind do to do what kind of model architecture changes to bring to better your results. So I just wanted to
+36:01
+see if we are running some experiments if we ask this auto research agent to conduct our own research conduct its own
+36:07
+set of experiments will the you know accuracy or will the metrics that we are tracing uh will it keep on improving and
+36:15
+uh what will happen to the expenses etc. So here one comment which I had provided
+36:21
+explicitly to cloud code while defining the its purpose was uh I am worried that
+36:27
+you know my uh context window might rot because uh you are working on so many different um
+36:35
+uh tasks one after the other sequentially uh in the process of running these experiments and writing
+36:41
+the paper and uh because of that I'm worried that you may even have halluc
+36:47
+hallucinate some results or hallucinate some experiments. So then what I did was
+36:52
+this I explicitly mentioned like whenever you decide to do a new set of experiments where you feel like um the
+37:00
+previous set of experiments are a complete in a completely different sandbox and the new experiment can be considered to be a different sandbox
+37:07
+even if your context window is not bloated yet to 80%age just make sure that you are doing an auto compaction.
+37:15
+So with this because of this in none of the sessions although this was running 24/7 for last so I started this
+37:21
+experiment on uh sometime on Saturday around 2 p.m. or something like that
+37:28
+although this was running 24/7 for the last almost 2 days never ever it ran out
+37:33
+of the session uh limit. So as you know if you have used cloud code it has a session uh session based um usage limit
+37:41
+and then after the session it will uh refresh but that never happened with this and I was keeping on and I had
+37:47
+asked it to push it to my GitHub. So it was keeping on pushing the experimental results to GitHub and I was tracking the
+37:53
+experimental results on GitHub and it not even once it stopped. Uh one way in
+37:59
+which this could have stopped is I had given it my runpod access through runpod AP uh this access token I think API not
+38:05
+access token and then uh I had around $100 in the run pod um uh um I had uh
+38:12
+recharge run credits only if the $100 ran out for whatever reason it would
+38:17
+have stopped otherwise due to context issue it would never stop or it would never rot. So yes, I was on to I am on a
+38:24
+$200 uh cloud plan because I use it very much extensively for building products and running different experiments plus
+38:31
+multiple people in my team use the same account. Um so we have total three accounts which are maybe used by seven
+38:38
+or eight different people. So if my credits run out for a session, I just switch the account. So that's what I do.
+38:44
+It's not ideal but that's the only option right now available. So what is done is if you have a big task a big
+38:51
+project there will be lot of files which are actually relevant all those files obviously you cannot fit in the context
+38:56
+and this is where you define sub aents by giving isolated um context to these
+39:03
+agents. Um yeah yeah so how did you ensure context did not blow up? I simply gave
+39:08
+an explicit instruction. The explicit instruction was that um whenever you are
+39:14
+switching task whenever you are going from one experiments to another set of experiments even if the context is has
+39:21
+not reached 80%age you compress the context or run/ compact operation. So
+39:27
+this will ensure that when I'm running from one experiment to another all the baggage from the previous experiments are not carried forward. uh this will
+39:34
+significantly keep my contacts clean plus it will also keep my price a little bit low price or
+39:41
+token consumption a little bit low. I mean there are many different ways to do this by the way but this is what I tried
+39:46
+cuz I was so worried that this may not run 24/7 simply because session usage might exceed because that has happened
+39:52
+many times but uh not even once it did exceed the session although it was continuously running experiments. One
+39:59
+thing might be because the experiments are actually run on runpod GPU and not on uh not by cloud code itself locally.
+40:06
+That could that is one reason of course why too much consumption is not there. On the other hand, if you are building a
+40:11
+website or something all the files uh node modules packages you are literally
+40:17
+defining locally. So lot of lot more tokens might be constructed in let's say
+40:23
+web development compared to in actual research because in actual research you almost never run your code in local
+40:29
+Python. So the the visual studio screen which you saw is not my computer. It is
+40:34
+uh an uh AWS EC2 instance uh with some 32GB RAM or something which I purchased
+40:40
+because I needed RAM because I need to run multiple agents on that same computer. So the computer should not
+40:45
+slow down but at the same time many agents do not run the experiments like
+40:51
+building website or running Python script on EC2 itself. So I have connected the EC2 with runpod. So all
+40:57
+the all such heavy experiments are running on runpod GPUs. So because of that reason one my Amazon AW uh my AWS
+41:06
+EC2 instance does not slow down. Second my token consumption of cloud code is
+41:12
+also not that high. But that's an artifact of what type of experiments I am running. But if you are
+41:17
+running some experiments where you are running Python script locally in EC2 instance or your Mac mini or whatever
+41:24
+device you use or your computer uh I'm 100% sure after some time your you know
+41:30
+if you are running 24/7 experiments your uh session memory will run out. I don't I forgot what is the total usage total
+41:38
+number of tokens that you can very easily see by typing slash usage. in slash usage they will see a bar show a
+41:44
+bar whenever usage is about to exceed the session uh the session limit.
+41:50
+Um then okay let me ask you a question uh this I
+41:55
+think many of you may have doubt about if we um okay I'll answer one more
+42:01
+question did so did cloud code figure out how to use runot API so that you can steer it from your EC2 project no cloud
+42:07
+code did not figure out automatically I mean API key of course I gave cloud code but other than that cloud code it's it's
+42:14
+very basic uh cloud code already um figuring out how to run run pod using
+42:20
+its API is a very trivial thing. Uh I don't know if it has MCP or just API uh calling is enough. I don't think it's
+42:25
+MCP. It's just API key based. So that part was very easy. You can just give the cloud code access to your run pod
+42:31
+and ask it to execute the code. Store the results and keep the inference uh uh those things keep it on EC2 instance. Uh
+42:39
+run pod you initiate the run the pod on run pod run the experiment. Once the experiment is done, once no im immediate
+42:45
+experiments are uh planned, just close it, terminate the pod so that you are not accumulating cost. Uh one day it so
+42:51
+happened that I was not using cloud code and I was manually running run pod instances. Uh and then what I forgot to
+42:57
+terminate it. Then uh in two days we had some I think $150 or $200 bill for
+43:04
+nothing. I mean we were not running any experiments at all because there is some idling cost also for storage. So if it
+43:10
+goes for certain number of hours by default I think it's8 per per hour or something like that um
+43:19
+for most of the pods but for expensive pods for more storage it'll be higher so even if you are not running any GPU
+43:25
+instances any at any given point you will still accumulate some cost. So if you are not running anything you have to
+43:31
+terminate it or pause it. So um so what I have done these days is I use the pod
+43:38
+as I initiate the pod as and when I need uh for new experiments I so I tell cloud
+43:44
+code one of your tasks is to minimize my uh run pod bill. So for that what and
+43:49
+but at the same time it should not impact the quality of your experimental results because if you need to use the same pod again you can use that but make
+43:57
+sure that you are minimizing my bill but if you don't have to keep a pod in idle
+44:03
+state for 1 hour or 2 hour if that is what is needed in that case you terminate the pod you restart a new pod
+44:08
+uh when your new experiment has to start but whatever results you have from pod number one store it in the EC2 instance
+44:15
+so that it can be passed if needed into the um run pod now instance number two. So these are some instruction I have
+44:22
+given. I don't think such extensive instructions are needed. I just gave this as a safety. But if you want to
+44:27
+just run the run pod with minimum cost, you can just say that in simple plain English and cloud will most likely take
+44:33
+care of it. Uh last week I remember one question was if you have two agents
+44:41
+agent number one and agent number two. Okay, let's say cloud code is spinning
+44:48
+two sub aents, agent one and two. According to your current understanding,
+44:55
+what happens? Do these agents access the same LLM and
+45:01
+same context window or do they make separate API calls or and they have separate context windows? Plus one more
+45:09
+one more question is do they share anything in the context window? Is is some part of the context
+45:16
+window of agent one also accessible to agent 2 directly
+45:26
+like is there is there some way of sharing the exact same tokens which agent one is using and agent which agent
+45:32
+2 can also use.
+45:37
+So ultimately all the sharing happens through agent orchestrator. The
+45:42
+individual agents do not share context window directly. Why? Because they are completely separate API calls. So
+45:48
+context window of agent number one and context window of agent number two are two different things. However, if for
+45:55
+example system prompt needs to be provided to both agents, which means the tokens corresponding to the system
+46:02
+prompt which are stored in agent one and tokens corresponding to system prompt which are
+46:08
+stored in agent 2 may look very much the same because a tokenizer that is
+46:13
+converting system prompt into LLM's tokens will will be applied similarly. uh so let's say the cloud MD file is to
+46:21
+be entirely present in agent 1's uh API call as well as agent 2's API call then
+46:28
+the way in which that cloud MD is tokenized will be the same because you
+46:33
+are using the same LLM same tokenizer so the tokens that represent the system prompt in the agent 1's context window
+46:42
+will sort of mimic the tokens that represent the system prompt in agents 2 context window. However, just because
+46:49
+they are mimicking each other, it does not mean that this these two agents are sharing it. It may appear like that, but
+46:57
+there is no direct sharing. If at all something needs to be shared, what happens is this agent orchestrator will
+47:03
+decide what to be fed into the context window of both agent one and agent two apart
+47:09
+from system prompt. So if agent one has bunch of results which are given uh stored back into cloud u into the
+47:17
+orchestrator's memory and then orchestrator decides that actually that needs to be part of agent 2's context
+47:23
+also then orchestrator can share it to agent 2. So I'll just show you one
+47:28
+figure uh which you should remember this one.
+47:34
+So these agents directly do not communicate via a shared memory but
+47:40
+rather an orchestrator in this case you can imagine orchestrator to be cloud
+47:45
+code itself agent A and agent B to be sub aents spun by the cloud code and
+47:51
+cloud code should decide what files or um what database is shared between agent
+47:57
+A and agent B. They don't directly do it. So just please understand this. Now coming back to why do we need sub agents
+48:05
+the need for sub agent is very clear. Uh you have different tasks. Uh so if you
+48:10
+are working on a research you could have an agent that is whose sole purpose is executing some code Python or JavaScript
+48:17
+or some type of code which may consume a large number of tokens. But this this
+48:23
+code agent need not let's say review the results of the code which it wrote.
+48:30
+Maybe a code agent can write the code, a testing agent can execute the code and
+48:36
+test it for various um you know use cases. A review agent can review the
+48:41
+results and the code and then this review agent can its only purpose will be it will be provided a code. It will
+48:49
+be provided the test case results and then the review agent has to provide a detailed summary uh which consumes maybe
+48:56
+2,000 tokens. So orchestrator agent will also have same context window size 200k
+49:02
+tokens but it will not consume 200k tokens. It will consume only 10k tokens. Then it will delegate a task to this
+49:08
+research agent. The research agent will consume maybe 40k tokens. This 40k tokens plus 60k plus 30k. So the 100k
+49:16
+plus 130k plus 155k 165k. So roughly 165k tokens are
+49:22
+consumed but they are not consumed within the uh individual orchestrator
+49:28
+agents API call. They are consumed overall. Now this 160k tokens 165k
+49:35
+tokens could have been consumed within one single agent. Okay. But then the problem that would
+49:41
+have happened is if the same agent is looking at every single thing there is heavy context rot here that is not there
+49:46
+because this 10k is now part of 200k. This 60k this 40k is now part of another
+49:54
+200k there is no no chance of context rot code agent another 60k as part of
+49:59
+another 200k and the llm does not penalize you for making new context
+50:04
+windows llm only care about how much how many tokens are consumed through its input and output so it's always better
+50:11
+to consume these tokens in a modular way by making multiple API calls if that is what your application demands so this
+50:19
+these deleg Delegates are basically sub agents and if you really notice what the cloud code is often echoing it provides
+50:25
+an echo right as it is performing some some operations especially in this auto research I have seen many times it is
+50:31
+spinning its own sub agents uh it will say four parallel tasks are running um
+50:37
+right now if it is working on four different figures or something and then it will say uh four tasks are running I
+50:43
+will give a summary once the task is done when all the all four agents are done uh executing the task So but the
+50:49
+total token consumption is again not very significantly high. Uh so this I have uh noticed I have
+50:57
+already mentioned then what the orchestrator decides this I will show you in a folder structure
+51:03
+rather than uh in the text format. Okay. So let's see this folder structure when there are sub agents
+51:10
+cloud.md all the agents ideally will have access
+51:15
+to not the it will not pass the entire cloud MD into the context it will pass
+51:20
+whatever sections of cloud MD from uh using rag or using keyword matching
+51:26
+then what's the difference between this agents MD and this agents MD and this
+51:35
+agents MD what what's the difference between these three
+51:43
+first let's talk about this one what is this agents.mmd what could this be called as can you compare cloudmd and
+51:51
+this agents.mmd they are different this agents.mmd is present in the root of your directory your root directory is my
+51:57
+project this agents.md is present in that now maybe the purpose of this
+52:02
+agents MD is to help your um cloud code decide whenever you when you need to
+52:10
+spawn new sub aents. Now let's say there is a sub agent whose only purpose is to
+52:17
+build the website. Now this agents.mmd which is one level below in hierarchy
+52:23
+will decide that okay I am an agent who supposed to manage this entire website development task for which there are
+52:30
+front- end tasks and backend tasks. Then this agent will decide okay I need to
+52:35
+now create front end task. So this front end folder is there inside which there is another agents.mmd.
+52:40
+Now this agents.mmd is the lowest level in hierarchy meaning it has only
+52:46
+instructions related to maybe the front end schema or whatever the components
+52:51
+inside inside the front end. Uh so now the question is let's say for
+52:56
+whatever accidental reason you had given some front end related information over
+53:01
+here you say I prefer uh a modern front end you are you mention here okay you
+53:07
+should not mention but let's say you ended up mentioning but here you give some other instruction here you say the
+53:13
+the front end should look like um uh monospaced uh um some sort of um
+53:21
+you know legacy style should be followed or something like that what will be followed will this be followed or will
+53:28
+this be followed will the root level agents MD's instruction be followed or will the sub
+53:34
+agents uh instruction be will be followed so whenever there is a conflicting in instruction always the
+53:41
+instruction provided by the child is used the reason is simple the child has
+53:46
+more proximity towards the task that is being implemented at the moment so If front
+53:53
+end is being developed at at the moment, this agents.m MD is more close to the
+53:59
+front end related task. Whereas the agents.mmd on the root level of your working directory is not a front end
+54:05
+specific agent. So it may have mentioned a few things but it would not it would not have been specific enough or it would not have been deep enough into one
+54:12
+particular task. However, does it mean that the root level agents MD is replaced by the child level agents MD?
+54:19
+Is is some sort of replacement happening? If not, if not replacement, what may
+54:26
+happen? This we had discussed two lectures before. If it is not replacement, what is happening?
+54:39
+What is happening? You can sort of imagine to be some some sort of concatenation. Conflicts are replaced.
+54:45
+But otherwise, uh the system prompts which are there in cloud. MD are concatenated with sub aent level
+54:51
+instructions and that whole thing is passed into the context window of the particular front- end agent. So here
+54:58
+effectively four agents will be there. One agent at the root level, one agent at the web development level, one agent
+55:04
+at the test level. Then under the web development there will be two more sub aents. One at the front end level and
+55:10
+one at the back end level. This is how the folder structure will look like. So each of these agents will make its own
+55:15
+API calls. Now the frequency with which the agents may
+55:21
+make API call might differ. Uh so in most of the implementation steps
+55:27
+whichever agent is implementing that particular task of front if front end is being built at the moment the frequency
+55:33
+of API call of this child level agent will be higher compared to frequency of
+55:38
+API call made by the root level agent. Uh so you're saying that if we are
+55:43
+placing the code for the agent they will find agents.m MD at these respective levels. Exactly. In cloud code however
+55:50
+you don't necessarily have to define this. The reason why I'm showing this to you is so that in case somebody is not
+55:56
+planning to use cloud code for whatever reason let's say your company is not allowing to use cloud code but you want
+56:01
+to construct agentic framework because agents.md is universal. All LLMs understand what agents.mmd is. Cloud.mmd
+56:08
+is by the way not universal that you will have to explicitly define for the LLM unless you are using uh anthropics
+56:14
+models but agents.md is a universal framework. So if you are defining it like this then it knows that okay there
+56:21
+are four sub aents four agents here out of which two are child agents one is a root agent etc. What is the replacement
+56:28
+for cloud.md in codex? uh I forgot the name codex I have been not used in the last uh many uh months but however um if
+56:37
+you refer to lecture number I think one or two I had shown a table where you show uh the equivalent version of
+56:43
+cloud.md is shown for uh codex but at the end of the day even if you are having the folder file name as cloud.mmd
+56:50
+it is not an issue if you explicitly mention to the to the agent that my um
+56:56
+system prompt level instructions are primarily mentioned in cloud MD file that if you explicitly mention it will
+57:02
+refer to it. If not you have to use the uh default format. Yeah, in copilot it's
+57:09
+called c-ilot instructions.mmd. Um in many uh agents there is there is a f
+57:14
+file called soul.md. Sol. Um so this is how it works. So if root
+57:20
+agents.md is there and in that if there is one instruction this will be taken. So use typescript uh strict mode. Then
+57:26
+inside if src folder which is for web development if there is an instruction like follow the coding standards in
+57:32
+style.mmd that will be taken. Then if there is a front end specific agent inside the front end folder and if it
+57:38
+mentions react use react 19 no class components it'll be mentioned and within the front end let's say you are building
+57:45
+components like cards or u models or something it'll have its own sub agent
+57:50
+and that sub aent may have another instruction. Now the the context which
+57:56
+this sub agent will use will include this plus this plus this plus this
+58:02
+provided there are no conflicts there are no conflicting uh instructions. So
+58:07
+what it may look like the context may look like something like this. It will have all these four instructions embedded in the context. In the context
+58:14
+of which agent in the context of this um child of child or rather uh yeah sort of
+58:21
+like child of child of child because this there are four levels of hierarchy here. So this is root this is the coding
+58:27
+agent this is the front end agent and this is the component level agent. So this component level agent will have all
+58:32
+these four instructions inside its um uh context.
+58:38
+Now there is one question you may naturally have. I think one person had already asked this um in two lectures
+58:45
+back. What's the primary difference between claw.md and agents.mmd?
+58:51
+cloud.mmd is the primary document which you will refer to for your system prompt
+59:02
+and this parts of cloud.mmd will always be used irrespective of what API call
+59:09
+you are making within that project whether it's a sub aent level API call whether it's a root agent level API call
+59:14
+or whether it's not even a uh uh orchestrator API call in at all levels
+59:20
+System prompt parts of cloud.mmd which are part of system prompt will be used.
+59:25
+Agents MD at the root level is used by the agent orchestrator.
+59:34
+Meaning there are tasks which are outside of the agent orchestrator's job. Maybe the the cloud cloud MD the cloud
+59:41
+code has to utilize the agent orchestrator for making sure that the front end agent backend agent sub agents
+59:48
+all of them are performing his task but may there may be other tasks which are outside of that maybe to make sure that
+59:54
+the overall folder structure is correct maybe to make sure that the phases that are being implemented which may include
+1:00:00
+tasks which are not just web development tasks maybe there are other tasks for summarization or what whatnot for that
+1:00:07
+cloud.mmd will be always referred to. So agents.mmd please note the orchestrator
+1:00:12
+will be primarily using the agent and under the orchestrator there will be sub aents under the sub aents there will be
+1:00:18
+even lower level hierarchy agents and all of them will refer to agents.mmd and
+1:00:23
+all of them will naturally will also get access to parts of cloud.md or entire cloud md depending on the context why do
+1:00:30
+I keep saying parts of cloudmd because sometimes cloudmd can be a huge file and
+1:00:35
+you are not passing the entire file into the context that will bloat the context. So you are using keyword matching or
+1:00:40
+rack you will fix you will uh fetch only required parts from the cloud.md.
+1:00:46
+Um now I want to show you a few things but before that let me take you through some exercise and then we will come back
+1:00:53
+to this. So I'll share a link with you. Just open this
+1:01:01
+uh just a second. Okay. I just shared the link. I just
+1:01:07
+want to make sure it's not shared in the waiting room. It's shared in the main Yeah, it's shared in the main room only.
+1:01:14
+Just open this and put your um OpenAI or Gemini API key.
+1:01:20
+Then yeah, collab link also. Let me share in a moment.
+1:01:26
+So collab is very long by the way. So you will end up spending at least 30 minutes on collab. Uh so I will share
+1:01:32
+the collab and please use your API key from the environment. But uh for the
+1:01:38
+exercise purpose today I will be going through the interactive website.
+1:01:53
+Yeah. Yeah. So if you give a prompt saying um produce I mean build this particular component level feature then
+1:02:00
+uh automatically orchestrator will know which sub agent to trigger. Uh because orchestrator the role of the
+1:02:06
+orchestrator is never to um run the code or build things directly. It is to make sure that the people who are supposed to
+1:02:12
+build is building. So I'll give you one more example of my recent workflow which I have started. So for those of you have
+1:02:20
+who have not uh used cloud code or any agentic coding framework know that often
+1:02:25
+the execution will stop unless you very strongly explicitly suggest otherwise and then it will ask you for your
+1:02:32
+opinion and sometimes you want to make sure that it's not blindly executing the
+1:02:37
+task all the way. You want to give your opinion you want to give your review comments and stuff like that. So one of
+1:02:43
+the better work workflows that I have recently tried and it's working very nicely is um on top of cloud code use
+1:02:51
+open claw. So open claw is like a very nice assistant. So I will tell my open claw to use a very cheap um language
+1:02:59
+model uh like uh gemini 2.5 flash or something like that. Oh by the way open
+1:03:04
+claw was so expensive. I tried it with 3.1 uh preview. It was like crazy level
+1:03:11
+expense like for 10 minutes of my open claw usage I ended up the the bill ended up being like $7 $8 or something which
+1:03:18
+was like crazy but if you use a cheaper model Gemini I mean any model by the way
+1:03:23
+um so I switched down to cheaper model in Gemini the expense was 100 or 150th
+1:03:29
+something like that then I will tell my open claw personal agent as my assistant
+1:03:36
+to take care of claw claw code. So I told him open claw gemini should never
+1:03:41
+be used to uh never be used for you know um running any sort of experiment. So open claw's only purpose is to be an
+1:03:48
+orchestrator. Orchestrator for whom? Orchestrator so that it ensures that
+1:03:53
+cloud code is building the project and cloud code is actually doing what it is supposed to do. So whatever output is uh
+1:04:00
+output you have um make sure that open claw checks the output cloud code
+1:04:07
+produced and if it's going in the wrong direction course correct it so there is a question yes is it safe to use open
+1:04:13
+claw so what I did is for my safety I did not install it on my personal computer I installed it on my EC2
+1:04:19
+instance on EC2 there is no personal data nothing the only thing which openclaw is probably getting exposure to
+1:04:25
+is my API key but API key I have pretty good control over. So um so there there
+1:04:31
+is no issue. Plus I have not connected openclaw to any of my um like calendar
+1:04:36
+or Gmail or slack or anything. I only connected it to my telegram and telegram I have never ever used to text anyone
+1:04:44
+like in the sense like I don't use it at all. So now I'm using telegram as just a
+1:04:49
+tool for communicating to open close. So on my phone right now if I if I switch on telegram I can just uh text open claw
+1:04:56
+as if I'm texting you know um my uh personal assistant then open claw will
+1:05:04
+plan things accordingly and it will ask claude code to execute the task. So my Gemini API will not experience a lot of
+1:05:11
+uh you know cost accumulation but rather uh claude which anyway I have a pro plan there the price will accumulate but yeah
+1:05:19
+but please be you know please very be very careful with open claw especially with respect to price um price is it's
+1:05:26
+it's so expensive especially if you are not careful with which model you use the number of tokens it accumulates it's
+1:05:32
+like for each conversation after like 10 seconds worth of conversation you will see that the token has number of tokens
+1:05:39
+have bloated up. So something is wrong with open claw. Maybe cloud code is not that terrible but open claw with respect
+1:05:44
+to token consumption is so bad from at least from my experience. I don't know if it is universally true. Um so yeah so
+1:05:51
+but that is a good workflow that way open acts as acts as you know if there
+1:05:57
+is any issue like let's say your session uh limit uh ran out on cloud code how do
+1:06:02
+you know cloud code cannot tell you once the API once the limit of token usage has run out. it simply stops. But if
+1:06:09
+open claw is kind of uh supervising that work, it can automatically switch the account. It can take care of that. So uh
+1:06:16
+and it can notify me through telegram if there is any issue in the execution. So I find that kind of workflow to be very
+1:06:22
+fascinating because everything is running on uh my EC2 instance. I can
+1:06:27
+switch off my laptop and go home and if any issue is there, I'll be notified on my phone on Telegram and I can I can fix
+1:06:33
+the issue. I can ask it to take the next step. Um did you face any breaking point with
+1:06:39
+open claw like context rot or forgotten memories? The thing is open clause open clause context is anyway very short.
+1:06:45
+It's it's never executing anything. It's only orchestrating claude codes execution. So all the context that is
+1:06:51
+loaded is into the um opus 4.6 context. Opus 4.6 context is anyway not managed
+1:06:57
+by open claw directly. It is managed by cloud code. Open claw is only affecting the context that is there in my gemini
+1:07:04
+uh API. But Gemini's context is not that it's not that precious to me. I just
+1:07:10
+need it so that orchestration can be can happen very nicely. Plus if any issues happen, it can relay that information to
+1:07:16
+me and I can take some measures in a timely manner. Even if I don't have my laptop with me, I can do it. But uh the
+1:07:23
+context rot if at all it happens in open claw in in gemini it's not so important to me because first of all I don't think
+1:07:29
+it will happen because the gemini context window is big enough and uh open claw if I'm using such that um I don't
+1:07:37
+pass any heavy task to it. I haven't noticed any issue in in task breaking or anything like that. Yeah. So in my case
+1:07:44
+open clause work is very lightweight. It simply ensures that cloud code is keeping on working. it's never stopping
+1:07:50
+or terminating or if it's not detracting from its original task. Anyways, let's come back to this. So here I will show
+1:07:56
+you a few examples um u based on LLM summarization, tool
+1:08:02
+result clearing, priority trimming and hierarchical hierarchical compression. So let me show you first full transcript
+1:08:09
+and what the situation is. The the the kind of um hypothetical scenario is there is a bite bridge company. That
+1:08:16
+company is like a food delivery company. And uh there is some some sort of rush on a particular day. Uh there is a
+1:08:23
+dinner rush where there are lot of customers who are not receiving uh orders on time etc. And um we need to
+1:08:32
+check the logs check what has happened and there is a bite bridge API bite bridge AI uh chatbot also. So now if you
+1:08:40
+look at the context there are a lot of conversations that have happened uh and there are a lot of tool results. So if I
+1:08:46
+scroll down here can you tell me which one looks which one resembles tool result.
+1:08:58
+So order dashboard this looks like a tool result right? Uh and as we discussed last time tools the way it
+1:09:04
+looks like is the noun plus verb or here maybe it should be a slightly different way order order dashboard fetching or
+1:09:12
+something like that should have been a better name but whatever does not matter. So this is one example of a structured tool result. Here is another
+1:09:18
+one driver analytics the ordering the delivery person who is delivering this is these are the analytics of that
+1:09:25
+config audit. This is also the log of a particular tool result.
+1:09:30
+Then u this bitebridge bridge AI is basically the tokens consumed in the maybe in the observation uh process or
+1:09:37
+reasoning process of the AI model. Then these are user instructions or
+1:09:42
+operations manager Priya is sort of giving some sort of instruction. So in the full token uh that consume the
+1:09:50
+context it's like 1.9K tokens and let's say for this time being the token size
+1:09:55
+window size is 1.9K. Now in LLM summarization what we want to
+1:10:02
+see is how many of key facts that are there in this is
+1:10:08
+retained. So if there are 20 facts in this thing in this whole whole context window how much are retained when we do
+1:10:16
+LLM summarization and how much compression it results. Right? So apply LLM summarization.
+1:10:23
+So here an actual API call is made is being made to open AAI. I gave OpenAI API key and then OpenAI will uh the GPT4
+1:10:31
+mini I think is that's the model that I'm using that will summarize and let's look at the auto compaction result. So
+1:10:37
+autoco compaction result looks sort of like this
+1:10:43
+sort of like this and look at what has happened to the tool results especially. So one of the tool results was um
+1:10:52
+bitebridge AI order dashboard. Do you see much about order dashboard here?
+1:10:57
+There is not much about order dashboard at all because those total results are extremely compacted into natural
+1:11:03
+language format. And from,97 tokens you you went down to 257 tokens.
+1:11:10
+And you can see that most of the parts here bite bridge AI its own communications um or the summary of when the uh crisis
+1:11:19
+began which are present in these timestamps probably all of those things are very nicely captured in this natural
+1:11:26
+language unstructured uh compaction which can be later passed into the next API call and what I have done here is I
+1:11:34
+have asked the LLM also to separately capture the key 20 facts from this
+1:11:39
+original document. And so this original document is 1,900 tokens long. From that it has identified 20 facts which ideally
+1:11:46
+should be uh captured even after compaction. And then look at this 18
+1:11:52
+facts are retained. Two facts are not retained. So sort of like instruction retained ratio irr is 18 out of 20 which
+1:12:00
+is roughly 90%age. But the compression is very very effective. You went down from,900
+1:12:07
+tokens to 257 tokens. Now let me ask you a question. If I apply tool result clearing,
+1:12:14
+what parts of this initial context do you think uh will be affected?
+1:12:19
+Like will order dashboard be affected?
+1:12:27
+So order dashboard will definitely be affected. It's part of the tool result. Will uh do you think this um let's say
+1:12:34
+operations manager Priya's uh conversation do you think that will be affected by default? It will not be
+1:12:40
+affected because it's not a tool result. So I will show you after implementing tool result how the result looks before
+1:12:45
+and after and how many facts are retained. So tool result in this particular case has not resulted in
+1:12:52
+significant compaction only roughly 550 tokens have been reduced. But that's
+1:12:58
+also because out of my entire context right now tool results are not overwhelmingly high. Tool results are
+1:13:04
+consuming some number of tokens. And if you look at what has happened to tool results. So order dashboard this tool
+1:13:09
+result was roughly 200 to 300 tokens. And now look at it. It's roughly uh maybe two sentences with each sentences
+1:13:17
+having uh maybe 10 words. So it has been compressed to like 30 40 maybe 50
+1:13:23
+tokens. Right? Right. So this order dashboard was very big and that has been compressed so much. Similarly, there was
+1:13:29
+one more section where there was another tool result delivery metrics. See this is again structured data coming from the
+1:13:35
+result of tool results and delivery metrics again you can see
+1:13:40
+that will be compacted to just two or three sentences. But if you
+1:13:47
+look at the other sections of the context um so what this operations manager Priya
+1:13:53
+has mentioned there is absolutely no change in this section because this is not a tool result uh the bite bridge
+1:14:00
+AI's own communication nothing has happened to it so this is the advantage of tool result and look at the facts
+1:14:06
+that are retained 100% of the facts are retained 20 out of 20 facts however compression is only 1347 compression
+1:14:14
+happen two is 13 47 token So if you were to kind of score the technique based on um retention rate
+1:14:21
+versus score for compression, LLM scores better in compression because it has
+1:14:26
+compressed to 200 tokens, 250 tokens, but the information retention rate is
+1:14:32
+like uh a bit lower in LLM summarization. That's also because we are aggressively summarizing. We can
+1:14:39
+also ask LLM to you know uh pay more attention to uh key facts that we could
+1:14:45
+have done. So can we combine tool results and LLM summaries? Yes. Yes. Absolutely. So what you can do is yeah
+1:14:52
+very good question. I really like the question. So that is exactly what we are seeing in the um 80% threshold. So what
+1:14:58
+is initially done is initially do not summarize using LLM. Initially clear the tool results. Why is that? Because tool
+1:15:04
+results clearing is very uh non-risisky. Cuz if you really wanted a tool result again, you can just call the tool again.
+1:15:11
+Once the tool result is cleared and let's say you did not compress good enough. So right now compression has
+1:15:16
+happened only 1347 tokens. Then the remaining items you compress using an
+1:15:21
+LLM so that you are not immediately applying LLM compression. You see what
+1:15:27
+happens to your compression after tool results are cleared. Maybe most of the facts will be still retained. But if
+1:15:34
+compression is not good enough only then apply an LM uh summarization.
+1:15:39
+Then priority trimming. So here if you apply priority trimming these are the four priority levels P 0, P1, P2, P3. So
+1:15:46
+P3 is the routine conversation. You can see 1, P3 over here. So operation manager Priya has mentioned something
+1:15:52
+like great summary. I'll create tickets for all follow-up items marking this incident as resolved. The driver
+1:15:59
+distance spike was the key signal. So some some thing which this manager has mentioned it's a routine conversation
+1:16:05
+which need not be retained. So this is entirely removed and as a result the number of tokens have reduced and let's
+1:16:12
+see what else has been removed. I don't think anything else is removed
+1:16:19
+yet. How about tools? No tool is kept. All of these are entirely kept.
+1:16:25
+One thing I'm not so sure is 1686 tokens. So around 24 220ish tokens have
+1:16:33
+been removed. But was this Priyas conversation actually 220ish tokens?
+1:16:39
+Uh I can see this to be 58 tokens but
+1:16:48
+it should ideally be 200 tokens. So yeah there is another one here 48 tokens.
+1:16:54
+Then there is another one here maybe 30 tokens. Yeah. So if you add up all the conversations this operations manager
+1:17:01
+has made yes probably they will add up to roughly 200. So you can see that what
+1:17:06
+the LLM has figured that is a very you know low impact or low risky thing to
+1:17:12
+remove is all the conversations made by Priya this operations manager. In fact not all the conversations some
+1:17:18
+conversations some are kept and then the total result is around 220 um tokens
+1:17:24
+being removed. Is the decision based on some kind of rule. It's based on rule. It's not not based on semantics. Uh here
+1:17:30
+it is purely rules. Tools have the lowest priority then uh even lower priority is routine
+1:17:38
+items. Then uh if a task is being implemented at the moment that will be at P1 and P 0 will be system prompt. So
+1:17:45
+here only P2 is removed. P1 is not removed. Uh I think these tool results will come in P1. So yeah. So if more
+1:17:52
+level of compaction is needed next what will be removed is these tool results from P1 they will be removed they will be trimmed aggressively but here again
+1:18:00
+compression is very minimal and because of that reason it's not it's not very surprising to see there is 100% fact or
+1:18:06
+information retaining this is not very surprising oh I think I wanted to show you one more thing um hierarchical
+1:18:14
+compression just to show you how the semantic based compression works so this
+1:18:19
+is hierarchical compression and here what is What happens is if something is in P 0 uh the P 0 will be found to be uh
+1:18:27
+the 100% of whatever is there in P 0 will be retained. If something is there in routine P3 it's 0% retained. If
+1:18:35
+something is in P2 10%age will be retained. And if something is 50% if something is in P1 50% is retained. So
+1:18:42
+P1 is the tool results. So tool result will be summarized ideally. So here this order dashboard this is part of a tool
+1:18:49
+result and it's compressed. Yeah I will share the pro prompt that are passed into LLM. Yeah I'll share with you guys.
+1:18:55
+Right now it is masked behind the uh this website front end. You mentioned this earlier uh earlier it's not
+1:19:02
+necessary to use top compression top model for compression in cloud code. Do you have to keep toggling the models for
+1:19:07
+building any compression? Is this what you do typically? I personally have never explicitly mentioned the model to
+1:19:14
+toggle between uh explicitly mentioned the cloud code to um toggle between the models. So I don't know internally what
+1:19:21
+cloud code does whether it switch to haiku or cloud set or something like that instead of opus 4.6 because opus
+1:19:27
+4.6 is um the most expensive model right by far. So in the compaction I am not
+1:19:36
+100% sure whether there is a switching of the model happening internally or not explicitly I have never mentioned it but
+1:19:42
+I have to check it. I will check and let you know. Um so this is how hierarchical compression runs. Again P 0 to P4 P3
+1:19:50
+levels are defined but in each level there is no complete trimming. Complete trimming may happen in P3 but if P3 is
+1:19:56
+not removing everything entirely P2 is not entirely trimmed away. P2 is kept 10% 10% of P2 is kept. Uh yes, prompts
+1:20:04
+should be there in Google Collab. Yes. Um for sure. Uh I I just need to verify whether the
+1:20:10
+prompts are exactly same in the website or Google Collab that I have to check once um because I have made a few
+1:20:15
+changes to the website uh recently. Then let's go into phase two just to see
+1:20:24
+how all of this will appear visually.
+1:20:31
+So here what we need to do is define a hard cutff for when compaction is triggered and define a hard cutff where
+1:20:38
+the trimming is triggered. So can you tell me why do you need these two
+1:20:44
+cutffs? One is at 80%age and one is at 95%. So if at 80%age of the context
+1:20:50
+window size if compaction is already getting triggered why do you need another emergency trimming of at 95%.
+1:20:57
+What's the logic behind this?
+1:21:10
+So the question is why do you need two such uh thresholds at 80%age and at 95%.
+1:21:25
+So it can so happen that let's say uh first of all
+1:21:31
+you know let's say you are at the limit of 64%age um and let's say you are you have
+1:21:37
+100,000 tokens in your token window. Now 64,000 tokens are consumed. If the
+1:21:44
+output of the LLM is another 30k tokens directly your number of tokens will jump
+1:21:50
+from or let's say the output is not uh 30K. Let's say the output is uh 20K. Let
+1:21:55
+me just draw it here. So let's say this is 100K
+1:22:02
+and you were here for example let's say at 50K. Now you call the LLM and LLM's
+1:22:08
+output is 20K. then LLM's output will fill this much more sort of
+1:22:15
+then you exceeded 80% right so maybe you will this will be at 85 or 90% something
+1:22:21
+like that then you will call compaction and what is the first thing which you will compact the first thing you will
+1:22:28
+compact is probably tool results and let's say your tool results are not that heavy your tool results are only
+1:22:34
+occupying this much right so even Even after compaction
+1:22:41
+and even after compacting our or or even removing the tool results you still are
+1:22:47
+above 80%age then what you what will you do you will continue calling the LLM and
+1:22:52
+let's say in the next LLM call your context window ended up filling up this much where now this is 95%age.
+1:23:01
+So now what will happen is this is an emergency situation because now you have barely any more tokens available to fill
+1:23:07
+which means your output LLM producers cannot fit in your context window. So now there is an aggressive trimming that
+1:23:13
+happens where tool results are trimmed and and P3 levels are trimmed or even
+1:23:19
+direct after tool results are trimmed direct LLM summarization happens and why
+1:23:25
+when direct LLM summarization happens your this thing will jump from 95 to roughly even 20 again. So I'll just uh
+1:23:32
+let me erase all of this and let me show you visually how it will look like. This compaction continuous compaction will
+1:23:37
+look like. So just click this uh start simulation.
+1:23:54
+So here you can see system prompt, user instructions, uh assistant instruction
+1:24:00
+which are maybe the sub aents and then the tool which are the results of tool call and it keeps filling. The moment
+1:24:08
+you reach look at which part is getting trimmed the most aggressively. This this purple part is getting trimmed uh
+1:24:13
+trimmed or compacted the most aggressively which are tool results. Tool results are compacted to very few tokens. Let me just play this once more
+1:24:21
+by decreasing this compact at. So threshold I'm keeping to be uh 60% and
+1:24:27
+emergency let's keep it at 95%age only. Now in first step system prompt second
+1:24:34
+step user instructions. Third step the uh assistant maybe coding assistant tool
+1:24:41
+call. So tool call there are results. Okay. And then you get the results back. Then again the assistant does something.
+1:24:46
+Maybe it calls the tool. Then again you get uh tool results. Then again the tool results are passed to the assistant.
+1:24:52
+Assistant uh consume some token again tool results maybe you inject a bit of user uh prompt here. So Priya has
+1:24:59
+injected something then again assistant works tool call or maybe user
+1:25:05
+instruction then again tool call again uh assistant again tool call. So the
+1:25:10
+moment tool call is increased beyond a certain point not tool call the entire context is increased beyond a certain
+1:25:15
+point compaction is triggered. And look at which part got triggered the most aggressively. This purple thing was uh
+1:25:20
+was compacted the most. Neither assistant nor user nor system prompt. System prompt is very rarely touched.
+1:25:27
+See, so tool results are almost aggressively
+1:25:35
+triggered. And we can also see one more thing. Let
+1:25:42
+me put this at maybe 90%age.
+1:25:49
+and emergency at 85%age. Now what will happen according to you there should be like a proper trimming that is
+1:25:56
+happening. Let's see what all things are trimmed.
+1:26:18
+So here actually one thing that may have happened in the logic is I don't see the entire tool result being removed. Uh so
+1:26:23
+in the backend logic I have to make sure that entire to result is removed. Right now uh when you look at the difference
+1:26:30
+between compact and emergency it doesn't look like emergency is any different from compact. Emergency seems like it's
+1:26:37
+also compacting the tool result. But ideally emergency is supposed to without any mercy remove the um tool results and
+1:26:44
+remove anything else at P3 levels uh P3 P2 levels. But right now that does not seem to be happening. That's okay. Uh in
+1:26:51
+most of your usage cases you will not come across this situation. um you will
+1:26:56
+most likely encounter the threshold where tool results are uh threshold 80%age where tool results are bloating
+1:27:02
+your context window and the moment tool results are compacted along with the rest of the things your context window will go back to maybe 36%age or
+1:27:09
+something like that. You might notice also in cloud code often when a new task is being implemented cloud code will
+1:27:15
+explicitly ask you um clear the context window and start execution.
+1:27:21
+Sometimes it will ask you compact the context window and start execution. it itself will give you and then in the
+1:27:26
+recommended section it will say recommended is clear the context window and start execution. Yeah. So P 0 P1 P2
+1:27:32
+in this case system prompt should be in P 0 because that has the highest level of priority. Uh P2 will will be uh sorry
+1:27:41
+P3 will be tool results uh because that is at the lowest level of hierarchy tool results which you already have
+1:27:47
+available. you don't have to keep storing in context because in case if you ever need the tool result in the
+1:27:52
+future, you can get it into the context window uh by calling the tool again. Um
+1:27:59
+then the assistance interaction and users interaction may or may not fall in P2 or P3 or P1 depending on the
+1:28:06
+semantics because sometimes the user inter instruction at that moment is very important. You should not be trimming
+1:28:12
+it. Sometimes the latest interaction that assistant had is again important. So if I if I re reset this back such
+1:28:19
+that this is something like this and emergency is over here. And if you now run if you now keep looking at what
+1:28:26
+happens to these colors, you will see that assistant assistance um length is sometimes getting trimmed but only after
+1:28:33
+tool is getting trimmed. So tool has the lowest um lowest priority. So P 0 is red
+1:28:40
+color system. Um purple color is definitely P3.
+1:28:46
+The blue and green depends on what you are what the context is right now. So
+1:28:51
+there you will have to use some sort of semantics.
+1:28:56
+Uh and here just look at this the final tokens final capacity of comp uh
+1:29:03
+context window that has reached after this is 54%age. Meaning at the end of all of this uh out of 2,000 tokens you
+1:29:11
+are still at only 1,087 tokens. On the other hand, if the stream trimming did not happen, by the time 28 messages are
+1:29:17
+there between tool, system prompt, assistant and user, you will definitely cross much much above 2,00.
+1:29:25
+And um here we are not really uh looking at how many key facts have been retained or anything that we will
+1:29:32
+not look at this in this exercise. One thing we should also look at is this
+1:29:38
+multi- aent framework. So multi- aent framework what we decided was um for the
+1:29:43
+same task if there are different types of subtasks multiple agents will be defined. So here this uh diff kind of
+1:29:51
+file is showing you the difference between um before creating a pull request and after creating a pull
+1:29:56
+request. So plus is the new lines that are added minus will be I mean plus is the new line added minus is the new line
+1:30:02
+or old line which is removed just like when you make a pull request on GitHub. And here in this code file there are
+1:30:10
+three different things to take care of and for that three different agents can be utilized. One is the style of the
+1:30:17
+code. So this will review the code style. What are the naming conventions for variables whether anything related
+1:30:22
+to documentation needs to be looked at and uh project coding standards. Security agent will scan for
+1:30:29
+vulnerabilities in the actual code. Then performance agents will look at um
+1:30:34
+perhaps the execution speed of the code. So these three agents are there and it has it its own budget and we can look at
+1:30:42
+how the agent contract looks like. Okay, this is one topic which I did not discuss. This is where I exactly
+1:30:47
+stopped. So coming to something like when you
+1:30:52
+have two different agents let's say there is one agent working on front end
+1:30:59
+another agent working on back end. There has to be some sort of
+1:31:04
+commonality between agents may uh between what the agents may produce. So
+1:31:10
+if the agent working on back end is producing an output which is in a different format from what the front end
+1:31:16
+agent is producing there will be compatibility issues right. So here
+1:31:21
+there is a get request get API/ API/v1/ user here / API/ users and so on. So
+1:31:29
+front end agent may have a default way of behaving because front end calls and front end uh schema is usually different
+1:31:35
+from back end. So they may have a default behavior but unless you explicitly say that the output you guys
+1:31:42
+produce should be adhering to certain format or certain structured format they you will not be able to integrate them.
+1:31:49
+So there is an idea called contact contract first pattern. So contract simply means the orchestrator
+1:31:56
+will define a schema which both of the agents should sort of follow. So if
+1:32:02
+there is an API called related schema, API specifications.json file will be defined by the
+1:32:08
+orchestrator. By the way, cloud code does this automatically. You don't have to say
+1:32:13
+explicitly that when you are spinning sub aents, define sort of like the contract that these sub aents should
+1:32:19
+follow. You don't have to explicitly say that. it is implicit. However, if you are building your own coding agent
+1:32:25
+outside of uh Codex or outside of uh cloud code, this is something which you will have to define explicitly. You will
+1:32:31
+have to tell the orchestrator that make sure that sub aents are following or building based on a c certain predefined
+1:32:38
+contract so that when those two things are integrated they will actually work. An example of this is I had talked to
+1:32:45
+you about um building my new segregator agent or even building a central uh
+1:32:51
+brain for visual. So the central brain for visual is an agent orchestrator and
+1:32:56
+then there are many sub agents that we are building. Now one schema that we are now forcing these agents to follow is uh
+1:33:03
+a schema that will allow us to have a two-way MCP. So two-way MCP as in um
+1:33:09
+it's not like one part can be client and one part can be uh server. it can switch the roles. Um so both ways it can act
+1:33:16
+and uh for this to happen we had to explicitly um mention it in the system
+1:33:21
+prompt that system prompt I mean agent.m MD agents.mmd that um the output that is
+1:33:27
+produced by this should follow the uh MCP format which are mentioned in the
+1:33:32
+guidelines of my central orchestrating agents. Output of my email agent should follow the format mentioned by this
+1:33:39
+agent. And uh same thing when when visual is acting as the client and this agent is acting as the uh server there
+1:33:47
+is a specific way of communication from this client to the server. So this was again an explicit instruction not
+1:33:53
+implicit. The reason why this had to be explicit is because we only defined the MCP ourselves which means there is a
+1:33:59
+certain structure that these sub agent should follow. Um so that is what this section is
+1:34:04
+about. Let me let me go back to the um this section. So the style agent has
+1:34:12
+its own input schema and output schema. Security agent contract defines its input schema and output schema and so
+1:34:18
+on. And when you run the multi- aent, this is just a simulation by the way. Um when the multi- aent uh schema is run,
+1:34:24
+the orchestrator will decide when to call the style agent, when to call security agent, when to call when to
+1:34:29
+call performance agent. um each agent the token consumption is completely different needless to say.
+1:34:36
+All right. So this is just to visually show you how it will work. I want to show you couple more things before we
+1:34:43
+move on to uh the agents.mmd file structure. Okay. To this I will come
+1:34:48
+last. I want to show you one more thing.
+1:34:55
+Yeah. So the way in which sub aents will communicate. So let's discuss a little bit about that.
+1:35:08
+So there is a concept called fan in and fan out. So fan in fan out is nothing but
+1:35:15
+how does a fan work? If if a fan is rotating if something is released from the fan
+1:35:21
+things will things will go outside, right? I mean it'll be in straight line but it will go outside in this way.
+1:35:27
+Right? So fan out is the idea where the central orchestrator
+1:35:33
+will spin isolated agents which have and these agents have nothing to do with
+1:35:39
+each other. Okay. And they barely share any apart from system prompts they don't share any
+1:35:46
+base documents or anything like that. So this is this idea is in general called as fan out. But however sometimes
+1:35:55
+orchestrator can say apart from system prompts there are a few more things
+1:36:00
+which I want to share with the agents. So a good way to visualize that is in this way. So this is the orchestrator.
+1:36:09
+This is sub agent number one sub agent number two and sub aent number
+1:36:15
+three. By default, the system prompt is passed
+1:36:21
+directly to all the three sub aents. So this is system prompt to agent number
+1:36:26
+one, sub agent number one. This is system prompt to sub agent number two. This is system prompt to sub agent number three.
+1:36:33
+Anything else? Let's say if there is a config audit which needs to be shared
+1:36:39
+between all the agents or if some other file needs to be shared across all the three agents that is decided by the
+1:36:46
+context curator. So now config audit may be so this these two green color lines
+1:36:51
+show that config audit is shared between root cause analyst and remediation
+1:36:56
+planner. So this file agent the orchestrator has decided that these two
+1:37:02
+files are site of sort of like base documents shared base document
+1:37:08
+for sub agent three uh one and three
+1:37:14
+and this is system prompt. The remaining file will completely depend on the
+1:37:20
+sharing of remaining files will completely depend on what the orchestrator seems fit to each sub aent
+1:37:25
+based on the sub aent's uh task or sub aent's talent what it is supposed to do.
+1:37:31
+So maybe architecture diagram orchestrator will decide that it needs to be only shared with impact assessor.
+1:37:37
+So impact assessor will now get access to system prompt. It may get access to metrics dashboard or error logs and it
+1:37:43
+will also get access to architecture diagram. So this is how the custom
+1:37:49
+context is set up for each of the sub agents separately. Now if I go back
+1:38:00
+this full isolation is the idea where every single sub aent is having
+1:38:06
+completely different um inputs into the context. So there will be some base instructions. This
+1:38:14
+base instruction can be in the form of agents.m MD. Here we are not mentioning the claw.md file that is implicit. I
+1:38:20
+don't have to mention it. But let's say there are three agents. One for triage, one for root cause analysis, one for
+1:38:27
+recovery. Um for for whatever event that has happened for this food delivery company. Now the the things which will
+1:38:34
+go into the context of triage is its own base meaning its own agents.md file
+1:38:39
+which is not shared. So please don't get confused. This is base a base with 200 tokens. This is base with 200 tokens.
+1:38:45
+But this is different from this. This is the agents.mmd file for the triage agent. This is the agents.mmd file for
+1:38:51
+root cause. And this is agents.mmd for recovery. Then there will be other documents which are other documents or
+1:38:57
+other um tokens which are passed into the context which are relevant to those agents. And these are fully isolated
+1:39:03
+agents. And in this case for example, okay, let
+1:39:08
+me show you three agents then I'll ask you the question. Then there is another concept called shared base. So shared base visually you
+1:39:16
+can look like you can see like this. So agent four, five and six in this case
+1:39:21
+this green color shows that there is a common base that is shared between these uh three agents meaning common documents
+1:39:29
+which the orchestrator decided to give. But apart from that there are completely
+1:39:34
+different uh agent level knowledge which is passed into the context. So security
+1:39:39
+agent will just get information I mean we'll get in addition to the shared base will get information regarding security
+1:39:45
+performance agent will get information regarding performance and so does style. So this is the idea of shared base plus
+1:39:53
+whatever is isolated between the agents. The last one is sequential sub aents
+1:39:58
+where the output input that goes into agent number B will depend also on the
+1:40:04
+output coming from agent A. So this is sequential because unless agent A is fully uh implemented agent B cannot
+1:40:10
+work. A good example of this is for example let's say we are working on a research agent and the implementation
+1:40:16
+can happen only after uh literature review is done. Then literature review agent agent A may come only after only
+1:40:23
+before agent B and agent B can happen work only after literature review and gap identification is done. It cannot
+1:40:30
+work before. So this is sequential pipeline. Now let's go back here and just look at shared base context how it
+1:40:36
+look like. So here this is the shared context between the three dage agent root cause agent and recovery. There is
+1:40:42
+a common shared base. Then apart from that there is uh agent specific instructions and this will consume
+1:40:48
+certain set of tokens. In sequential pipeline the triage agents output is
+1:40:54
+summarized and passed into root cause. So in root cause you will see there is the triage agents findings. Then that
+1:41:01
+findings plus findings from the root cause agent will be passed into the recovery agent. So recovery agent now
+1:41:06
+has in the context uh summary from tree age agent plus summary from whatever root cause agent has found. So recovery
+1:41:14
+agent cannot function without these two things that are passed into the context. That's the reason why it's called sequential.
+1:41:20
+Uh how the pattern defined how is it defined sequential and
+1:41:26
+parallel? It is implicitly defined by the agent orchestrator itself. To give you a simple example, when you are think
+1:41:32
+about it, if you are building a uh a website dashboard, you cannot run a
+1:41:39
+components do components agent or you cannot run an agents.mmd corresponding to the components before you let's say
+1:41:46
+fix the overall architecture of your website. So if the folder structure looks something like this
+1:41:56
+MD and then the root level agents.m MD
+1:42:01
+and here you have the coding agent.
+1:42:07
+So this is another agents.mmd. Then
+1:42:14
+here you have front end
+1:42:20
+and within the front end you have components
+1:42:26
+and this front end agent might have said a few things in the component. In the component hierarchy maybe there is uh
+1:42:32
+navigation bar then and inside navigation bar let's say
+1:42:38
+there are buttons. Okay. Now if there are agents for creating
+1:42:43
+buttons, agents for creating navar, agents for creating separate components, etc. The agents.m MD corresponding to
+1:42:50
+this button section cannot run before agents.m MD corresponding to navar has executed because agents MD corresponding
+1:42:57
+to uh navar says that hey we are currently building navar in which three buttons are required dashboard login
+1:43:04
+logout something else home button only then the agents.md corresponding to this
+1:43:09
+will execute so here the hierarchy of this folder structure is kind of implicitly giving the um agents MD in
+1:43:18
+the root and idea which agents will be executed at what time. But sometimes some things can be in parallel because
+1:43:23
+when you are building the navbar you could also build your whole hero section. You could also build something
+1:43:30
+else in your page and while you are building the front end you could also build some parts of the back end. Right?
+1:43:37
+So if you were to manually define in sequence which agent comes first and which agent comes next, I think it will
+1:43:44
+cause more confusion to the model than um bringing some sort of clarity. What
+1:43:49
+is better is create a very nice folder structure in which the agents MD itself implicitly defines um what the order in
+1:43:56
+which the sub aents are executed. Um if you have agents.md on top, what is
+1:44:02
+the need for cloud.md? So cloud.md. So agents.mmd is only looking at maybe
+1:44:08
+coding task and testing task. So let's say there are two tasks coding and testing.
+1:44:15
+But let's say at the project level you have many other things to do apart from building website. Maybe you have to plan project road map PRP project road map
+1:44:22
+planning. Maybe you have to assign task to your team members or something like that. Like once this is done you have to
+1:44:29
+let's say push something to Trello or canban or you have to uh check the
+1:44:35
+details of your project execution by the rest of your team members on GitHub. So at the central level there are many
+1:44:41
+other tasks which cloud MD can do which let's say an orchestrator agent for
+1:44:46
+coding cannot do or orchestrator agent for coding plus testing cannot do. So agents.md is specific to what all tasks
+1:44:55
+it is supposed to orchestrate. CloudMD is specific to everything that your
+1:45:00
+entire project in your in your workspace is supposed to do. So cloud.md will be corresponding to your workspace
+1:45:10
+and then sometimes so this agents.md it might be confusing to you because right now I have shown you just one agents.mmd
+1:45:17
+in the root file right. The easiest way to remove this confusion is I can literally move this out of my root. So
+1:45:22
+I'll move it here and I will say that I don't have any agents.mmd at the root level. My only a my two aents.mmd is one
+1:45:30
+agents.mmd is at the coding level. Then I may have another agents.mmd at the
+1:45:37
+uh maybe uh project roadmap planning level and at the root level there is no agents.mmd but at the root level I will
+1:45:43
+still have claw.md. So whether you have an agents.mmd at root level or not it's up to your project specification but at
+1:45:50
+the root level you will always have a cloudmd file if you are working in cloud code.
+1:45:56
+Um okay this let's get back. So this is how the um how the sequential pipeline
+1:46:02
+will look like. Now just answer the simple question. There is a scenario multi-dommain restaurant onboarding.
+1:46:08
+Three specialist agents are needed to verify a new restaurant joining the platform. Um in this case just read this
+1:46:15
+and just tell me what type of agent would you do? Would you use full isolation
+1:46:20
+shared base uh context or sequential pipeline?
+1:46:37
+So there are three agents they have to do few things. they are analyzing the at
+1:46:43
+the end of the day it's the same restaurant uh I mean same restaurant applicant application data each agent
+1:46:49
+applies domain specific expertise so probably there has to be a shared base is what I'm thinking
+1:46:56
+let's see so there has to be a shared base but there will be fan out fan out meaning
+1:47:01
+there will be isolated context also how about third scenario let's come back to second scenario after this parallel city
+1:47:09
+expansion analysis three agents Each research a different aspect of potential new cities for expansion of your food
+1:47:14
+delivery platform. Uh demand agent queries food ordering trends. Then uh
+1:47:20
+completion agent maps this logistics agent delivers uh evaluates the driver availability. So if it's a parallel city
+1:47:28
+expansion analysis, it's a completely different city and uh maybe the things
+1:47:33
+that you need to do in one city and the other city are completely different which means there is nothing to share,
+1:47:38
+right? So it could be full fan out like full isolation. Then the last thing is rush hour
+1:47:44
+incident uh response. An active Friday rush hour crisis needs urgent
+1:47:49
+resolution. First is triage incident identifies the severity of the incident. Root cause agent uses triage to find uh
+1:47:56
+findings to pinpoint to the So basically here itself it says triage findings are needed for root cause agent to analyze
+1:48:03
+the issue and then the recovery agent uses both uh the triage results and the
+1:48:08
+um results from the root cause agent which means it looks like a sequential pipeline because the output of one
+1:48:13
+depends on the uh input of one depends on the output from the other. Uh then let me show you one more thing.
+1:48:20
+This windows this part will be very interesting. So again look at this folder structure.
+1:48:27
+So this will answer some of the questions which you may have. Your workspace is bitebridge incident. Okay,
+1:48:33
+this is your project workspace in which there is cloud.md but there is no uh agents.md
+1:48:40
+but inside the folder inside this agents folder you have an agents.mmd. Now this will be the orchestrator.
+1:48:46
+Now inside this orchestrator I mean inside this agents folder there are three subfolders for one for root cause
+1:48:51
+analysis, one for impact assessment, one for recovery planning. It's it has its own agents. Now let's just run a
+1:48:58
+simulation of how this looks like which files will be passed into which agent. So orchestrator will have access to
+1:49:04
+system prompt. System prompt says you are a specialist agent in Brisb incident response team. Follow the thing uh
+1:49:10
+respond in JSON format and so on. claw.md has bunch of things about the team, incident response conventions,
+1:49:17
+terminology, etc. Then incident briefing document. Incident brief is this
+1:49:23
+document is probably passed into this working directory directly because this brebridge incidents incident is the
+1:49:30
+folder to which some briefing might be there. So this incident briefing MD you can imagine to be similar to the ideas
+1:49:36
+v2.md or something which I discussed a few lectures ago like a markdown document which kind of describes what
+1:49:42
+the situation is and cloud.md will be independent of all of this claw.md will take care of all the incidents broadly
+1:49:49
+incident briefing.md will describe the specific incident that has occurred and then there will be instructions provided
+1:49:57
+to orchestrator. So orchestrator instructions are um provided in the agents.mmd
+1:50:04
+this one and orchestrators delegation plan. So now this delegation plan will
+1:50:11
+be a separate file uh which is not shown here but what that file will decide is
+1:50:18
+what agents what sub aents now to run. So orchestrator will decide in the first step I need to run root cost analyst
+1:50:24
+agent. So send the config audit plus driver analytics to root cause agent.
+1:50:31
+Then after the root cause agent output is available impact assessment. So for that I need the impact assessing
+1:50:36
+assessing agent to which I need to send send the root cause summary. Right? After that send have the recovery
+1:50:42
+planner and then synthesize. So let me just run one step and see how the step proceeds. So the first step is root
+1:50:50
+cause agent is called because in the orchestrators de uh delegation plan first sub sub first sub agent that is
+1:50:56
+called is root cause analyst. So root cost analyst is al also getting system prompt. So it's the same system prompt
+1:51:03
+it's also getting access to cloud.md. The same cloud it's also getting access to incident briefing. Incident briefing
+1:51:10
+is the that markdown file at the root level. So this is getting access
+1:51:15
+accessible to root cause analyst. Apart from this root cause analyst will have its own instruction in its own MD file
+1:51:22
+agents.mmd file. So it will say your role is root has to act as a root cause analyst. Then analysis of the current
+1:51:30
+incidents and then the config audit trail and driver analytics snapshot is
+1:51:36
+something which orchestrator ended up deciding to send. So orchestrator had send config audit send driver analysis
+1:51:46
+or analytics. So these two things orchestrator decided to add into the context of root cause uh root root cause
+1:51:52
+analyst agent and which contributed to 150 tokens 160 tokens. So totally 310 tokens. These 310 tokens came here
+1:51:59
+because orchestrator decided to add it. This 100 tokens came because it is part
+1:52:05
+of the agents.mmd file. This root cause analyst in section this 85 + 140 + 135
+1:52:11
+tokens came because it is part of the there is a shared shared base plus system prompt is anyway part of the um
+1:52:18
+um all the agents. So incident briefing is sort of the shared base it's shared between all the agents and now when we
+1:52:25
+run now root cause analyst agent has executed its result are passed back as
+1:52:31
+summary into the orchestrator. So now orchestrator has an additional 180 tokens. Ideally these 180 tokens some
+1:52:38
+output tokens will be stored in the root cause analyst also. It's not being shown here. So please don't get confused because root cost analyst is calling its
+1:52:45
+own API. That API will have its own results. Those results will be stored in this context window only. So this 770
+1:52:52
+should ideally increase to something. But then whatever the output is the output can be summarized and will be
+1:52:57
+stored in the orchestrator like this. Now what is the next step? Next step is
+1:53:02
+orchestrator already has a delegation plan. It has step two is impact assessor agent. So in the next step
+1:53:09
+orchestrator will call the impact assessor which will get access to the same three files system prompt claw.md
+1:53:15
+and incident briefing.md. But there are now new files. This new file is the agents.md corresponding to
+1:53:21
+impact assessor. This new file root cause summary is the result of the previous agents execution which is the
+1:53:28
+same thing. the same money tokens are here. Then this uh order pipeline
+1:53:34
+metrics and normal performance baseline was added by the in uh orchestrator. So
+1:53:39
+orchestrator had said send root cause summary plus order metrics plus baseline
+1:53:44
+into the impact assessor agent. So this is these two files of 130 tokens and 90
+1:53:49
+tokens came to the context of impact assessor because orchestrator had planned it. So total 870 tokens. Now
+1:53:57
+impact assessor will run its step which will produce its output and that output is now stored as a new set of tokens in
+1:54:04
+the orchestrators context. So those new set of tokens are now 165 tokens. Now the third and last step should be
+1:54:10
+orchestrator plan is um called the recovery planner to which these two things are sent along with some
+1:54:17
+playbooks. So in the next step recovery planner will get access to system prompt
+1:54:22
+cloudmd and incident briefing. Then this new file in yellow color is the recovery planner instructions in the form of
+1:54:28
+agents.mmd. These two green color ones are the uh summary of the implementation
+1:54:35
+of the previous two agents. And these two files recovery metrics and customer recovery playbook were passed by the
+1:54:41
+delegation by the orchestrator when it delegated the uh task to recovery planner. And then finally
+1:54:49
+uh recovery planner's uh final uh summary will be over here. recovery plan
+1:54:54
+immediately activate tier two tier two and three refunds for all the affected orders 24-hour push notification so and
+1:55:00
+so and so and that's it I think that's the last step yeah so look at how the orchestrator how many times it
+1:55:06
+interacted uh orchestrators context got filled after three interactions one
+1:55:12
+interaction with each uh each agents right and finally only the output that
+1:55:18
+we need I mean the the recovery plan because this this whole workspace is about when you have an incident How do
+1:55:24
+you recover from that incident? Incident could be large number of orders not getting delivered or whatever. So this
+1:55:29
+is a a brief overview of how it looks. And you can also see this here how the
+1:55:35
+context is getting full. So cloud MD plus briefing is is the 360 tokens that
+1:55:40
+are part of all the uh or agents orchestrator as well as the three sub aents. CloudMD plus briefing cloud.MD
+1:55:47
+plus briefing. Then this 205 tokens are contributed from agents.mmd of
+1:55:52
+orchestrator. But then orchestrator will pass the conflict plus uh config file
+1:55:58
+plus audit. Those are the 310 tokens. This 100 tokens are in the agents.md. So this yellow color defines the agents.mmd
+1:56:05
+file. Number of tokens in the agents.md file. And these are the these files. These three this agents.md this
+1:56:12
+agents.mmd and this agents.mmd 100 105ish tokens each. 100 100 110 and 105
+1:56:18
+tokens each. This one is the orchestrator agent which has around 205 tokens. All right. So this is roughly
+1:56:26
+how it looks. Now what we can do is I think there was one section which I wanted to show you. Uh this I already
+1:56:33
+yeah I think this will be covered anyways in the in the uh quiz part.
+1:56:39
+Basically what we need to do is there are three sub agents. So sub a one sub agent will take care of order related
+1:56:46
+items. One sub agent will take care of delivery related isuh items into the items meaning delivery related data into
+1:56:53
+the context. One uh agent will take customer related data into the context
+1:56:58
+and each agents we have defined to have a context limit 950 tokens 900 tokens and 1,100 tokens. And these are apart
+1:57:06
+from the system prompt and apart from the task briefing MD which are already passed into all the three agents you
+1:57:12
+have these many six uh not six these many uh 1 2 3 around 10 or 12 items to
+1:57:17
+be passed into the sub aents the question is how would you decide that so
+1:57:23
+uh we don't have to spend time on this but I will just show you the solution uh we can spend time in the quiz part so
+1:57:29
+the solution is that you decide the context to be passed into the each agent based on what that agent's capability
+1:57:36
+is. If one agent is really good at handling things related to order, pass things related to order to that agent's
+1:57:42
+context. If another agent is supposed to handle things related to customer, pass only things related to that into the
+1:57:48
+particular agent's context. Um, now let's go through a few questions that will make things lot more first
+1:57:56
+confusing and lot more clear afterwards. Uh, please answer your options in the
+1:58:01
+chat. Uh some questions are actually very very straightforward. So I'm expecting all of you to um you know give
+1:58:07
+the correct answer. What is this information retention ratio? Fairly straightforward. What exactly is the
+1:58:13
+definition of information retention ratio in context compression?
+1:58:19
+Obviously it is the ratio of what are the total number of facts existing in the document compared against the total
+1:58:24
+number of facts that were preserved after compression happened. Right? So ratio of key facts preserved to total
+1:58:30
+key facts after compression. fairly straightforward. What about this? Which compression is
+1:58:36
+most effective for large uh with uh conversations with large embedded tool
+1:58:42
+results? Fairly straightforward. There is nothing confusing here. Uh do you do LLM
+1:58:49
+summarization or would you do tool result clearing? Probably these are the only two options coming to your mind,
+1:58:55
+right? So the most effective one for large tool results. If tool results are definitely your biggest uh item which is
+1:59:02
+consuming your context tool result clearing should be the easiest one. But if tool results are equally proportional
+1:59:08
+to other items in the context maybe then you will first do tool result clearing and then do LLM summarization. So LLM
+1:59:15
+summarization can result in a lot of loss of information. Also a 15 turn
+1:59:20
+operations debug session has 5,000 tokens. After LLM summarization, it's
+1:59:26
+400. It is 400 tokens with 16 out of 20 GX retained. What's the IRRa? I mean,
+1:59:32
+fairly trivial. 16 out of 20 means you multiply by 5. 16
+1:59:37
+multiplied by 10 is 1860 multiplied by 5 means it's 80. So 80%
+1:59:43
+should be the IR fairly fairly straightforward. In hierarchical compression tiers like
+1:59:49
+critical 100% retention, important 50% retention and so on. What determines which tier a message belongs to? This is
+1:59:55
+one question many of you might have doubt about.
+2:00:06
+So here the question is is it D or C that's the question in in hierarchical compression do we
+2:00:14
+decide the hierarchy based on some rules or based on LLM based I mean based on
+2:00:19
+semantics. So in hierarchical compression it should
+2:00:24
+be based on semantics. Uh but in the trimming in trimming it's based on uh
+2:00:30
+it's completely trimming it's based on rules right but here it's based on semantics.
+2:00:36
+Then why is priority trimming considered riskier than tool result clearing?
+2:00:48
+What is the risk behind priority trimming?
+2:01:00
+So this is a little bit confusing right just think about it. I think people are typically I mean generally consider uh
+2:01:06
+confused between B and D. Okay first of all let's eliminate priority trimming requires more compute power to execute
+2:01:12
+than clearing. Uh there is nothing like that. So A we can eliminate for sure. Priority trimming can only done by an
+2:01:18
+LLM. uh while tool clearing is rule based and uh deterministic actually priority trimming can uh see trimming
+2:01:26
+can be done by a nonlm because in priority trimming hierarchy is defined based on P 0 P1 P2
+2:01:35
+P3 uh P1 P3 is the tool results and maybe uh earlier conversation history
+2:01:41
+which we can define based on rule P2 might be things which are earlier in the
+2:01:46
+in the later part of the conversation like conversation that just happened recently. So we can define some rules.
+2:01:52
+So here necessary LLM is not really required. Tool result clearing uh tool result
+2:01:59
+clearing preserves reasoning context while trimming removes entire messages that may not be implicit. Tool results
+2:02:05
+are always redundant. So clearing them is safe while user messages always contain unique information. Let's let's
+2:02:10
+go with one of them and let's see. So answer is B. Tool result clearing preserves reselling context. But these
+2:02:17
+two are very confusing, right? They pretty much almost feel like they are saying the similar thing. But tool
+2:02:22
+result clearing preserves the reasoning context while trimming removes entire message that may contain implicit uh
+2:02:28
+dependency. Tool results are always redundant. So clearing them is safe while user message always contain. Maybe
+2:02:34
+the always word is not so true. It's not like always tool results are redundant. We can't say. Um and always user
+2:02:41
+messages unique information also we cannot say. If this was rewarded in a slightly different way, it would have
+2:02:46
+been even more confusing whether B or D is correct, right? So maybe this always word is not the not the right thing to
+2:02:53
+say. Um an operations transcript has three tool results averaging 250 tokens
+2:03:01
+each. So 750 tokens. Um oh in B it is
+2:03:06
+saying let me go back to fifth. uh tool tool clearing preserves reasoning context while trimming removes entire uh
+2:03:13
+messages that may uh contain implicit. So basically in tool result clearing if
+2:03:19
+you remember LLMs can also clear tool results. Sometimes in the LLM summarization but there it's not
+2:03:25
+clearing the tool results it's summarizing in one or two sentences. Um if it is complete tool result
+2:03:32
+clearing it is um it is not LLM based but in LLM based summarization it can
+2:03:38
+clear in LLM based summarization also tool results are cleared technically right tool results are summarized into
+2:03:44
+one or two sentences. Um but yeah what this is saying is tool result clearing preserves reasoning
+2:03:50
+context while trimming removes entire messages that may contain implicit uh dependencies.
+2:03:56
+So trimming means um in trimming what may come in your P3 level can be r tool
+2:04:02
+results as well as your conversation history. So your conversation history which is far from their most recent
+2:04:07
+conversations may get cleared. So it may affect the context conversation history or or uh uh user inputs which are far
+2:04:15
+away from the current user input may again get removed that may affect the context. That is what this is saying.
+2:04:22
+Um okay you have three tool results each averaging 250 tokens then 12
+2:04:29
+conversational messages averaging 60 tokens each. So this is 12 * 60 which is what 720 and this is 750. If you apply
+2:04:37
+tool result clearing replacing each tool result with a 30 token summary what is the appro approximate compression ratio?
+2:04:47
+It's fairly easy. You can
+2:04:54
+So basically tool results were originally 3 * 250 which was 750. Now
+2:05:01
+tool result becomes 3 * 30 which is 90. So your tool results go from 750 to 90.
+2:05:09
+So whatever that number is that much compression is there. So about 78% of original uh tool res from 750 to um 90
+2:05:18
+tokens. Let me check if first of all yeah this is this is not definitely 55%age. This is 90 out of 750 is closer
+2:05:25
+to 78%age. Then
+2:05:31
+in a threepass autoco compaction system, why does tool result clearing happen before message summarization?
+2:05:46
+This I think should be clear. We have discussed this in detail like why is tool result clearing the first thing
+2:05:51
+which you do in autoco compaction. The reason is uh as we discussed toolled results are kind of deterministic. Of
+2:05:58
+course depends on the tool but in general when you call the tools with a certain condition it will always give
+2:06:04
+you the same output. So toolled results are sort of deterministic. It lower it's low risk because if you need ever need
+2:06:09
+it again you can simply call the tool again. So you can get maximum
+2:06:14
+compression before resorting to LLM based summarization which can be lossy.
+2:06:20
+You saw that in in the example which we discussed in the LLM based summarization that was the most lossy summarization
+2:06:25
+because 18 out of 20 facts were retained two did not get retained. What what is the recommended compact at
+2:06:32
+threshold for production autoco compact systems? This we have discussed fairly straightforward. You should know this.
+2:06:38
+So there is um compacted and there there is emergency trimming right. So compacted is typically 85 80%age
+2:06:45
+trimming emergency trimming at around 95%age. Um
+2:06:50
+then what does context rot refer to? I think by now this is the only thing maybe you should be able to answer this
+2:06:55
+in the sleep. It basically degradation of models uh context over uh time and
+2:07:01
+usage. Then during an autoco compaction simulation yeah this question auto compaction
+2:07:08
+simulation pass one fires which is tool clearing fires but the context is still at 88%age capacity emergency threshold
+2:07:15
+is 95%age. What should happen next? First of all, is everyone clear why
+2:07:20
+after tool clearing the context is still 88%age capacity? Why is it not coming below 80%age?
+2:07:27
+Is everyone clear why? Because auto compaction triggers at 80%age
+2:07:32
+if So my question is if it gets triggered at 80%age, how come the capacity is still 88%age? Wouldn't it
+2:07:39
+bring it below 80%age anyways?
+2:07:46
+Why why is this make sensible? I'm I'm just trying to recollect your memory. Why is why is even after autoco
+2:07:53
+compaction triggering why does it stay at 80 88%age?
+2:07:59
+Simply because in the whole in the whole context you don't know how much uh is
+2:08:05
+the tool output. So when you clear the tool or um compact the tool results
+2:08:11
+there is no guarantee that you may go from 94%age to 79%age or 88%age. You can
+2:08:18
+you might still stay at 88%age or 80 above 80%. So what happens? So what
+2:08:24
+should happen now? Uh I let me just check your answers. Um B A B most of you
+2:08:30
+are saying B. Some of you are saying A. Okay. I'm not sure what what which one you're saying. What should be the next
+2:08:35
+step? So nothing is between 88%age compacted
+2:08:41
+and emergency. So system waits for more messages. Is it that or system retries pass one with more aggressive tool
+2:08:46
+clearing?
+2:08:59
+Okay. All of you are it seems like many of you are saying a some people are saying password retry password. Um so
+2:09:06
+what see what what should happen is there are different levels of clearing. First of all in hierarchical clearing
+2:09:12
+first level of clearing is tools and second level of clearing is um the let's
+2:09:18
+say some things in P2 or or some other things a apart from tools in P3 which is
+2:09:23
+like conversations that are very old or u um you know uh user instructions user
+2:09:30
+prompts that are very very old. Maybe you can clear that because rest of the things uh things about user instructions
+2:09:36
+are already captured in the rest of the context. So something should trigger right that's what ideally should happen
+2:09:41
+because if we don't do anything we are guaranteed to reach this emergency threshold. You know when emergency threshold is used emergency threshold is
+2:09:49
+used only when imagine that your context window is right now at 79%age. At 79% there is no compaction. Okay. Now
+2:09:57
+let's say you your LLM produces an output and that output is these as these
+2:10:02
+many tokens such that you jump directly from 79 to let's say 96%age
+2:10:08
+at that point auto compaction which happens at 80% will not get triggered at
+2:10:13
+that at that point directly emergency threshold will get triggered but anything before that if autoco
+2:10:20
+compaction is not a the pass one of tool clearing of autoco compaction is not able to do anything it will try pass two
+2:10:26
+so that is the next logical step should happen. uh if nothing nothing being done
+2:10:31
+is not a good thing because then you are anyway see at 95%age anyway you are trimming without any uh you know care
+2:10:39
+because your context window is almost dead so you have to trim so there is no no choice but at 88%age you may have
+2:10:46
+some choice to remove P4 and P3 only do not touch P2 right so when you have more
+2:10:53
+choices you you will execute that choice so it should be firing pass two immediately Pass two is compact at run
+2:11:00
+the compact at but for maybe the next level of hierarchy. Uh okay another one why is the emergency
+2:11:08
+threshold um emergency at is separate from compact? Why do we need these two
+2:11:13
+things?
+2:11:25
+So why do we need this? It's very aggressive. Uh so emergency threshold compaction uh I mean trimming is very
+2:11:31
+aggressive. It will literally remove entire portions. Whereas compaction can be made using LLM. So if LLM compacts
+2:11:37
+something uh from tool results, it can still compact whatever is remaining. But emergency trimming will completely
+2:11:43
+remove tool results. So nothing will be available. Plus it will remove anything else needed
+2:11:49
+in multi- aent code review system. Why is contract first design critical? First
+2:11:54
+of all remember what is contract first? Why is it needed?
+2:12:03
+So contract simply means defining a common schema for all the agents so that the results can be merged or or combined
+2:12:11
+together to build one single product. So if you have sub agent for front end, sub agent for back end, whatever they
+2:12:16
+produce should you know should be compatible with each other. Then what is the main advantage of fan out or fan in?
+2:12:24
+So fan in simply means you have multiple sub agents you compile their results into one single orchestrator. So why is
+2:12:31
+this preferred over a single agent approach for code review?
+2:12:48
+So I think this is a bit confusing right? Okay, let's let's first of all look at what may not be the answer. Fan
+2:12:54
+out is always faster because agent run in parallel. Uh not sure it need not be fast. It
+2:13:01
+depends on the particular project. So it's probably not a right. Fan out uses fewer total tokens because the
+2:13:07
+difference is split into smaller pieces. Uh there is no guarantee of that. It may
+2:13:12
+even end up using a slightly more tokens. Why? Because the system prompt is passed to all the all the individual
+2:13:18
+uh agents. So maybe the total number of tokens consumed may be a bit higher. What about um D multiple agents can use
+2:13:26
+different LLM providers simultaneously reducing vendor lock in. I mean for sure
+2:13:32
+that is possible for sure you could do that but that's not primarily the reason why we use fan out. The reason is um you
+2:13:40
+have specialist agents. Some agent is good at code review. Some agent is good at security issues. Some agent is good
+2:13:46
+at um perhaps um uh testing. So you need
+2:13:51
+the specialist to invoke their special skills. In a multi- aent system, the
+2:13:56
+orchestrator sends the full PR pull request diff to all the three sub aents. What's wrong with this? So earlier we
+2:14:03
+saw the example where the PR diff was sent such that uh only the required
+2:14:08
+parts were sent to required the the specialist agents. But what if we send the whole thing to all the three sub
+2:14:13
+agents? What's wrong with it?
+2:14:28
+Okay. First of all, let's think about it. Nothing wrong. No, it's not like there is nothing wrong. There is something wrong about it. So, it's
+2:14:34
+definitely not a it violates the fan out pattern which requires equal sized input to all agents. There is no such rule. We
+2:14:40
+don't need equal size rule or anything. How about B and D? B versus D. It weighs
+2:14:46
+tokens. Each agent should receive only receive the code sections relevant to its domain. That's the first thing. D is
+2:14:52
+it causes agents to produce duplicate findings since they all see the same code. Is D true?
+2:15:03
+See, D is not true. Just because all agents receive the same input does not mean they all will produce the same
+2:15:08
+output because their capabilities are different. Maybe these agents have different access to different tools, right? So there is no guarantee that
+2:15:14
+they will all produce the same findings. But if the entire code is provided to
+2:15:20
+sub agents, the sub aents can definitely see the relevant sections of the code corresponding to their expertise and
+2:15:26
+they can produce the findings which they are supposed to find. But the thing is it will also receive a lot of tokens which it cannot do anything with because
+2:15:34
+if there is a let's say a agent which can do some testing on a function maybe
+2:15:40
+a code review agent looking for schematic of the code need not receive those tokens. So it weighs tokens
+2:15:46
+basically but there is no guarantee that providing the same input to all agents will provide the same output. There is
+2:15:52
+no guarantee different agents have access to different tools. Then a security agent finds five
+2:15:58
+critical SQL injection uh vulnerabilities but its output schema only allows the maximum se uh sec
+2:16:05
+severity warning of sever maximum severity of warning. Uh what design
+2:16:10
+principle was violated.
+2:16:23
+So output schema uh is not allowing it to produce an output which it is it's supposed to produce because of its
+2:16:29
+restrictive nature. So um that's the reason why it will not this this is not a good structure. What is the
+2:16:37
+orchestrator's role in the fan in phase of multi- aent code review? So fan out we discussed from orchestrator you go to
+2:16:43
+different agents. Fan in is the opposite of that. So what what is the role of orchestrator?
+2:16:57
+So this is where the dduplication idea comes. So earlier we discussed if we pass the same input to three agents they
+2:17:02
+all will produce the same output. They will not all produce the same output but maybe some some findings may be
+2:17:08
+duplicated between the agents because maybe two agents have similar some two agents some capabilities of two agents
+2:17:14
+might be similar. Maybe then because of that they can produce same findings. So those findings we duplicate and then
+2:17:21
+merge the finding from all the agents and determine overall review verdict. So the central orchestrator agent basically
+2:17:27
+collates the information coming from all the different agents. So in the WSCI framework, what does the C specifically
+2:17:33
+address? Very trivial question.
+2:17:44
+So it's it basically compresses uh reduces what is already there in the context window while preserving critical
+2:17:49
+information. So compress is basically compressing what is there in the context window already.
+2:17:55
+Um okay this we have not discussed. So I will move to this. What is the relationship between compress and
+2:18:01
+isolate in the WSCI framework?
+2:18:11
+uh fairly straightforward nothing uh nothing nothing um confusing at all compress will reduce the context within
+2:18:17
+a single window isolate just isolate is like multi- aent framework it will distribute the context so that different
+2:18:23
+agents can have its own uh API calls so they can work in different context windows
+2:18:31
+uh then in the context pyramid which layer has the highest preservation priority ity during compression.
+2:18:39
+This also we have discussed many times. But which one has the highest priority
+2:18:45
+system instructions and persona? They define the uh agents behavior and must never be removed.
+2:18:52
+A production agent handles 50 turn customer support conversations. After 30
+2:18:58
+turns, the responses become increasingly confused and contradictory. What is the most likely cause? You know this already. It's the context rod. Um on
+2:19:07
+Vijuara's website now we have a you know uh a calling agent. I urge you guys to
+2:19:12
+try it if you really want to just go to our landing page and uh this there is
+2:19:18
+like a phone icon. Sometimes it'll say it'll say like daily limit has reached but basically you can just um there is
+2:19:26
+this ask AI option. So here what we have done is we have an agent with a specific
+2:19:31
+context about um our programs and stuff like that and you will notice that after
+2:19:38
+like 5 minutes or 6 minutes it's uh its ability to communicate in a very nice
+2:19:43
+way will uh significantly reduce because we have not optimized the context or anything over there and after some point
+2:19:50
+it will completely disconnect. So um basically its context window will become full. So compaction and compression we
+2:19:55
+have not yet implemented. So it's a you will see a classic case of uh context rot if you just look at our current uh
+2:20:02
+chatbot but uh I think now we have we are making some implementations not sure if we have um pushed it to production
+2:20:08
+yet but that was the case 3 days back then uh so here context rot will happen
+2:20:15
+then your multi- aent system occasionally produces duplicate findings the style
+2:20:21
+agent and security agent both flag the same missing authentication decorator How should you handle this?
+2:20:34
+This we already discussed uh three two three questions ago in multi- aent
+2:20:39
+framework.
+2:20:46
+So think about this sometimes uh sub agents can give findings which are duplicate. The only
+2:20:53
+only place where you can analyze this is sort of um in the orchestrator because these findings are directly going into
+2:20:59
+the orchestrator. So in orchestrator there should be a step a dduplication step so that you know these similar
+2:21:05
+findings are grouped so that the context window is not unnecessarily bloated. You are designing an autoco compaction
+2:21:12
+system for a coding assistant. Which type of message should never be compressed or removed? Okay, this is an
+2:21:19
+interesting question.
+2:21:28
+So what should never be compressed?
+2:21:43
+This uh we briefly discussed during the lecture also if you remember right. Uh so the so if you if you read the uh
+2:21:50
+structure okay let's read this D the user's initial request that started the conversation it's already captured in
+2:21:55
+the ongoing context. So uh users initial request okay after the initial instructions when the when you are
+2:22:02
+building something what you are building why you are building for what you are bu for for what's the reason why you are
+2:22:07
+building all those all those things are kind of captured in the context although
+2:22:12
+if it is part of claw MD file we should not delete the fire file directly right
+2:22:18
+but if there are some initial instructions it kind of is there in the context already so if the very initial
+2:22:24
+thing is removed it's kind of Okay. But look at this option A. The most recent
+2:22:30
+code uh code edit the assistant proposed that the user hasn't yet accepted or rejected. So when you use a code uh code
+2:22:37
+code editing assistant u you will see that the diff is shown in in the whichever ID you use right and that diff
+2:22:45
+you have to either accept or reject before moving to the next step. So if user has not gotten a chance to say
+2:22:51
+whether I accept this change or reject this change probably you should not delete that from the context yet right.
+2:22:57
+So uh you should keep this uh this is like a very special case right. So this is a special case where you should not
+2:23:04
+be removing this. Then a multi- aent system for food delivery crisis has agents for order
+2:23:11
+flow dispatch driver dispatch customer support and communications. The communications agent need access to
+2:23:17
+findings from all other agents to draft the status update. How will this be architect architected? In what way this
+2:23:23
+will be running? Give the communications agent access to full context window of all other agents. Include the
+2:23:30
+communications agents in the initial fan out so it can observe the investigation in real time. Run communication after
+2:23:36
+the others are complete and pass only the structured output. Then have each agents send their raw context to shared
+2:23:42
+database. So this is classic example which we discussed earlier. If there are agents whose input depends on the other
+2:23:48
+agent it's like in a sequential way right. Of course sequential agents will also get other things in the context.
+2:23:53
+They will get cloud.md or other markdown files which are relevant. So there will be a shared base also but uh the agent
+2:24:00
+specific summary will be happening in sequence. When cloud code spans a sub aent how does the sub aent receive its
+2:24:07
+context? It shares the parents context window via memory map IPC. It inherits full parent
+2:24:14
+conversation history automatically. It receives a separate API call with a curated prompt containing only relevant
+2:24:19
+context. It reads from a shared database that both parent can and some agent can access. It's not like that. The
+2:24:27
+um relevant context is curated by the orchestrator. Here the orchestrator is
+2:24:32
+cloud code. So this sub agent will have its own way to call separate uh LLM a I
+2:24:38
+mean its own ability to call claude whichever model you are using using its own API.
+2:24:44
+An orchestrator sends the entire 50,000 token conversation history to its three of the sub aents. What is the primary
+2:24:51
+problem? This is again clear. The primary problem is context rot of each sub agent. So the
+2:24:58
+point the whole point of creating the sub agent itself is lost here. if you are sending the same humongous 50,000
+2:25:04
+token history into these agents. So very very straightforward in the shared
+2:25:10
+context shared base context pattern. What is the base that all agents receive?
+2:25:26
+So there is one minor issue in the wording here. I mean answer should be B
+2:25:31
+because a a common foundation plus agent specialized context. So agent specialized context which is agents.m MD
+2:25:37
+it is special to itself. Okay by the way. So in this from this option maybe we should just delete whatever is
+2:25:42
+written after this plus of course it is plus something but the common foundation will be system prompt task description
+2:25:48
+and shared data like in the food delivery incident report MD cloud MD and
+2:25:53
+any other uh shared data. So that will be forming the common base.
+2:25:59
+Then why does the sequential pipeline pattern produce uh higher quality findings than
+2:26:06
+full isolation?
+2:26:18
+So there is one point which I want to discuss here which is see sequential pattern pipeline pattern it's like a
+2:26:24
+double-edged sword because for reasoning it can do better better job because you you can validate what one agent has done
+2:26:31
+using another agent but at the same time it can also cause error propagation. If one agent produces something erroneous,
+2:26:37
+it is propagated to next agents also, right? So, it's like a double-edged sword. So, you will have to put some guard guard rails. Three agents have a
+2:26:44
+thousand token budget. The shared base is 300 tokens and each agent needs 600
+2:26:50
+tokens of specialized context. What is the total context consumed across all the agents?
+2:27:00
+This should be fairly straightforward. What is the total token consumption?
+2:27:14
+So 600 is a specialized context plus each of them receive 300. So it is 600
+2:27:20
+multiplied 600 + 300 multiplied by 3 which is 900 * 3. It is not 600 * 3 +
+2:27:28
+300. That's not how it works. This 300 is taken three times. Shared base is uh
+2:27:34
+although it's a shared base that same context is appearing as tokens in each
+2:27:40
+API call. Okay. So this is common. So it's 600 + 300 multiplied by 3 which is
+2:27:46
+2700. Then a coding a assistant uses
+2:27:51
+agents.mmd file in project subdirectories. How does this how does this relate to context isolation?
+2:28:00
+How does agents.mmd file in the subdirectory relate to uh context isolation?
+2:28:11
+So agents.md which is in a subdirectory is agent specific. So it defines the
+2:28:16
+context which each sub aent receives. Right? Agents.md can of course be for a
+2:28:22
+specific agent can be modified by the orchestrator for sure.
+2:28:27
+Then when is full isolation the best choice over shared base or sequential
+2:28:33
+pipeline? When do you prefer that instead of shared base or instead of sequential pipeline?
+2:28:42
+This is a classic case where you don't need the agents to know much about what the other agent is doing. They are
+2:28:48
+completely they're as if they are the only people who exist like uh sort of you know independent contributors in
+2:28:54
+teams. So they are literally is in full isolation. Then uh what is the main risk of the
+2:29:02
+sequential pipeline pattern? We discussed this like 2 minutes ago.
+2:29:08
+So just like how if there is a reasoning the the remaining agents can verify the reasoning just like that there could be
+2:29:15
+a risk of error propagation. If first error if first agent makes an error in sequential pattern it could propagate
+2:29:22
+into the remaining part of the pipeline. So this this we have to put guardrails to make sure that there is an error and
+2:29:28
+it's not getting propagated. So it may result in some extra token consumption to make sure that such a thing does not
+2:29:33
+happen in a multi- aent system. What is the orchestrator's most important
+2:29:38
+responsibility regarding context?
+2:29:45
+Obviously the orchestrator's single biggest thing or rather two things are one is deciding what sub aents you need.
+2:29:51
+Second is once you decide these are the sub aents you need um what should we feed to each sub aent. So it's deciding
+2:29:58
+what context to include in each sub aents window. Then last questions question how do sub
+2:30:05
+aents typically share their findings with the orchestrator.
+2:30:15
+So this we already discussed there is a contract between agent and orchestrator sub agent and orchestrator agent based
+2:30:22
+on that contract there is a schema that is defined and that schema will be in JSON format or whatever and then that
+2:30:28
+that will be shared. So this is the quiz. So I need before we
+2:30:33
+wind up the lecture there is one more thing uh some people have asked me personally regarding an extension to the
+2:30:38
+weekend assignment. I can already see some assignment submissions that are good. uh but if you need extension to
+2:30:44
+submit the assignment on MCP uh please take you know few more days if you want
+2:30:49
+uh anyways I plan to um evaluate it after this course only so I will anyway need some more days to go through your
+2:30:56
+submissions properly so if you if you need more time just take more time just let me know drop me a message uh then I
+2:31:02
+can just take that into a note so uh this will bring us to an end of today's
+2:31:08
+lecture so for the uh okay there's a question most of the examples are focusing on coding agents
+2:31:14
+do these concepts work similarly in non-coding agent frame agentic frameworks like langraph crew AI Google
+2:31:19
+ADK yeah so the uh framework of agents MD whatever we discussed today is kind
+2:31:26
+of universal it works in almost all agent decoding platform as well as
+2:31:31
+platforms like uh langraph but u I am not so sure about the same
+2:31:37
+for the equivalent of cloudmd file because cloudmd And similar equivalents are there for coding based agents but uh
+2:31:45
+for remaining frameworks I'm not sure how it actually works. My takeaway is if
+2:31:50
+if you have access to a coding agent which is the most modern you should definitely give it a try. So in the last
+2:31:57
+3 days I was talking to three separate friends of mine who are working in uh in good positions and one thing that they
+2:32:04
+have been telling me is like they they have been wanting to use cloud code or similar agent but then there are severe
+2:32:10
+restrictions from their companies because one of them is working on Amazon another person is working in 3M
+2:32:15
+all of these are like 100 billion plus dollar companies and it's very difficult
+2:32:20
+for them to come to decision of how to use what to use. So it's very slow. So
+2:32:26
+then what we thought was okay for at least to know what are the capabilities so that they can propose something to
+2:32:31
+their team so that the team can form a policy which can which they can see how to implement in their in their at least
+2:32:37
+in their team itself. Uh what we discussed was at least for some personal
+2:32:43
+project which has got nothing to do with company try some of the most modern coding agents. Um and if the results are
+2:32:51
+like day and night different at least try to make a proposal to your company about okay this is this is something
+2:32:57
+that we should have many of you might have seen people posting on LinkedIn and x.com about their cloud code monthly
+2:33:03
+budget like some teams are literally sometimes meaning like small companies like 100 people team $50,000
+2:33:10
+uh bill they are getting for like 1 month's usage it's like crazy and many people are literally stopping their
+2:33:16
+operations whenever there is an outage in cloud code but yeah Sumit's question how is the experience with auto research
+2:33:22
+are the results of experiment improving yes the results of the experiments are improving but one thing which I noticed
+2:33:28
+is like uh auto research at least the way Karpathi has designed it has a tendency
+2:33:35
+to oversimplify everything so it is going towards experiments that are too
+2:33:40
+simple I mean that's deliberate karp you can literally see in the in one of the uh markdown files that he has written go
+2:33:47
+for simple experiments which can be executed fast. So because of that one issue is that sometimes the model will
+2:33:53
+not tend towards uh complex some if something complex
+2:33:59
+needs to be done normally cloud code can do it but in auto research most of the experiments are are like 10 minute 15
+2:34:06
+minute 20 minute experime experiments but cumulatively they they of course they accumulate to something better I
+2:34:12
+can see that the results are improving. So one in in the paper that we are working on right now we are seeing that
+2:34:17
+um uh they are proposing like um uh from
+2:34:22
+the from the embedding layer find out the deviation from the original data and subtract a certain number which sounds a
+2:34:28
+bit trivial but uh it's working it's it's really working. So the results are improving but then my fear is okay are
+2:34:35
+we trying something trivial or is there something logically amazing here right? So that that uh that
+2:34:42
+issue is there but you should try uh auto research once in all of us in our
+2:34:47
+team are running different research problems now to optimize some of our models see how good auto research can
+2:34:52
+be. So the way it you can set it up is take any Amazon EC2 instance slightly
+2:34:58
+better RAM would be better. So the free version has I think 1 GB of RAM or
+2:35:03
+something which is too too small. get something with at least eight or 16 GB of RAM so that things are a little bit
+2:35:09
+fast at least on the computer side. Then if you have runpod just recharge it for $10 or something $10 $15 and um then
+2:35:19
+connect it with your github and you don't need to have open claw or anything in this case. Uh auto research uh
+2:35:25
+instructions are very simple. Then whatever is your problem statement uh whatever your data set or model you have
+2:35:31
+at the moment. If you don't have any model that's also fine you just need to mention it. But whatever your problem statement is mention it mention that and
+2:35:37
+mention the direction you want to take and uh yeah in auto research only
+2:35:43
+training train.py we can optimize on multiply multiple files. So the by default way he has mentioned it is only
+2:35:50
+train.py will be changed but the way I have written it is in such a way that I did not directly clone auto research or
+2:35:56
+anything. I gave the link of auto research to um cloud code and I gave my
+2:36:01
+own specific instruction. I asked it to follow the philosophy of auto research but not follow it exactly because in my
+2:36:07
+case I know that experiments some of them are not 10-minute experiments they are longer experiments but I just wanted
+2:36:12
+to follow the philosophy the philosophy is continuous improvement and relentless experimentation in the sense like never
+2:36:18
+stop until a human says you stop so that's the reason why it's 24/7 it's running uh just try that I also had used
+2:36:27
+one more GitHub repo for research uh forgot the name of that starting with M
+2:36:32
+Um but but I am primarily sticking to auto research for next at least few days. I just want to just see what what
+2:36:38
+are its limits. How much how much can it optimize models but yeah uh you you guys
+2:36:43
+should try it like at least try for some of your research try a modified version of auto research. Don't fork I mean
+2:36:50
+don't clone the report directly. Just give the link to cloud code or whichever coding agent you use. then mention your
+2:36:56
+your instructions like um you don't want to restrict to simple experiments alone
+2:37:01
+whatever it is just mention that but follow the similar philosophy I think that will give even better results in
+2:37:07
+any case if I get something amazing I'll share it with you guys uh in some days I'm asking it to run a few more
+2:37:13
+experiments today and tomorrow uh all right everyone we can stop today's lecture here thank you so much uh for
+2:37:19
+joining and staying back so so long uh tomorrow we'll discuss about memory uh on 8th Day eight session we will uh
+2:37:26
+there are two projects option I'm thinking um I haven't yet finalized because both are equally exciting but I
+2:37:32
+don't have time to time to uh show you both maybe I'll record one video one I'll show in the lecture live and one
+2:37:38
+I'll record a video or something but u let me finalize it and um tell you my
+2:37:44
+plan regarding that so that will be on Thursday or Saturday so the date I have not finalized u so the the build session
+2:37:51
+will be s on my bill session will be on Thursday or Saturday Rad and Rajett's build session uh will be finalized. I'll
+2:37:58
+talk with them and I'll let you guys know the date. Um uh share the explanation of software next week new
+2:38:04
+course what it will contain. So that I think Raj will be a better person to answer than me. Uh all I know is like
+2:38:10
+he'll show you some amazing um practices for modern software development with AI
+2:38:15
+agent. So I I think it'll be a very very uh powerful tool anyone can tool as in
+2:38:21
+powerful framework which anyone can learn from. So I know Raj's workflow in and out because we literally are working in the same office, right? But I think
+2:38:28
+uh you guys will benefit a lot from uh learning the sort of workflow that we internally use at Visualara. So uh check
+2:38:34
+it out. The link I can just find the link. Um
+2:38:41
+just give me a second.
+2:38:47
+Yeah. So this is the link. Yeah. Yeah. Thanks. Yeah, that's the link. uh just go through that um you should understand
+2:38:54
+the structure. It's starting on next Monday for continuously 5 days uh Monday to Friday. So it'll also be again uh
+2:39:02
+long lectures of building. You will build a lot of projects as part of it. Uh so it'll be like a pure workflow
+2:39:08
+setting up um stuff like how to set up your perfect workflow for
+2:39:14
+building using coding agents. uh because there are there are different things which you need to do for projects of
+2:39:20
+different complexity level. So for some simple projects I never define like oh go with this project road map document
+2:39:26
+with version one version two. I don't say that. I just want things in one shot. But if it's a very complex project
+2:39:32
+I typically ask to go um first be in development mode develop the v1 iterate on v1. Once that is done um go to the
+2:39:39
+production mode um oh sorry planning mode to development mode and then if it is if it is a good v1 then put it into
+2:39:46
+production then go back to planning to v2 then uh planning of v2 to development of v2 and so on. So I have a specific
+2:39:54
+iterative process which I follow for complex larger scale projects. For
+2:40:00
+smaller scale projects I don't uh I don't follow any of that. It's it's it's more random. But anyways uh you'll you
+2:40:06
+guys will learn all of that in detail on that boot camp. So see you guys tomorrow. Uh no it's not self-paced. It
+2:40:13
+is uh live. It is it's live happening I think from 9:00 a.m. to uh 11 uh p.m. I
+2:40:22
+mean 11:00 a.m. Just let me just share my screen.
+2:40:28
+So this is the
+2:40:34
+modern.
+2:40:43
+I think somebody had shared the link right Shrihar you had shared yeah I myself had shared me just open that
+2:40:54
+so this is the boot camp link and the goal here is like to have proper build session so you will you will have to be
+2:41:00
+ready with your laptop and whatever your coding agent platform is uh it will not be a passive lecture where you can just
+2:41:07
+listen so it will be very very intense and you will have to spend a lot of uh
+2:41:12
+actual brain cells to to code. But anyways, just uh if you have any doubts, just
+2:41:18
+drop an email to hello@visara.com. We will uh get back to you. But it'll be a very very nice course. I highly
+2:41:23
+recommend it. Uh Raj has spent a lot of time designing this. So uh thank you so
+2:41:29
+much everyone. Let's meet again tomorrow same time uh 9:00 a.m. And uh take care
+2:41:34
+until then. Bye.

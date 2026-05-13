@@ -1,0 +1,2782 @@
+0:00
+If you can confirm, if you can see my screen and also hear me properly, that'll be great. Okay.
+0:10
+Okay. Thank you so much. So today's session is fully about building. Uh today we'll be building a email reply
+0:16
+agent from scratch. So there are a few things that we will cover which includes
+0:22
+um different platforms like Versel for deployment, railway, Google cloud console um fetching um emails from Gmail
+0:31
+API etc. So at the end of the day what we are going to build is a web application which mimics email and it
+0:38
+will fetch data from your actual Gmail application and then you can reply through it provided there is a context.
+0:45
+So we will set all of that um very nicely in the next few minutes.
+0:51
+The prerequisites for this we have discussed in detail in the last lecture also. Just get ready with your cloud
+0:57
+code. You will need uh either of the API keys OpenAI or Gemini. It doesn't matter
+1:03
+whether it's OpenAI or Gemini because you are building this today. Um so you can pretty much use any API key that you
+1:08
+have available. I have these two API keys available. That's the reason why I have listed it here. And uh I'll be
+1:15
+building using cloud code but it doesn't matter really which uh coding agent you
+1:21
+use. Uh any coding agent is fine to be used. Um so uh we can proceed with that.
+1:27
+Uh just a second. I think somehow there is an annotation forming on the screen. Let's stop sharing and I'll restart.
+1:45
+All right. So, here is the actual pain point. Okay. So, I built this app myself
+1:51
+and uh I I'm currently using my own app for replying to all my emails. The goal
+1:57
+is not to make a AI agent automatically reply or anything. Uh automatic replies
+2:02
+I personally don't prefer. However, uh add a human in the loop. Craft the reply
+2:08
+using AI itself so that it is useful to you in 90%age of the cases. In 10 percentage of the cases, the email that
+2:14
+is crafted by the uh email agent in your draft will not be good. So you will have
+2:20
+to modify it. So this will not cut down your email reply time into zero. But if
+2:26
+the time is x, it will probably cut it down to.1x. In the last lecture, I had asked you in
+2:32
+the chat how many emails are you replying to typically uh on a daily basis and many people mentioned it's 2
+2:38
+to 5 or 10 to 20. Uh I did not see anyone who mentioned like 50 to 100 or
+2:43
+something like that. So the true utility of something like this will come for those who are using either email or
+2:50
+slack or discord or any other let's say platform for communication in your inside your team where the order of
+2:57
+magnitude of number of messages that you have to process before crafting a reply or the number of replies that you have
+3:03
+to craft are on the order of few dozens because that's when you truly feel the pain to reply to one or two emails you
+3:10
+don't need an agent at all but what I'm hoping is that irrespective of how
+3:15
+extensive your usage of uh these communication platforms is. Eventually
+3:21
+you will find something like this useful. Um you might have also seen Gemini when
+3:27
+you are using Gmail. Gemini creates an automatic response right? I'm sure you have seen that many of you. Uh my
+3:34
+question is have you noticed anything not so great about the Gemini responses?
+3:40
+like what has been your experience about the autoresponse crafted by Gemini if you have ever used it or if you have
+3:46
+ever seen it you can just mention in the chat
+3:54
+so I will tell you what I experienced um it is the Gemini response is useful like
+4:01
+1/5ifth of the times but it does not have the full context it may have the context from that particular thread but
+4:09
+it's like It's a bit generic response. Um I use it like one out of six times.
+4:15
+If if I see Gemini auto response six times, I may use it once. But other than that, I have pretty much found it very
+4:21
+useless. Right? And the main reason is not because the large language model is not good. Large language model is of
+4:27
+course good. But the reason is we are not setting the context very nicely. So this problem is very real and in fact we
+4:33
+are also building a tool where companies can um make use of something like this where they can connect their Gmail and
+4:39
+their own database so that they can have their own email reply agent. Now what we
+4:44
+are going to build is something like this. We will have a website which will look almost like
+4:50
+uh gmail.com. Okay. Inside this website we will fetch the emails that are there
+4:57
+in our primary inbox. The reason why I said primary inbox is um the rest of the
+5:04
+um categories social updates and there is one more right you don't reply to those typically those are useful links
+5:10
+or when whenever somebody shares documents or when there is a one-time password you use that but the main inbox
+5:16
+where you will spend time replying is the primary inbox so we will create something which will
+5:22
+look kind of like the Gmail primary inbox and what we want to do is uh we want to
+5:31
+craft a reply to any particular email in the primary inbox. If we click on that email, so if that email is currently
+5:38
+selected um there should be an automatically created reply and if we
+5:44
+approve that reply should be sent to the person who sent us the email, right? So we don't have to 100% automate but we
+5:51
+will 90%age automate. Human is still there in the loop. In case the reply is
+5:56
+not something which you like, in case the reply is completely wrong, you should be you should be having the
+6:02
+ability to correct it. In case the email is the reply created by AI is 90%age
+6:08
+correct. You just need to make 10%age change. You should be able to do that. Okay. So let's look at first of all
+6:14
+where do we need to start to do all of this. We will of course start with cloud code and we will require some API of any
+6:20
+LLM. Um and in that uh you will feed the
+6:25
+context of this entire email to that LLM and that LLM is only ultimately who is
+6:31
+going to create the response. Now before we go ahead I have one question. We are using cloud code to
+6:38
+build this application. But once the application is built and once it is deployed is cloud code coming into the
+6:44
+picture anywhere.
+6:52
+So cloud code is not coming into the picture in deployment. If we are using it in local host of course uh cloud code
+6:58
+can help. But when we are deploying we will only have access to one brain. That brain will be the API or mean LLM. uh
+7:06
+any LLM whichever one we are using we'll use openAI or uh Gemini so basically that will be the brain cloud code we are
+7:12
+simply using as a coding agent to build this platform beyond that cloud code will not be there in the picture
+7:18
+now first we need to have a Google cloud console account uh I will tell you uh
+7:24
+how to create this if you don't have it yet and this is where we will set the Gmail API key and whichever email you
+7:32
+want to use um make a Google cloud console on that particular Google account and of
+7:38
+course we will have Gmail as the application from which we are fetching uh our past emails or current emails for
+7:47
+storing the data. Um so when I say data there are a few details which I need to mention. I will come to that. But for
+7:53
+storing the data related to uh whenever our AI agent is replying or when we made
+7:58
+a correction to the reply or when we gave the agent some feedback all of that we will store in superbase. Superbase is
+8:06
+like a postgraql style database. So you will see that when we are building the
+8:11
+front end part of our application we will deploy in versel. If any back-end functions are needed uh which I don't
+8:18
+think if we are building a simple app I don't think backend functions will be needed but if it is needed we will use
+8:23
+railway to deploy and the whole project we will be um deploying on a github
+8:28
+repo. So the github repo can be connected to railway or versel so that whenever you are making changes to the
+8:35
+github repo um you can auto deploy through continuous integration or
+8:41
+continuous deployment to railway or versel. So this is the um workflow. So
+8:46
+we will be using all these platforms. Now can you tell me if we need to craft
+8:53
+a reply to an email, what all things should we feed into the context of the large language model. Let's say that the
+9:00
+databases uh the emails that are coming to you is based on some knowledge base.
+9:05
+So you have some knowledge based document. Let's say you are part of team visual. We have a bunch of courses bundles you we have a lot of information
+9:12
+about other programs everything may be there in some form of data JSON file or CSV file now this is let's say the
+9:21
+students are sending you emails or people are sending you emails regarding some of these programs specific programs okay now tell me what all things should
+9:29
+you pass into the context of the large language model to create the response first of
+9:45
+So first of all the thread current thread which we are looking at that we should obviously pass right because in
+9:51
+the current thread maybe there are already two or three exchanges that happened maybe this is a new thread so no exchange has happened but we don't
+9:57
+know so we will have to pass the entire current thread that is the least thing we have to pass. Okay,
+10:06
+let me just type it. I think there is a little bit of slowness.
+10:14
+So thread is one thing we pass. Then what else do we pass? We have a
+10:20
+knowledge base, right? So that knowledge base, do we ideally pass it entirely or because let's say you have 200 programs.
+10:28
+Uh somebody is asking you about some specific programs. Do you have to pass the entire knowledge base? Cuz it's a
+10:34
+bit of waste of context, right? So, use rag uh to fetch relevant item from the
+10:40
+knowledge base.
+10:48
+From the knowledge base, KB. What else do you need to pass?
+10:54
+You have a specific style of response, right? So maybe you have to pass some email um writing preferences.
+11:06
+What else you may need to pass? Imagine you have already built the application. Wouldn't it be it'd be
+11:12
+great if your uh email response agent is m is becoming better over time.
+11:19
+Wouldn't it be great? because what if the agent is not so good and you need to give some sort of feedback so that the
+11:25
+agent can become better and better over time. So there should be some feedback system um for your agent
+11:34
+and those feedbacks can be passed. If the number of such feedback is very very big maybe we'll have to figure out a way
+11:40
+to condense it but assuming that the app is in a very early stage then the quantity of feedback will not be that
+11:46
+high. So it will not pollute the context that much but this feedback will be very good. And what can be feedback like what
+11:53
+are different forms in which you can give feedback or or what all what all types of feedbacks can can exist when
+11:59
+you are using this application. One can be like a star rating. So let's say AI agent drafted a reply for a current
+12:06
+email. I really like the reply so I directly sent it which means there is
+12:11
+zero change between um what the agent created and what I finally sent right so
+12:18
+one is um marking
+12:24
+or storing the change we made to the agents draft storing changes to emails
+12:31
+so this will be useful why is it useful because that way the LLM can learn that
+12:36
+this is the reason why I did not like its reply. I have specifically changed one or two sentences in the reply and
+12:42
+and the LLM can learn from it. Storing changes to emails. Second thing is we
+12:49
+can have some star rating uh which will tell the degree with which
+12:54
+its response was accepted by us. We can also have something like um
+13:00
+keywords or like a oneline comment saying the email was too generic or uh
+13:05
+we can have a comment based feedback right and this feedback needs to be stored somewhere. We can store it in
+13:11
+superbase and
+13:17
+one more thing that might be useful is past emails or recent emails. So recent
+13:25
+emails that were
+13:30
+sent. So you know why recent emails give a lot of value because if we have
+13:36
+accepted an email and if we have already sent it, it means that that already sent or already accepted email is something
+13:43
+like a gold standard meaning as a user I accept this email which is the reason why I decided to send it. So that will
+13:50
+be very useful for my uh you know judge not judge my agent to realize that oh
+13:56
+this is actually a good example of an email right. So recent emails that that were sent this also we should store in
+14:02
+the database. So if we have this much uh that we are passing as part of the
+14:08
+context we are hoping that um the llm whichever one we are using will be able
+14:14
+to um craft a very good response. Then now let's go go down. So we will
+14:23
+have oh one more thing I forgot to mention is what if there is a
+14:28
+new data set that is added to a knowledge base. For example, if your knowledge base add information about
+14:33
+your programs and let's say you are now having some new programs, it is a painful thing for you to go to the back
+14:39
+end manually and in superbase add uh I mean I mean manually add the new data
+14:45
+into your database. So it'll be great if on your application itself on the front end there is something which allows you
+14:52
+to add new information into your database right and one more thing that you can do is uh one more thing which we
+14:59
+can implement in the app is setting some sort of rules.
+15:06
+So by rules here what I mean is um let's say your email agent you you notice that
+15:13
+an email agent is making some some big mistake in some of its replies that it is hallucinating about one particular
+15:20
+thing you can create a rule saying this should never be done and that rule will always be there in the context. So this
+15:27
+rule also so it'll be great if there is a there's a provision in the application to set some rules which irrespective of
+15:34
+which emails uh you are replying to um the agent is taking care of that rule is
+15:39
+like yeah some sort of guardrail because if something is always present in the context it is it will act to a great
+15:46
+extent as a guardrail right in any case there is a guardrail the guardrail is human there is a human in the loop
+15:51
+unless you are completely automating the pipeline where you create a confidence score and for those emails where the
+15:58
+confident score is greater than 90, you decide to send the reply automatically. If it is less than 90, a human in the
+16:04
+loop is coming. In that case, the guards need to be very very strong. Um, but yeah, and what about the tone of reply?
+16:10
+So, all of that will be in this email writing preferences. So, in the email writing preference, we will uh uh feed
+16:17
+information about what type of reply should it be um a long reply, short reply, etc. Is my voice not very clear?
+16:25
+If you can confirm maybe it's it's just my mic or internet. Okay. Okay. Thanks.
+16:34
+Um so this also I mentioned. Okay. So AI would have generated an email reply. So
+16:39
+before versus after if we modify this AI generated email the before version is
+16:44
+the AI's original version. After version is the version which we created after modifying AI's version. So that also if
+16:51
+you store in superbase or whatever the database is it will be very good.
+16:56
+Uh another couple of features that you will need is you will require an authentication system. Authentication
+17:02
+system as in just like how you log into your email uh Gmail just provide the same login access to this so that only
+17:08
+you can access it. Second thing is something that will be nice is if there is a way to uh easily change the API
+17:14
+key. So if you are using open A or Gemini if the API key let's say expired it'll be nice if uh a API key
+17:21
+modification provision is there in a simple way then
+17:27
+a few more features which I think will be beneficial for the application is if you already made a reply to a particular
+17:34
+email in the primary inbox. So, by the way, we will only be looking at the primary inbox, the updates, social,
+17:40
+forums, those things. We don't care, right? We typically don't respond to those emails. We reply primarily in our primary inbox. So, from the primary
+17:47
+inbox, if we already made a reply, it will be great if we simply archive the email. Archive meaning it will not be
+17:53
+deleted. It will still be there, but we will not see it in the front end. That way, our front end is very clean. Second
+17:59
+is we will ensure that the LLM is never auto replying. uh this this is easy to implement because uh Gmail API needs to
+18:06
+be called. So unless we click a button, Gmail API will not be called. And to make our life easier, we should not have
+18:12
+to give any custom command to start generation. As soon as we select a particular email thread, the uh reply to
+18:20
+that particular thread should be created in one click. And of course uh we should have a provision to modify the email and
+18:27
+send it um if we need to modify it. So then the amount of modifications that we will have to make will be uh high in the
+18:34
+beginning and it will be low hopefully as the app becomes better and better with our usage. Okay. So this is the um
+18:43
+overall structure. Now we can um open our
+18:48
+visual studio code and I have a folder here. So this is my folder.
+18:54
+Okay. I have named it as building email agent live. So you can also create a
+18:59
+working directory in your um uh open in your visual studio code and or whatever
+19:05
+is your um IDE and here I'm showing you the knowledge base which I had for my
+19:11
+earlier um you know my current actual email agent that I am using. So, I'll
+19:16
+show you a folder.
+19:29
+So, this is my knowledge base which I will not be using today. I just pasted it here just to show you um how it how
+19:36
+complex it is and how it actually looks like. So, one thing I want to show you is this emails folder. So this emails
+19:43
+folder has I think 10 uh 12 or 13 JSON files. Each of these JSON files
+19:49
+correspond to all the email threads happened in a in a month. Uh so all these are emails from our last one year
+19:56
+of uh emails. Okay. And look at the size of these JSON files. If a JSON file is
+20:02
+34 MB, it's huge. Meaning that the number of emails here is huge. Uh so the
+20:08
+total size of these JSON files alone is maybe like 200 to 300 MB which is very
+20:14
+high. Okay. So this is one reason why we cannot pass the data um directly in a
+20:20
+raw format to our context. It will easily exceed our context or it will rot our context. Second thing is the
+20:27
+knowledge base. So we have bunch of courses information regarding those courses all created in this JSON format.
+20:33
+Um and it's very very long. So this is that JSON format document and this also
+20:39
+if we pass it directly to our um context this will not be good. People might
+20:45
+think okay we can directly convert this JSON into some format or store this as some uh you know bulk data set in
+20:53
+superbase engine then just retrieve it whenever needed then retrieve the full thing whenever needed but that won't be
+20:59
+an ideal thing. So we have to create much compressed version. So what I'm going to do is I will start from scratch.
+21:05
+Uh let me just delete this knowledge base because this is not what we are going to use. We'll use a separate one.
+21:11
+Was the knowledge base JSON created by LLM? No, that was not generated by LLM. Uh that particular knowledge base was
+21:17
+generated using an MCP which connects to uh my Firebase fire store database. So
+21:24
+um it fetches all the course information, creates JSON files for individual courses. Then I asked LLM to
+21:32
+write a Python script and then for using the Python script I compiled those individual JSONs into one single JSON
+21:39
+but then later I created a much more condensed version. Now for today's purpose I have created a
+21:47
+uh simple CSV file
+21:52
+which I will show you in a moment.
+21:59
+So this is the CSV file. Uh I think I should just open it. Uh but I think you can see what what it looks like. So
+22:05
+comma separated means each comma before and after each comma it's a separate column. So first column is course name,
+22:10
+course link, course description, starting date etc. So this I created using uh chat GPT just today morning.
+22:17
+It's very fairly easy. I just asked it to create some sample um sample data
+22:22
+set. Okay. So I asked it to mention details about 150 courses with these
+22:27
+details. So it's not a very uh big data set. It's a kind of small data set. So I
+22:32
+will share the knowledge base with you guys. So let me first create a GitHub
+22:37
+repo for this that also I can ask um
+22:45
+cloud code to do. create
+22:50
+a public GitHub repo for this
+22:56
+titled um Vijara
+23:02
+email agent building.
+23:08
+No, I have not connected with GitHub MCP. I'll I'll tell you how this works. Just give me one second. My computer is
+23:14
+slowing down a little bit. Let me just close if there are any uh background processes.
+23:27
+Uh you can actually do in parallel. Uh but if you are stuck somewhere, you can of course uh refer to the recording. Uh
+23:35
+the goal today is not just for you to watch the lecture, it's to build it. And there are so many steps. So I think you
+23:41
+can catch up. Okay. Now about connecting with GitHub.
+23:48
+Um, so I'll tell you how I connected with my GitHub. So just go to github.com
+23:53
+or search GitHub access token on uh
+24:02
+Google and then here you will see an option I mean on Google itself you will see an option called managing GitHub
+24:08
+personal access tokens and where is the link?
+24:30
+Yeah. Yeah. GitHub O login should also work. Yeah. I created access token so that uh each time I don't need whenever
+24:36
+I'm switching uh my workspace uh to my uh AWS EC2 instance I can just you know
+24:46
+I can just provide the access token. But yeah you can you can easily use uh GitHub O also anything is fine. But
+24:52
+anyways, let me just uh find this first.
+24:58
+Uh Sati, if I go any slower, this will take you guys 6 hours before you leave. So, um there are a lot to there is a lot
+25:04
+to cover. So, the whole reason why I'm recording this is because um I'm pretty sure that because each of you have
+25:10
+different systems. Some of for some of you, Python might be an issue. For some of you, uh you might get stuck at some
+25:16
+other place. So I'm sure that 100% of you will not be follow it fully during the live lecture but you can follow it
+25:22
+afterwards. Um but let me just find the if any of
+25:28
+you just find the the direct link to get the access token that'll be great. Otherwise I'll just show you how to
+25:33
+access using GitHub CLI. Um log to GitHub using CLA
+25:42
+or O
+25:51
+So once I create the GitHub, I'll share the link with all of you. You can just uh get this dummy data from there.
+25:58
+Oh, thanks Vishnu. So, so yeah, this is where you can create
+26:04
+the uh personal access token. I have already created one uh for my AWS but what you can do is uh this link which
+26:10
+Vishnu has shared u click generate token and it will ask you for your pass key
+26:18
+for logging in for sure
+26:28
+and you name the token and give it appropriate um permissions like if it needs to access all repositories. Okay,
+26:35
+so let's say you click all repository and then here is an option to add permissions. So if you add all
+26:40
+permissions, basically this access token will act like a complete admin, an admin
+26:46
+who has complete access to your GitHub which is not recommended. If it needs to get access to only some specific
+26:52
+repositories, you should only only give that level of access, right? So in the permissions, you can give appropriate
+26:57
+permissions. Okay. But u the idea is if you have the access token, keep it
+27:03
+private and you can use it whenever you need to um connect to GitHub. So it'll
+27:08
+be it'll make your life very easy. Uh yeah, the process is basically this link
+27:14
+which Vishnu has shared. Just go to that link uh create an access token. In the
+27:20
+access token, give whatever um you know just give whatever uh permissions you
+27:27
+need to give. Don't give permissions for all. Just give repository level permissions. Uh but that and all you
+27:33
+know actually GitHub permission is like a lazy thing to do. You don't you don't really need it. If you are using GitHub
+27:39
+desktop or something on your computer, you can manually push the changes to GitHub. You don't need AI agent to push
+27:44
+the changes. But just because I just I'm just continuing everything here on GitHub uh uh on on CCO. I'm just u doing
+27:52
+it. But this is the repo. Okay. So what you can do is
+27:58
+okay now let me ask it to push everything to the repo
+28:04
+so far to the repo.
+28:14
+So this is the repo. just uh open it, clone it and uh you should find I mean
+28:21
+once this is pushed you should find the um knowledge base there.
+28:31
+So this is the CSV file with roughly uh 150 dummy course data set. Okay. So just
+28:36
+uh take a clone of this. Uh next is let's create a basic markdown
+28:44
+documents something like um initial
+28:49
+MD um in which we will mention all of our details what we want to build.
+28:57
+So I want to
+29:10
+an email reply agent for Gmail.
+29:20
+Then use Gmail API to
+29:28
+fetch everything from primary inbox.
+29:38
+The agent should craft the reply
+29:46
+um using Open AI or Gemini API.
+29:56
+Then there should be a superbase
+30:03
+database where the knowledge
+30:10
+is stored. Basically we have
+30:17
+um courses or programs regarding which
+30:23
+we will receive emails. So when the reply is
+30:34
+crafted it should refer to the document
+30:41
+mentioning The program info.
+31:03
+Um, then what else do we need? We need
+31:09
+I need the ability to modify the email
+31:18
+drafted by AI before sending
+31:26
+if required. And then the next thing is
+31:33
+in the super basease the original
+31:39
+email drafted by AI.
+31:45
+Uh I usually use whisper flow for speech to text but right now I'm not using it because I realize my computer has become
+31:51
+slow maybe because I have not updated zoom or something like that. It's becoming a bit slow. So that's the
+31:56
+reason I'm just directly typing. uh in this web page original drafted uh
+32:02
+email drafted by AI and the one I sent
+32:07
+should be stored.
+32:16
+The front end should be
+32:22
+uh deployed on versel.
+32:28
+If backend functions are needed, you can use railway.
+33:01
+All right. So I just gave this as the command and there are many more things which we have discussed in the in the
+33:07
+mirror nodes which we are missing right now. Um yeah authentication system we'll
+33:13
+come to that. Um then
+33:22
+I also text stack I think it will ask uh it
+33:27
+will we can say ask for our preferences uh what type of front end what what uh stack do we need to use in the back end.
+33:36
+Yeah, but there are so many instructions, right? First we should give the instructions and then
+33:41
+uh let's let's divide this whole building into different phases. Um okay, then we have to fetch some
+33:48
+emails from our uh inbox. So that I will do a bit separately. I will first ask um
+33:55
+cloud code to create a separate function for fetching the email because the current that today the email that I'm
+34:01
+going to use for this demonstration purpose is a different email of mine. Uh so this is the email which I don't use that frequently. Uh I don't I rarely
+34:08
+reply to anyone on this. So you can see that many of the inbox is like some useless junk but we can use this. So
+34:14
+here there is really no data which uh somebody can utilize to teach our um
+34:21
+agent. But what I will do is like I will create my own writing preferences separately. But I will also show you if
+34:27
+you need to scrape data from your own Gmail, how can you do that? Um,
+34:36
+and then you should never
+34:42
+send an email automatically.
+34:48
+The user should approve with one button click.
+34:56
+implement authentication so that only the owner
+35:06
+of the email has access. The login
+35:13
+can be via Google login.
+35:26
+Um then the other feature that we need is yes for every email
+35:35
+reply there should be a star
+35:40
+rating and um textual feedback
+35:47
+option that is stored on superbase.
+35:56
+Uh this we will do later. This provision for adding new data we can add a bit later. Um then existing knowledge base.
+36:03
+is the existing knowledge
+36:11
+base in the CSV file in the
+36:18
+um working directory
+36:25
+should be converted to a vector database.
+36:37
+and stored in um superbase.
+36:42
+You will have to perform rag to fetch the
+36:51
+relevant info
+36:57
+from the vector database. There are a lot of spelling mistakes, but I'm just ignoring it. Um
+37:04
+okay I think this much initial uh information is uh enough for the time being. Um we can add the rest of the
+37:11
+things later. The implementation
+37:19
+should happen in phases. So
+37:25
+you should plan first ask my preferences
+37:31
+and then execute in phases.
+37:37
+All right. Uh maybe instead of initial MD I'll just rename this as uh idea MD
+37:42
+or something. Okay. And let me just push this.
+37:51
+Actually you know what? This is annoying. So what I'll do is I'll show you how the easier way to um use GitHub.
+37:57
+So this is the GitHub repo, right? So I have GitHub desktop. If you install GitHub desktop, you can just say open
+38:03
+with GitHub desktop.
+38:14
+Do we need to log the completion metrics AK? What is the completion matrix? Like completion of what?
+38:22
+You mean the phase implementation or something else?
+38:28
+Uh log the completion metrics. So when you say metrics you mean uh for each phase if it did this so and so should we
+38:37
+log it somewhere. Um it's not needed because whether a phase has been
+38:43
+implemented or not we are anyway in this particular case it's not needed because we will anyway see it in our front end. uh whether something is implemented. Let
+38:50
+me not open GitHub desktop guys because again there is a little bit of slowness.
+38:55
+Um by the way I have
+39:02
+I can ask it to open it in my GitHub desktop. Open this in GitHub desktop.
+39:12
+Push latest changes to GitHub.
+39:28
+Yeah. Yeah. I know. I know Claude can do it. It's just that I just want to show you where I skip the cloud altogether.
+39:34
+Like whenever a change is made, I can just with one click, one mouse click from GitHub desktop, we can just uh
+39:41
+commit the commit and push the changes. So, so that I don't need to keep on using, you know, um cloud code for it.
+39:49
+But anyways, it's pushed to the GitHub. So, if you need my exact idea.md file, you can take it from GitHub. Uh now I'll
+39:57
+ask let me increase the font size a little bit. I'm not sure if it's fully readable
+40:03
+for you. uh create a detailed
+40:08
+um cloud MD file
+40:17
+based on the instructions provided
+40:23
+in idea.md and again here cloud.mmd will be only
+40:30
+used during the building of this uh application once it is built Once it is deployed, we are not using um anymore
+40:37
+the um we are not using anymore the cloud code environment at all. It's a production environment where the only
+40:43
+LLM that is coming into picture is whatever LLM we have access to. Right? So this cloudMD will not be used once
+40:50
+the app is working.
+41:16
+So, meanwhile, just let me know where are you guys at. Um,
+41:39
+okay. So, cloud.md is ready. Let's just look at the structure. Uh, we can just open it as a proper markdown file. So I
+41:46
+have installed like a markdown preview uh plugin. So if I just press command shiftv whatever markdown file I have
+41:52
+opened I can see it in a nice way. So this is the same cloud MD but I'm viewing it using this preview uh
+41:57
+plug-in. AI powered email reply agents which helps visual respond so and so. The agent um fetches emails from primary
+42:05
+inbox drafts context aware replies using rag lets the user review edit approve no email is sent automatically. Very good.
+42:12
+So front end next.js deployed on versel. So here it did not ask my preferences which is okay. I can I could have said
+42:18
+okay um make sure that for front end and back end user preferences are also asked
+42:24
+uh but maybe it will ask let's see uh system flow this this is fine core requirements Gmail integration AI reply
+42:31
+with rack convert this into markdown extension name is called I think uh MD
+42:37
+preview or something let me just check markdown down
+42:47
+uh this one I think it's this this markdown preview with 8.8 8 million downloads you can just search markdown
+42:53
+preview in the extensions you will see that um
+42:59
+then yeah so email reply so once you have the Gmail integration done this we
+43:05
+have not done yet we will we are yet to do it email reply drafting using rag so first this CSV file has to be converted
+43:11
+into vector database I will show you exactly how the vector looks like in superbase then human in the loop for
+43:17
+sure authentication so that only people who are having access to the original Gmail should get access to this app.
+43:24
+Then superbase database schema uh there is a table for storing emails. There is a table for storing replies. I don't
+43:31
+know if there should be two separate tables like that but anyways that we can modify feedback there should be one
+43:37
+table course embeddings there should be one table this is also where the vector embedding will show up. So you will see
+43:44
+inside this table the vector embedding corresponding to the course then knowledge base/Rack pipeline uh feedback
+43:52
+system with star rating implementation phases first is the foundation knowledge
+43:57
+base Gmail integration email reply generation feedback and polish then
+44:03
+deployment okay let's go with the first phase so
+44:09
+so all of these instructions are in natural language you can simply say um you know um in natural language just to
+44:17
+go ahead with uh phase one. So let us start
+44:22
+implementing in phases now.
+44:29
+So I am simplifying this as much as I can. The reason is uh the amount of time it required to for me to build my actual
+44:36
+Gmail uh email app is like humongous because there are a lot more details which I added and I have probably spent
+44:42
+two or three weeks on it. This is like a much more distilled version of that. Okay, before we start face one I have a
+44:48
+few preference questions AI provider open Gemini or for both. So
+44:53
+both open AI and Gemini options
+44:59
+should be there. Then superbase. Do you already have superbase project or
+45:06
+I have superbase account but no project? If you don't
+45:12
+have account, you can just log into superbase using Google or GitHub. Google cloud project. Do you have uh one set up
+45:18
+with Gmail ID? I don't have Google cloud project.
+45:26
+Then package manager npm. npm is fine. UI
+45:32
+framework, uh, UI, I'm I'm fine with pretty much
+45:37
+anything. Tailwind is fine. Uh, you can take the call here.
+45:47
+I'll just copy this. And I I'm not sure. Okay, by the way, if I paste this command uh in the chat, you probably
+45:54
+won't get the exact same questions, but regardless. So the first command was based on idea.mmd create detailed
+46:00
+claw.md. Once claw.md is created it will show different faces. Of course the faces will not be exactly same for each
+46:07
+of you. It will be it will be completely different but more or less it will be the same because our idea.md document is
+46:13
+the same. So uh and then once these phases are ready in the in the cloudmd
+46:19
+just ask cloud to start the execution then it will start the execution in phases. And since in the idea.mmd we had
+46:27
+asked uh it to ask our preferences at different steps it will ask our preferences. Okay. So manual setup
+46:33
+needed first uh of superbase then manual setup of cloud. This also we will do. What else? Okay. So now cloud code has
+46:41
+asked us to set up superbase and setup um Google cloud console. So this both
+46:46
+all of us can do together because all of us will need this. The first thing is superbase.
+46:52
+So just click superbase.com/dashboard.
+46:57
+If you don't have a superbase account, just go to superbase and login using your GitHub. Anything should work
+47:08
+and I have bunch of projects here. So I will you know what this urine smell
+47:15
+tracker is. Our earlier office had a lot of issue with the bathroom. So I created a agent to automatically send them an
+47:21
+email please uh clean the bathroom then
+47:26
+visual or so here I will name the project as
+47:32
+um what should I name email reply agent
+47:39
+v2 demo. Um so just go to superbase login using
+47:44
+your username I mean um if you have username password login using that or
+47:49
+Gmail I think Google also will work or GitHub. Once you are here just let me know. You have to create a new project.
+47:56
+Um you will have to create one organization. I think this there will be one organization available for you to be
+48:02
+created for by free. Then database password I can just put some strong password
+48:17
+uh okay and enable data API enable this I
+48:26
+don't think we need to enable by default so just create a project
+48:35
+and I don't need this password so I'm just saying never. So this is the superbase uh project and
+48:43
+we have to set up a few things. So first thing is new project name it something like this. Choose a strong database
+48:50
+password. Select a region. All of this is done. So now what we need to provide to cloud code is the project URL
+48:57
+anonymous public key um service role key. So where you can find is on the
+49:03
+left hand side of the superbase dashboard you you can see a bunch of things. Um so here
+49:10
+in the project settings if you scroll down or here itself you
+49:16
+can see where is that um API keys.
+49:25
+Before that let me copy the project URL. I forgot to copy.
+49:43
+So I will just paste this in a txt file for the time being. But obviously you should not paste these things in txt
+49:50
+file. Um I'm just creating this as a temporary thing. Okay. Ideally it should be in av file. I will ask cloud to do
+49:56
+that. So uh keys txt.
+50:02
+So this is the superbase
+50:09
+URL. Then I will need anonymous.
+50:24
+Uh and on publish key
+50:44
+and I need a
+50:50
+there was one more thing which was um
+50:58
+service role key. So that you can find I think in JWT
+51:03
+keys.
+51:16
+Let me let me just find I'm not sure where exactly to find the service ro key. Let me just Yeah, I think it's over
+51:22
+here in the API key section in the second tab.
+51:28
+Uh public key I got from this API key section. Uh here in the publishable and secret API key, this publishable key is
+51:35
+the public public key. Um the URL of the superbase project you can find from the
+51:40
+project overview page. And this uh service role key is over here.
+51:52
+service.
+52:01
+Okay. So that is also done. So you need three things from superbase.
+52:08
+Uh one is the project URL. Superbase URL, public key and the superbase service role key. Um you can find it
+52:14
+from the dashboard. Second thing is we need um oh you can
+52:20
+use search function in the dashboard to get these details. Amazing. Thanks for sharing Sati. Second thing you will need
+52:25
+is u the API key for accessing Google Gmail account. So for that we need to
+52:32
+create a Google cloud account. Many of you might already have a Google cloud account. I'm not sure how many of you
+52:39
+actually um have tried this before but you can you can just search
+52:45
+Google cloud and go to this and by default it will
+52:51
+ask you to create an account okay by default it will uh if you go to this console option it will ask you to create
+52:57
+an account but I today morning created a free trial account I already have bunch of other account but I don't want to use
+53:02
+that for this demo project but here in Google cloud console it will ask you you
+53:07
+can create a free account which will last for 90 days. Um and it's free. You
+53:12
+will have free $300 uh credits. Uh two-step verification.
+53:22
+Turn on twostep verification. Okay.
+54:16
+Okay. So, this is done. Two-step verification enabled almost.
+54:25
+Uh I don't maybe it will ask you for Google Cloud account in the next step for you. uh but in any case whether it
+54:30
+is asking or not you should do this step because uh you will need it at the later stage cuz you need to connect your Gmail
+54:38
+uh to your application right so Gmail API is needed and this Google cloud is required for that.
+54:46
+So the way things work in Google cloud is you have to create projects and different API or different apps are part
+54:51
+of the projects. Uh this I have already done. Let me just refresh.
+55:12
+[clears throat]
+55:56
+Uh let me just quickly check my internet speed. It's a bit
+56:05
+okay. Yeah. So basically what we need is the
+56:10
+the JSON file and the token. Correct. Uh so this is our first project and here we
+56:16
+need to create Gmail API. So search in the search bar search for Gmail API then
+56:21
+you will find this Gmail API option and for this project so I my project
+56:27
+name is called my first project we need to enable Gmail API. So just click enable
+56:47
+and let's go back to cloud. Cloud will need uh API and service services ooth
+56:52
+consent screen. Choose external user type. Fill in the app name. Add scopes.
+56:57
+So this is the oath consent screen
+57:03
+option. You just need to follow uh these steps. So let me just take a screenshot of this and put on your
+57:13
+uh on the chat so that everyone can follow this. So I just shared the steps on the chat.
+57:20
+Just uh follow that.
+57:27
+and get started
+57:33
+app name visual email dummy.
+57:42
+Yeah, I have steps for superbase also. I will share that also in the chat.
+58:02
+uh audience internal external I think this can be kept external then email
+58:08
+address here also I'll give my own email address I agree continue Create.
+58:27
+Now we need to create an oath client I believe. So first
+58:34
+external user type add scopes. Uh then in API and services go to credentials.
+58:42
+So,
+59:13
+Have has all of you created the uh super base yet? Just let me know where you are at right now.
+59:40
+so oath client I need to create my application is a web application so application type is web application name
+59:46
+I can put anything web client one is fine then authorized JavaScript origins
+59:51
+so authorized origins I think I can just put localhost 3000 assuming we'll be
+59:57
+local hosting this on this particular in the beginning we'll be local hosting it here.
+1:00:25
+Uh name of the app can be anything doesn't matter. uh you can put whatever name you want
+1:00:31
+it is just for reference and for authorize redirect whatever this is
+1:00:36
+followed by uh / API/ callback/g Google it's there in the uh instruction the um
+1:00:43
+screenshot which I shared. So now once you are deploying the app
+1:00:48
+you will have a separate um and it'll ask you for a JSON download. So this JSON will have all the information
+1:00:54
+regarding this app uh which you will need for connecting your Gmail to uh uh
+1:01:00
+your web app. So just download JSON. I'm not sure if it got downloaded or not.
+1:01:17
+Okay. So this JSON you can drag and put it inside your working directory.
+1:01:27
+Uh I think that's all we need. Download/copy the client ID and client secret. So that should be there in the
+1:01:32
+JSON file. Uh now what we can say is I have pasted
+1:01:41
+superbase details in the keys.xt
+1:01:52
+and the JSON from the
+1:01:59
+Google cloud is added to the working directory.
+1:02:11
+So now automatically this will realize that cloud code will realize that we have to add this into the env file. Um
+1:02:17
+so it should hopefully create av file now.
+1:03:06
+Yeah. So keys.txt file has three things. Um the superbase URL, then public key
+1:03:12
+and superbase service role key. Uh so those are the three things you need.
+1:03:17
+uh and in the JSON file which is directly downloaded from um from the
+1:03:24
+Google cloud it will have the the client ID and client secret.
+1:03:29
+Now let me scaffold faceman. I'll create nextjs project and set everything up. So it's now building the nextjs app and
+1:03:35
+hopefully we'll see uh I'm not sure if authentication Google login authentication is being set in phase one
+1:03:42
+directly or not yet. We'll see. Um where are you guys at? uh have you
+1:03:47
+done at least the two things uh superbase setup and um uh the Google
+1:03:52
+cloud setup have you done those two things and by the way if this same thing you want to apply for Slack Slack has an
+1:03:59
+MCP uh much easier that way or if it is Discord Discord also allows you to
+1:04:05
+connect through MCP I believe yeah so Google cloud steps um the steps are
+1:04:11
+shared in this particular screenshot if you scroll a little bit above um how do
+1:04:16
+I tag it I just need to pin it somewhere.
+1:04:21
+Yeah, I have just pinned it. So in Google cloud basically first you
+1:04:27
+need to create OOTH consent screen. The app name does not matter that you can put uh whatever name doesn't matter. Uh
+1:04:34
+but what you need to put correctly is the local host. So put local host 3000 for the
+1:04:41
+30,000 or any port is fine. Um, and then the redirect URL I'll just show you that
+1:04:47
+you guys might need. So this you can keep as the authorized
+1:04:52
+JavaScript URL.
+1:05:01
+And
+1:05:09
+obviously the 3,000 can be replaced with anything. Doesn't matter. But by default you can keep it like this.
+1:05:22
+Uh agents.m MD not necessarily. Uh we can create it. Um please zoom in. Okay.
+1:05:28
+In terminal let me just
+1:05:34
+I'll zoom in one more step. How about now? Is this better? Oh this is too much. I can't read anything now.
+1:05:41
+Yeah, this is better. I hope.
+1:05:53
+I will also say once done push the changes to GitHub.
+1:06:00
+Also you will notice for those of you who are familiar with this ignore is the file which will not be pushed into
+1:06:05
+GitHub. Okay. So in dot ignore we have to mention which files from this will not be pushed. So you see this env file
+1:06:12
+is included in getit ignore meaning it will be ignored while the commit and push is being created. Node modules will
+1:06:18
+have bunch of uh files with respect to the npm packages that also you don't typically push into github that you
+1:06:24
+produce locally. Um yeah so you will not find the env
+1:06:29
+file on your side once it is created.
+1:07:37
+Uh yeah, that is a good idea.
+1:08:18
+Yeah, I will show you once where the service role key uh can be found.
+1:08:31
+In any case, these I will be deleting. I know that this is not the right way to uh keep using the key, but
+1:08:40
+um so regarding service role key, this is where you have to go.
+1:08:47
+Um you see this section, this tab called publishable and secret keys. That is where you can find the uh publishable uh
+1:08:53
+key. And then this legacy anonymous/ service role API key from that you can
+1:08:59
+find the um this one service roll secret. So you just uh enable to view it
+1:09:05
+and then you can copy and paste it.
+1:09:56
+Okay. So, oath authentication is actually implemented in phase one itself. Uh post Google and superbase.
+1:10:02
+Can we summarize the steps again? Yeah. So, superbase is for database. Then Google authentication.
+1:10:08
+Uh for app to be deployed, you will require Versel for front end or anything is fine. But I'm using Versel. Sometimes
+1:10:16
+you might need to have some backend Python scripts uh running in a server.
+1:10:22
+If that is needed, um you should probably give access to railway also.
+1:10:28
+But I I cannot recollect for this particular app. Probably some backend functions are not needed. But let's come
+1:10:33
+to that. I don't think railway is needed for the time being. Uh please where to enter scopes for Gmail read only that I
+1:10:40
+did not modify ocean. I just kept the default. Uh so right now I think it will the API will have all the all the access
+1:10:45
+whatever is default. Um you can change it later. Uh this clerk asked me to do
+1:10:51
+for a clerk. I'm not sure what does that mean. Um
+1:10:56
+I don't know what it means. Uh asking to do for clerk meaning what does that imply? I'm not sure.
+1:11:13
+uh if no back end then front end code will do rag and uh llm API calls etc.
+1:11:18
+Yeah. So that's what that's what I'm thinking. So in the current app which I
+1:11:24
+have I there is a railway uh back end but that is for a very different functionality. I don't think uh I'm
+1:11:30
+running a Python script or something to do the LLM uh API call or doing the rag but
+1:11:38
+we'll see when we come to that because sometimes the cloud code itself will ask
+1:11:43
+for uh hosting a Python script on railway. Yeah. Yeah.
+1:12:03
+Where is what is the shape of your app currently? Like how much is it still being built?
+1:12:11
+Yeah. So if front end ideally front end should not do this. Uh so in if this is
+1:12:16
+a public facing app right uh let's say you are building something where the same URL public is coming and they are
+1:12:23
+using their individual uh accounts or something like that. The best practice is not to do anything of anything in the
+1:12:29
+front end. Uh do everything in a in back end. So create environment variables in
+1:12:34
+railway and store it store the open AI Gemini API keys in railway. Um let's
+1:12:41
+come to that in a moment. Last command was to start building. Uh so I asked to start phase one building. Then it asked
+1:12:47
+me to give superbase and cloud code uh sorry Google cloud information. I gave it that and then now it is continuing to
+1:12:54
+build these four things. The basic setup and uh Google o authentication
+1:13:21
+Oh, I mean this is just uh it'll keep uh it's just something that cloud keeps saying.
+1:13:31
+I mean next step is simply asking cloud code to continue building phase one. That's it. It it will take you see it
+1:13:36
+has taken me 11 minutes so far, right? Um so it'll take you some time.
+1:14:06
+level of front end will be there like we will be able to see something.
+1:14:17
+Yeah, of course gifying is that. But sometimes it'll keep saying some weird uh Tom Fullering. It'll keep on saying
+1:14:24
+depending on what it's doing. There are like a lot of memes surrounding uh what cloud says depending
+1:14:31
+on what it does.
+1:14:53
+Uh for email polling which option uh chron job or Gmail push notifications
+1:15:00
+realtime web hook. Um email polling means here in this context what does it
+1:15:06
+mean by email polling? Is it asking regarding how often to fetch the
+1:15:12
+um latest emails from the API? It can be based on
+1:15:18
+or or is it something else? If it is about how often should the Gmail API
+1:15:23
+latest email should be fetched from the API simply it can be based on refresh. It need not be a chron job.
+1:15:30
+Yeah, chronome means I think it will keep on doing um something as a function
+1:15:36
+of time. Okay. How to react for incoming emails.
+1:15:57
+Yeah. Yeah. So for for our own purposes right uh the Gmail required a lot of
+1:16:03
+additions. Um one is speed. So one of the practices that we have is keeping
+1:16:09
+because the same inbox is being looked at by three or four different people. We need to keep the inbox a little bit clean. Now, Gmail has a certain way uh
+1:16:18
+like you can enable um keyboard shortcuts in Gmail and one of the
+1:16:23
+keyboard shortcuts for archiving an already rep replied email is like E. So if you press the key E an email will be
+1:16:30
+archived which means it will not be there in the inbox it you can see it when you go to the all mails that option. So one problem that I noticed
+1:16:37
+was um in the app that we created whenever I was trying to archive once
+1:16:43
+archive functionality is implemented it was too slow. So when I have to move from one email to another the the time
+1:16:50
+it takes to make that switch is like 3 seconds 4 seconds which is like a bit annoying. Then we were looking at how
+1:16:57
+Gmail how Google implemented the same thing and Google has something where um
+1:17:02
+and first of all this archiving is also another API call right so we can't do it as fast as Google probably uh I don't
+1:17:08
+know internally what they do but in our case what we did is the moment I press archive or e button the process will
+1:17:15
+happen in the background but in the front end we will immediately make the email disappear meaning in the front end
+1:17:21
+we will see as if that email is gone but in the back end it may take a few more seconds to actually archive the email.
+1:17:28
+So, uh we did something like that to improve the user experience so that we can go through the emails a bit faster.
+1:17:34
+Um then another issue that I noticed was um in the superbase some tables were not
+1:17:41
+getting updated. U this issue most likely today we'll we'll again see and then sometimes what what happens is in
+1:17:47
+superbase you'll have to run some custom SQL command yourself by copy pasting it.
+1:17:52
+So uh to create new tables sometimes uh and uh sometimes the cloud code the code
+1:17:58
+itself which was written by cloud was making a mistake were um my original
+1:18:03
+plan was whenever an email is modified between 5 to 10 percentage I have to
+1:18:09
+notice that change and I have to store the original email and the changed email in the database but if an email has been
+1:18:15
+completely modified like let's say there is 50% change or 70%age change there should it should not be stored. because
+1:18:22
+then there's no point there is nothing for AI to learn that was my thought then what was happening was the the way the
+1:18:28
+code was written had a logic issue the flaw in the logic that all the change even minor change it was uh because of a
+1:18:37
+slash tab or some extra character coming in the uh uh in the email all the emails
+1:18:43
+irrespective of whether I make 1% change or 90%age change we're experiencing huge
+1:18:49
+change the the the way cloud code was the code was taken it was such that the email what I sent even if a minor change
+1:18:56
+is made is actually 90% changed and because of this no email was getting stored in my superbase database so this
+1:19:02
+problem we did not realize initially we ended up realizing it when the quality of our response started degrading
+1:19:09
+because no email was getting stored uh we realized then we had to check the superbase manually for every single
+1:19:14
+interaction to ensure that the way items are stored in superbase are the way we intend it to be stored
+1:19:22
+Um then
+1:19:27
+uh what else? So where are you guys at? Are you guys
+1:19:32
+still in the implementation phase for phase one?
+1:19:49
+Yeah. So context window management. Okay. Yeah. One thing I forgot to mention is uh I had created a separate
+1:19:55
+page for context window management for my app. So in my app I was using Gemini API. So I wanted to know what exactly is
+1:20:01
+going into the Gemini API call into the context each and for each and every email response creation. Um so then
+1:20:09
+there I created a context visualizer in which the exact uh content from the each file whatever
+1:20:16
+is being fetched from superbase exact content will be displayed in the front end so that I can see what context is
+1:20:22
+being displayed such a thing we can also build here because if we don't know visually what goes into the context of
+1:20:28
+the LLM we will never be able to manage it properly. So for context management, one thing that we are definitely going
+1:20:33
+to do here is rag. Okay, let me know when you are ready for phase two. Okay, something seems to be done. Let's
+1:20:40
+see. Migration SQL in Superbase in SQL
+1:20:47
+editor. Enable Google O in Superbase authentication providers. Add your OpenA Gemini API keys to environment local.
+1:20:54
+Okay, let's do this.
+1:21:01
+I'm not sure if Superbase allows any other I think primarily its database is Postgress SQL. I'm not I'm not sure if
+1:21:07
+it has any other database format. Uh
+1:21:13
+okay, first of all, where is the SQL code which I have to run?
+1:21:21
+Give me the SQL code to run
+1:21:27
+in Superbase SQL editor in a separate
+1:21:34
+file here. Then enable Google O in Superbase
+1:21:40
+authentication provider. Of course, I can do that.
+1:22:27
+I want to show you one more thing. Um let's just look at this. There is something called table editor.
+1:22:35
+Um and here you can see that there are no tables yet. Meaning in superbase there is nothing. So I just went to the
+1:22:41
+superbase database. On the left hand side you will see bunch of icons on the a table like icon is there that is table
+1:22:47
+editor or even in project overview you will see something called um or not in
+1:22:53
+project overview here you see something called database. So in the database there are no nothing yet no tables yet.
+1:23:00
+So to create the table instead of manually if you want to create it automatically uh cloud code will
+1:23:05
+typically when you deal with superbase it will give you these SQL u functions to run. I'm not sure if cloudboard can
+1:23:13
+directly run it in superbase or not. Maybe it can uh maybe we can ask ask it but in the interest of time since I
+1:23:18
+already have it here I will show you how to run this manually. So it will often when you work with superbase it will
+1:23:24
+automatically ask you to um uh create uh superbase tables using the SQL.
+1:23:32
+Uh so just go here find this SQL editor
+1:23:40
+and then paste the SQL code which cloud code gave you here and then just command
+1:23:46
+enter to run and if it is if it is successful it says success no rows returned. Now hopefully when we see the
+1:23:53
+database there should be some tables. Let's see if something is there. See so some tables are ready. uh feedback
+1:24:00
+table, course embedding table, replies table, emails table. So the tables are ready
+1:24:06
+um and
+1:24:19
+okay. Now we need Gemini or OpenAI API key so that I have available
+1:24:50
+So, env file I'm not going to show directly because it's not a good practice. uh but ENV file should ideally
+1:24:56
+have all the um I mean I have already shown you most of the keys but in general envir uh let's say you want to
+1:25:04
+keep it um separately you can create av.example example file. I can show you a dummy. Um but ideally it should have
+1:25:11
+superbase uh um links and then it should have the openi API key and what else?
+1:25:21
+Okay, I have already done already ran the SQL migration
+1:25:33
+but I have not enabled ooth in superbase. I don't know how to do it. So, let me ask cloud code how to
+1:25:40
+um enable.
+1:25:48
+Okay. Run enable Google authentication providers Google. Toggle it on. Place
+1:25:54
+the client ID and secret. How to give me
+1:26:03
+link where we can paste in superbase.
+1:26:25
+I'm also not sure why superbase requires uh Google o right now. Uh last time the
+1:26:31
+way I implemented was my app required Google o not not superbase but let's see
+1:26:39
+authenticate your users through a suite of providers. Okay.
+1:27:34
+Uh also in the Google Cloud Console uh add this as an authorized redirect URL. Hey.
+1:28:03
+So that is done.
+1:28:11
+uh authentication is one time or they have expiry uh it's it has expiry but I
+1:28:17
+think the authentication token will survive for whatever the typical duration is
+1:28:23
+uh this also is done this is also done so maybe for some of you superbase uh
+1:28:29
+and and Google connection it will not ask last time when I built it there is there was no such thing just my web app
+1:28:35
+was getting connected ed to uh Google. So I never had to provide superbase uh
+1:28:41
+redirect URL to the Google cloud. Uh will the script to pass the CSV
+1:28:47
+generate embeddings by open and store them? But it will be great if front end is ready for me to see the front end.
+1:28:53
+Can you local host the website
+1:29:02
+so far? Yeah, I will be providing the recording for those of you who are late for sure.
+1:29:20
+Has anyone reached a point where the phase one is getting closer to completion? Um, I don't think you will.
+1:29:26
+Everybody will have six phases. In my case, I have six phases, but you may have different number of phases.
+1:29:33
+Yeah. So the call back URL is pasted over here.
+1:29:38
+Um so wherever you have pasted the call back URL for the local host, right? So
+1:29:45
+you would have pasted something like this in the authorized redirect URL. Uh below that just add the URL and then
+1:29:51
+paste it here.
+1:31:00
+So I'm just manually just uh local hosting this once. Let's see how it looks like in
+1:31:06
+in dev mode.
+1:31:33
+Okay. So this is the login screen and here I will have to message is not
+1:31:55
+okay. So in the first step I am getting this error that authentication is not working.
+1:32:03
+terminal prompts as is. So if I paste so I have not given too
+1:32:10
+many terminal prompts by the way the only terminal prompts that I have given are pasting the so see terminal prompts
+1:32:15
+will slightly depend on what the cloud code is outputting you right so for me cloud code was asking uh to do some
+1:32:22
+things in uh superbase and in cloud console so I did both of that but I
+1:32:29
+think depending on what the structure of the project is sometimes it will not ask you to connect superbase and google
+1:32:34
+directly so that's the reason why I don't think it's that useful to have the same terminal commands. But if you ask
+1:32:40
+me which step you are at, I can tell you what to do at that step. Uh but yeah, if there are any major
+1:32:47
+building related commands, I will share those commands directly in the terminal.
+1:32:56
+Okay, phase two is complete. Uh in the login I am getting this error.
+1:33:19
+So the reason why I pasted this is this is my local host and when I try to login using Google um it's not showing me the
+1:33:26
+Google uh login pop-up rather it's showing th show th show th show th show th show th show th show th show th show th showing me the error so we can just
+1:33:31
+fix
+1:33:40
+Uh, enable Google. Go to this. Find Google. Enter the client ID. Enter the secret. I thought I already did this.
+1:34:05
+Okay, the problem was I had not flipped this switch to enable the Google login. So now it is enabled. So probably it
+1:34:13
+should work now.
+1:34:25
+Okay. So now it's asking me to login using Google. Yeah, Google authentication in this is
+1:34:32
+implemented using Okay, now I'm getting a new error. Access blocked. This has not completed Google verification
+1:34:37
+process. All right.
+1:34:42
+Now I am getting this error.
+1:34:57
+Oh, we need to add this user to the test user. Uh, okay. Add your Gmail address. The
+1:35:03
+one that you are trying to login with. I thought I already did that, but let's see.
+1:35:18
+Uh thanks for that suggestion uh Vishnu by the way.
+1:35:27
+Any user with Google account not yet. Add users.
+1:35:38
+I think this is needed because I had um I have not published the app. it is in this testing stage. So I need to add the
+1:35:45
+users who are eligible to log in to see the test.
+1:35:50
+Uh okay. So now hopefully since my email is here hopefully it should work.
+1:36:28
+Google hasn't verified the app. Uh, you should only continue if you develop, you know, the developer. Okay.
+1:36:35
+Sign in. Select all.
+1:36:56
+Okay. So, something is working in the app so far. Um, I don't know the I don't
+1:37:02
+know where is the inbox yet. Authentication is working. Okay. So,
+1:37:08
+okay. So, so far so good. uh inbox has not been set up yet or I don't know if there is a separate link for the inbox
+1:37:14
+it is working now
+1:37:19
+where can I see the inbox uh we did not give the any versel information yet
+1:37:25
+because this is still in local host so I have not deployed it right so I have not connected it with versel that I will do
+1:37:31
+at the end uh by connected right now
+1:37:36
+uh now the dashboard just shows a placeholder message email integration uh integration is in phase three. Right now
+1:37:42
+we haven't built it yet. Okay. So in phase three we will fetch the emails uh uh from primary inbox. Display them.
+1:37:48
+Store fetched emails in Zupase. Uh why should we store fetched emails in
+1:37:54
+Zupase? That is not needed.
+1:38:08
+Yeah. I think uh there is some hallucination here by uh cloud code because the reason why cloud thought
+1:38:14
+superbase and gmail should be connected is because superbase emails are being stored in superbase but that is not
+1:38:20
+needed. We don't need it. Uh the original idea was to keep a record of which emails got AI replies and link
+1:38:25
+them. But we can simplify fetch emails live from Gmail API and only store the email reference when a reply is actually
+1:38:32
+created. Exactly. That is better. That is what we need.
+1:38:42
+So what claude code was thinking so far is that um it thought um we are going to
+1:38:50
+store every single email in superbase but that is not the case. We are only storing those emails to which we make a
+1:38:56
+reply because they are useful emails but every every single email in the inbox need not be stored in superbase. That is
+1:39:02
+the reason why cloud code asked us to connect superbase and g uh Google but
+1:39:07
+that is normally not needed. So right now we are simplifying it. Uh so now hopefully after this phase
+1:39:15
+three simplified update is done we should see the emails being fetched and our inbox being displayed here. Let's
+1:39:21
+see that. Also I hate this font. I don't like this style at all. It's really bad. But that we can change in the end.
+1:39:28
+So the main thing is working now which is uh authentication with Google. Uh so can you tell me can you guys just text
+1:39:34
+in the chat where are you at? Are you still in the phase one building stage or have you ended up getting something up
+1:39:41
+in local host yet or where are you guys?
+1:40:00
+Okay. Uh for phase one, how many minutes is it showing so far? Has it crossed
+1:40:05
+like 25 minutes and all or is it still uh like 10 minutes, 15 minutes?
+1:40:13
+Oh, you have mail pulls from the Gmail app and shown in the app. Okay, amazing. That's awesome, Muri Krishna. It's
+1:40:19
+amazing. Do we need this front end superbase JWT secret? I don't think so. I don't think
+1:40:25
+we need that. Uh we just need three things from superbase. The URL, uh public key, and the service ro key.
+1:40:38
+Okay. So if email fetched email is uh being displayed it's already amazing. Um so now ideally you should be able to
+1:40:44
+reply from there itself. Um reply to someone from there itself. So right now
+1:40:50
+90% of the times I use my email app. Uh 10% of the times I use um uh the actual
+1:40:57
+Gmail.
+1:41:30
+Uh Sati, we don't have to manually um set up the env file that um cloud will
+1:41:36
+automatically take care of. You just need to give the API to cloud or put it in a different file and ask it to create
+1:41:42
+ENV yourself uh env yourself to cloud code.
+1:41:54
+If anyone can show the screenshot of the UI of the app, you don't have to display any private emails or something, but
+1:42:00
+just um uh if you can just show the UI of the app, a sample, that would be
+1:42:05
+great. uh anyone who has the app working you can just you can just take a screenshot without showing the actual
+1:42:11
+email content or something just to show the style that just to see the style has that cloud code has
+1:42:17
+followed. Oh, by the way, one more thing I forgot to mention. Uh, so yeah, two days back I
+1:42:24
+was building something with uh cloud code, but I accidentally ended up using
+1:42:29
+sonnet. Okay, and sonnet the output was so bad. I thought sonnet was also
+1:42:35
+semidecent. Uh, I was building a web page and uh the output was so bad that I
+1:42:40
+was like confused like why is it suddenly so bad then I thought oh maybe the model is not opus 4.6 anymore. So
+1:42:46
+opus 4.6 is making a huge difference. My thinking was that the the agentic
+1:42:52
+architecture that cloud has built that was making all the difference but it seems to not be the case. So if any of
+1:43:00
+you ever feel like the output is not so good just have a look at which model the cloud code is using. Okay, this is
+1:43:05
+great. Mod Krishna, it's a simple uh let me just open the
+1:43:10
+screenshot.
+1:43:56
+Okay. Pro plan uh is nearly impossible. Uh so in pro plan when you are let's say
+1:44:04
+building an app like this if you look at the slash usage um have you notice that it's like so
+1:44:10
+fast in 1 hour if you build for one roughly an hour it's exceeding the limits is it okay
+1:44:21
+it's it's so unfortunate in the sense like at least for you know UI related task I have seen sonet is not so good
+1:44:28
+opus is really really good. Uh but for tasks where you are primarily dealing
+1:44:34
+with code or just text I think using sonet 4.6 is fine. Okay. Vishnu also
+1:44:41
+seems to have a front end ready. Okay. Amazing. You can name it something um
+1:44:47
+something which you like. One thing you will notice that this is super slow like this meaning not the building process.
+1:44:53
+Whatever apps you have built by default will be a bit slow right? So you will have to do additional things to take
+1:44:59
+care of it. Okay, restart the dev server. Uh you should see. So now let's
+1:45:04
+see what has become the status of our local host.
+1:45:25
+I am getting this error.
+1:45:39
+Oh, 6:30 p.m. to 12:30 a.m. IST. Interesting.
+1:45:47
+In the back end it has given incorrect category. It should be just inbox. Yeah. Yeah. Yeah. Um that's that's exactly
+1:45:53
+what I I got like invalid label category. So I just copied it and asked cloud to fix it. So cloud is now
+1:45:59
+changing it to inbox
+1:46:04
+primarily because Gmail API probably does not have a category called category primary.
+1:46:20
+So uh can I ask you when you use set 4.6 are you able to manage uh like the full
+1:46:26
+a full building session um just out of your experience how does how does it work
+1:46:33
+cuz I'm using 80% of the times opus 4.6 6 and only few number of times. Okay.
+1:46:39
+Not for full building. All right. Okay.
+1:46:55
+Yeah. All right. So now it is working. Although the UI is very very bad. Uh it
+1:47:00
+is working. I will just quickly show the UI of my original app. um although I don't want to spend too much time on it.
+1:47:14
+So this is how the UI of our current uh actual application looks like the one which I built. So
+1:47:22
+uh so there is a lot of difference but anyways we don't care about UI that much right now. Uh okay let's see if I send
+1:47:30
+an email to myself. Can any of you send an email regarding
+1:47:36
+let's say I have a course okay rag is not set up I guess let let's check superbase first of all for what all
+1:47:42
+tables are ready then we can come back to email so in superbase go to this section called database
+1:47:49
+and and then go to tables
+1:47:55
+then you will see these tables okay So
+1:48:04
+now if you want to see the table so this course embedding should should have a vector embedding somewhere right. So
+1:48:10
+let's view in table editor and these are the courses and one of
+1:48:16
+them should be the embedding. See this is a vector dimensionality. Let's ask cloud code itself what is the embedding
+1:48:24
+model did you use for rag which embedding
+1:48:32
+model did you use what is the dimensionality
+1:48:41
+and how did you do chunking
+1:48:49
+And when I deploy the app,
+1:48:57
+do you run rag in the front end
+1:49:03
+or should we
+1:49:09
+set up back end in railway?
+1:49:26
+uh reply schema. Yeah, reply schema meaning how the email reply should look
+1:49:31
+like. I have not set it up yet. Um so that we are going to do in the next step. So right now the only thing that I
+1:49:37
+have done is created the rag chat uh database uh in which the course details
+1:49:42
+are there. But apart from that there is nothing set up. Uh how to reply, how short should be the reply, nothing is
+1:49:47
+there. The table it has automatically created but we have not done anything manual there. Uh but let's come to come
+1:49:53
+to that once I I want to see how rag was implemented. Text embedding three small model 1536 dimensions cheaper and fast
+1:50:02
+good for 150 courses. Then chunking strategy one chunk per course. Okay so
+1:50:10
+that makes sense. Each row is converted to a single text block. Uh then rag at
+1:50:15
+runtime. Rag run server side index.js API route not in the browser. Uh API
+1:50:20
+route receives email embeds the query. Superbase PG vector similarity.
+1:50:26
+Then no railway separate railway backend. Next is API routes on versel handles it. Okay. So this is then how my
+1:50:33
+current uh schema also works. Then railway would need would be needed
+1:50:39
+only if you have a long running tasks or heavy processes for this app versus alone is sufficient. Want to proceed
+1:50:44
+with phase 4? Not yet. I just want to see how superbase looks currently. So Roshan has mentioned three tables are
+1:50:50
+empty. Yeah, for me also three tables are empty. That is why because we have not given any tables uh any feedback. We
+1:50:58
+have not reply to a single email using AI yet. And this emails I think is the
+1:51:05
+uh I'm not sure what this table is. Let me ask what is the table called emails
+1:51:14
+doing in superbase.
+1:51:23
+So these three will not get populated by default. Uh we have to keep using the app. But we'll come to that. Let's just
+1:51:29
+first ensure that we have the tables which we need. It's only used when a reply is created to store the email
+1:51:35
+references so that we can link it to replies and feedback table. Without it, we have no way connect. Okay. Where are
+1:51:41
+we storing the AI generated email and the
+1:51:50
+uh version of the email that I send
+1:51:57
+after editing the AI generated
+1:52:03
+version. Okay, that is anyway coming in phase four I guess. So I don't have to jump the gun. Let me just delete this.
+1:52:10
+Okay, let us proceed with phase 4.
+1:52:21
+Okay, for Vishnu is saying for me there is a separate inest.py file that loads the data using the key uh using which
+1:52:27
+key Vishnu.
+1:52:36
+Okay. Okay. But where is this file being executed right now? Um
+1:52:43
+is are you just running it for the time being to create the 150 course rows
+1:52:49
+course embeddings is empty. Did you populate it using the run in superbase code? Yeah. So I populated it by so
+1:52:57
+I think I just got the SQL code right to populate it. Uh oh no no no wait a second.
+1:53:03
+I think my claude code would have already implemented the
+1:53:09
+code for populating it. You will have to ask for it separately. To create the dummy table in the first place, you will
+1:53:14
+have to run to create the tables. You will have to run the SQL code. But if it is empty, you will have to populate it
+1:53:20
+by running the script. For that, you can ask cloud code to uh run the script to populate from CSV file into the
+1:53:26
+superbase table. Right now in your tables, uh what all what all tables are
+1:53:32
+there? By the way, I have four tables. Um, this is not the table which I wanted. I wanted one for course
+1:53:38
+embeddings for sure. Once one for replies and one for feedback. But here, this emails is like a refer replies is
+1:53:45
+just a reference to emails. I don't want that. Uh, it's okay. But I need one more table for storing the changes happening
+1:53:51
+in emails to track the changes happening in emails. So that hopefully will be created during phase 4. If not, I will
+1:53:57
+manually create it. Okay. Course embeddings, replies and feedback. Yeah.
+1:54:03
+Okay. That is that is perfect.
+1:54:08
+You don't need both of these. That's what I'm saying. You don't need emails and replies. Just one of them is enough. Uh in my opinion, the reason why my
+1:54:16
+cloud code ended up doing this is because initially it started with using superbase for authentication which means it thought all the emails it will have
+1:54:22
+to store. Then it created that uh replies also it was it created at that time and now it realized it it need not
+1:54:28
+have that uh but yeah in the local host.
+1:54:44
+You know what we can do? We can test this in the local host like this. Maybe
+1:54:50
+um if I open the CSV file.
+1:55:15
+If anyone else got a decent UI for the app, feel free to share a screenshot.
+1:55:22
+I don't like my UI. It's not not that great. Uh so this is the CSV file.
+1:55:32
+So to test this, you know, uh what we can do is I will share my email with you. Um let's just make sure that
+1:55:38
+everything is uh in proper shape. to that email if you guys can send an email asking information about some course. So
+1:55:45
+all of you have access to the CSV file through GitHub, right? So pick any random course and um just send an email
+1:55:51
+to my email, my Gmail. This is my email. I'll put it in chat.
+1:56:17
+Sorry for the typo.
+1:56:28
+Can uh all of you send an email to this particular email shred.panat@gmail.com pan@gmail.com
+1:56:33
+asking for information regarding uh any one of these courses like I'll
+1:56:39
+just send bunch of course names here in the chat but otherwise if you want to refer to the CSV file you can get it
+1:56:44
+from the GitHub repo but these are the courses just send an email hi when what are the details of
+1:56:52
+this courses when is it starting or something ask some question using which I can craft a response for you uh I just
+1:56:59
+want to test because for testing I need some emails in my inbox. So that's why I'm asking.
+1:57:06
+Then we can see if the rag is actually working or not.
+1:57:22
+Okay. Shivam has also shared the snapshot.
+1:57:30
+It looks decent. I mean these are not the best UIs which mimic what Gmail does but they are decent. You know when this
+1:57:37
+will become actually useful to you. You should you should have keyboard shortcuts also. Keyboard shortcuts for navigating. So for my actual app the up
+1:57:44
+and down arrows are keyboard shortcuts for navigating. E is for archiving for replying command plus enter. uh claude
+1:57:51
+will automatically include some of these shortcuts that are standard but it will probably not do it for
+1:57:58
+um it will not keep the archive shortcut. Uh it will not probably have the up and down arrow navigation
+1:58:05
+shortcut. Okay. Build to verify phase 4. So we are
+1:58:11
+done with phase four. So hopefully now the email reply feature should be done.
+1:58:30
+Okay. Really Krishna has shared a uh so that
+1:58:36
+is a email crafted response or um let me just download your screenshot. I'm not able to see it right now.
+1:59:11
+Okay, it has course details. Is it? Let me just open the screenshot. I'll I'll show it to everyone.
+1:59:24
+One thing we have not set yet is the preferences, reply preferences that we should set.
+1:59:31
+And can you guys also ask your agent uh what is the um embedding model that was
+1:59:37
+used for rag u the the embedding for creating the embeddings and what was the
+1:59:43
+um size of those embeddings.
+1:59:50
+Okay, this is the generated reply for Muri if you have last mailer for
+1:59:57
+instance. Okay, there are some issues I can see there is this markdown formatting that needs to be better and
+2:00:03
+uh also Muri can you confirm if there are any URLs provided in the reply because I think URL is there in the CSV
+2:00:10
+file in the reply is there any URL probably not right uh I'm not sure if
+2:00:15
+beyond this if you scroll down okay okay so that needs to be set up so we need to say that whenever an email is crafted
+2:00:21
+it's actionoriented the other person person on the other end should be able to perform some action for that we have
+2:00:26
+to provide an a URL or something where which they can click and go to. So that we have to do. Um but that is easy to
+2:00:34
+do. But this is already decent. Uh okay.
+2:00:46
+So the reply part will be done in uh phase okay phase four is built passed and pushed ready for phase five.
+2:00:51
+Anywhere. Uh did you guys send an email? Can you guys send an email to my inbox so that I have something in my inbox
+2:00:56
+asking any question? This is my email shrat. Okay, already I
+2:01:02
+have bunch of questions. So let's look at this. I looked at the course detail. Want to understand whether this is recorded
+2:01:09
+query and rack systems in practice. So then if I click this, let's see what happens.
+2:01:23
+Okay, one issue is uh
+2:01:29
+I have no idea whether the there's an email being craft reply being crafted or not. So some circular rotating something
+2:01:36
+or something should be there in the UI. So let's talk about that. I don't
+2:01:45
+uh
+2:01:50
+the AI reply being crafted if it is
+2:02:00
+happening in the background. Let me know with a rotating
+2:02:11
+circular or processing component.
+2:02:16
+Second thing is if API is not working,
+2:02:23
+tell me that can you manually check my API key?
+2:02:33
+It might very well be that the API key is expired, right? So we can just add a processing icon just so that we know
+2:02:39
+something is happening in the background otherwise we don't know whether the button is working or not. Second is um
+2:02:45
+having um having an API test.
+2:03:02
+Okay. API seems to be valid. problem is UI. So let's fix that.
+2:03:12
+Um, one thing you should definitely do to make this app usable. So we are actually planning to build an application where anyone, let's say you
+2:03:18
+are a company, you want to build an email app. You can come to our website. we'll release a website where there you
+2:03:25
+can simply login using your Google account and then with a button click uh the past x number of emails will be
+2:03:31
+fetched and those fetched emails will be converted into an email knowledge base
+2:03:37
+from that a writing preference will be created and if you have any other knowledge base that also you can
+2:03:43
+manually add. So we are creating an application and you you should realize the value of this for most of the teams. Uh maybe big companies will not like
+2:03:50
+something like this because privacy what not very small companies or very
+2:03:55
+individuals probably won't need it because uh number of emails they are replying to is anyway small but for any
+2:04:01
+company where number of people are between 5 to 500 something like this is very much useful. Uh it will save them
+2:04:08
+tons of time. Uh okay make sure to restart after phase four changes quick email. Let's see what has happened now.
+2:04:30
+Okay, now I can see the change here.
+2:04:37
+Generate AI draft.
+2:04:45
+One thing good about uh tools which reply on chat like Slack or uh email or
+2:04:50
+discord is that latency is not much of an issue. Latency would be an issue if this was um like a voice call agent.
+2:04:59
+Let's say you have a speechto text model then textto text model and then again texttospech model. So it's like a
+2:05:05
+cascade of models to create a speechtoech effect. Right? There latency is such a big issue and there you should
+2:05:11
+definitely not have um you know uh you should have a much more efficient rag system here it took a few seconds but um
+2:05:19
+this is fine so question reaching out to me regarding questions about rag systems in practice course is designed to help
+2:05:26
+price is so much starting date duration format here link is also provided the only thing is formatting of this email
+2:05:31
+is like markdown format that's why I think these star and all are coming so this should be properly put as txt but
+2:05:38
+I'll Just approve and send. I just want uh Achel, can you just verify if you get this or not? I'm just approving it.
+2:05:47
+Once you get this, if you can just share a screenshot of how it looks like on your end, that'll be great.
+2:05:58
+Okay, reply is sent and then the replied email will be automatically archived. I
+2:06:03
+don't know if that functionality is implemented yet. Okay, Harrasad also has a question.
+2:06:10
+Let's SQL for analytics. Yeah, on your end it will be the Gmail
+2:06:16
+rendering. Of course, you you should be able to see on your app also. By the way, if this if the email through which
+2:06:22
+you have sent me this question is the same as the one which you connected to your app. You can see it on your app
+2:06:27
+also. But I just want to see on your actual Gmail how it looks like whether those star and those things are coming
+2:06:33
+or not. Okay. Okay, star is coming but the link is rendering properly. Okay, so the
+2:06:39
+formatting needs to be better and subject. Oh, subject is getting
+2:06:45
+printed or is it the subject? Is it the actual subject? The subject line is the
+2:06:52
+it's in the response, right? If I'm not wrong.
+2:06:58
+Okay. So, some weirdness is there in formatting. Very easy to fix. Not an issue. But in principle, a lot of things
+2:07:03
+are working right now in the app. Um now few more things are okay it's in the
+2:07:10
+response so subject should not be there in the response. Um I'll just create
+2:07:15
+okay let us continue with phase five phase five meanwhile I will create the uh you know the feedback for the current
+2:07:22
+stage. So continue
+2:07:27
+with phase five. Meanwhile let's create a feedback
+2:07:32
+document.
+2:07:47
+The email content should
+2:08:08
+um not show the subject.
+2:08:15
+Oh my god, my because my computer is slow when I'm
+2:08:21
+typing and when I'm moving sometimes it's there is a mismatch uh because claude is running in the background there is a lot of slowness right now. U
+2:08:30
+okay email content should not show the subject. Next is uh
+2:08:36
+there should not be MD formatting.
+2:08:44
+We can either say HTML uh for formatting or we can just say plain text formatting. Let's go with plain text
+2:08:50
+formatting. Use plain text formatting.
+2:09:07
+And what we need is
+2:09:12
+in the signature.
+2:09:19
+Oh my god, I'm This is These are not my spelling mistakes, guys. My computer is so slow now.
+2:09:38
+uh mention my name.
+2:09:47
+Yeah, I will push the current code. Let me just save this and push everything.
+2:10:07
+Okay. Anybody else who got uh at least the emails fetched in the front end? And if any of you, you know, if you got a
+2:10:15
+got any email response uh crafted by AI, you can just show that also as a screenshot or just copy paste the text.
+2:10:22
+Anything is fine. I just want to see the format.
+2:10:29
+This is the difference between Gemini and uh our custom email reply tool because here in the database we can
+2:10:35
+pretty much add anything
+2:11:16
+Okay. API credit got exhausted.
+2:11:22
+Uh Sati, did you get that message because you your app set it up in the front end or how did you get to know?
+2:11:27
+Did you get to know about it from the cloud code itself or did you see that in the front end?
+2:11:34
+Uh when I asked a question about something else, this is what it figured out. Let me just download the screenshot.
+2:12:04
+Uh Vishnu, if you don't mind, can you just copy the text of that email and then paste it
+2:12:15
+because uh it's taking my computer a bit tough time to download and open the
+2:12:20
+screenshot.
+2:12:38
+uh based on the AI replies for all the emails you are providing uh creating global feedback that you are feeding to
+2:12:44
+the cloud code. Uh no improvement is improvement of this app has nothing to do with cloud code in production
+2:12:51
+because um in in production cloud code is not there in the picture but improvement will come because ideally to
+2:12:58
+the context from the super base these tables should be loaded. Let me just open it. Uh okay it seems like you might
+2:13:05
+have reached out to someone else as this is visual online learning. Okay, the reason why Vishnu it says Vijuara is
+2:13:10
+probably because in the course database there is some Vijara name mentioned, right? Otherwise, other than that,
+2:13:16
+nowhere else it is mentioned, right? So, okay, that makes sense. Let me just
+2:13:21
+refresh this. I just want to see if any reply has been stored here cuz at least one reply should be stored here right
+2:13:27
+now.
+2:13:40
+Okay, excellent. So this is let me just view this.
+2:13:57
+Yeah. So this is the reply which I made to Achel and subject body received at
+2:14:03
+okay this is not the actual reply I need to see the actual reply which was done using AI
+2:14:12
+yeah so AI draft so this is the AI draft right so it is directly stored here now
+2:14:18
+one thing that is not yet implemented I think is editing the AI draft so if I edit an AI draft it should be stored the
+2:14:25
+previous version and the current version should be stored and feedback hopefully will be now implemented in phase five.
+2:14:31
+Let's see if phase five is done. So phase five was
+2:14:55
+if for any of you if you have ever found email to be painful you must definitely build this you will love it. um the
+2:15:02
+current actual production level app that I have I'm I cannot live without it these days. It's uh it's really really
+2:15:08
+saving us time because sometimes I'm like oh my god this knows my mind because some emails are exactly like how
+2:15:14
+I would have replied almost to to the dot almost. So then I'm like okay wow this is truly replacing me my need is
+2:15:21
+not there. Um okay let's see phase five.
+2:15:31
+So phase five is star rating plus text feedback UI and storage email thread view error handling and loading state UI
+2:15:37
+polition responsive design. Phase six is deployment. Deployment is the last thing. We don't need to do that right
+2:15:43
+now. Uh but I just want to see where have we implemented the um function for
+2:15:50
+storing the edited email and original AI draft. I don't see that. Uh let's let's
+2:15:57
+fix that also. In phase four, it should have been there, but
+2:16:02
+I don't recollect seeing the edit option.
+2:16:17
+Okay. And everything so far has been pushed to GitHub. So you guys should be able to access it from GitHub. Phase
+2:16:23
+five is done. Let's go back to the app.
+2:17:02
+This is another issue with the UI. This is fully blank space. And to see the AI reply part, I have to scroll all the way
+2:17:09
+down. That is not a good thing. Then I have to make two clicks. Here I
+2:17:15
+have to say draft AI reply. Then I have to scroll all the way down. And then here again I have to say generate AI
+2:17:20
+draft. So that also is not a good thing.
+2:17:26
+I just want to see if the functionality for editing has been implemented. Okay.
+2:17:31
+So if I let's say I delete these three these five lines and if I send this
+2:17:51
+so what I expect. Okay. And then this is good. How was the draft quality? Let's say three out of two out of five.
+2:17:59
+Uh poorly formatted
+2:18:07
+then uh two verbose
+2:18:18
+did not ask any. No, this is wrong. If I say if I give wrong feedback just the
+2:18:23
+sake just for the sake of it the reply might become worse over time but yeah submit feedback. So now hopefully this
+2:18:29
+should be stored in superbase and then it should be loaded into the context.
+2:18:37
+So feedback is zero but after I refresh it should be one now.
+2:18:50
+Okay. So feedback is now one and
+2:18:56
+star rating poorly formatted. Okay, this is good. But what is not good is I don't see the part where
+2:19:05
+in superbase I don't see a table for storing original
+2:19:15
+AI draft and my edited final draft.
+2:19:28
+So this should be there. And meanwhile I need to check what is my
+2:19:34
+model. By the way, I have a feeling like this is not Opus 4.6
+2:19:39
+because of the bad UI. But let's see.
+2:19:47
+Uh how do you see the feedback pushed into the context? Yeah. Yeah. For that we need to have some sort of context visualization. We'll we'll have a look
+2:19:54
+at that. Uh replies table exist and is empty. No replies yet. What do you mean no
+2:19:59
+replies? Of course there are replies. Uh replies there are two replies. Okay.
+2:20:08
+So replies table exist and is empty. Look for replies table. It has columns ID,
+2:20:15
+email ID, user ID, AI draft, send body. Okay. So AI draft is also there. Send
+2:20:21
+body is also there. Once you send a reply to the app, both the original draft and your edited version will be stored there. Excellent.
+2:20:27
+Let me just check for my model.
+2:20:33
+Okay, it is Opus 4.6. Um, now what do we need? Okay, before we
+2:20:41
+edit the UI, we need some sort of context visualizer. I need a page for
+2:20:49
+visualizing the full context or not a page
+2:20:55
+in the same page where AI draft is
+2:21:00
+generated. I want to see the full context that is
+2:21:08
+passed in to the LLM for generating the reply
+2:21:18
+in text format.
+2:21:26
+So if we visualize this, we can actually see whether things that are loaded into the context are relevant or not. You're
+2:21:32
+adding this requirement in the terminal promp. How will it be added to cloud.mmd? Um so this this I'm not
+2:21:38
+asking to be added as a this is just a feature which I'm currently building. I don't need to be I don't need this as a
+2:21:44
+it's it's in the I don't need this in the cloudmd file because uh whatever is there in the cloud MD file once it is
+2:21:50
+implemented right because this is an app it's we are not building technically a coding agent or something like that it's
+2:21:56
+just an app with bunch of features so once the feature is built even if that thing is not mentioned in the cloudd it
+2:22:02
+is fine however it would not be fine if you want to create a master app which
+2:22:08
+should act as a so let's say you want to sell an application whose only job is to create email agents
+2:22:13
+for anyone. So I want to create an email agent. I will come to this master application and it should build something for me. In that case, you
+2:22:19
+should have an MD file which details all these things. If that is not the case, if you want to do it just once, the
+2:22:25
+moment the feature is built, probably it's okay if things are not directly written into cloud.mmd file. The best
+2:22:30
+practice is to create diff newer version of cloud.md file and make sure that uh in the system prompt it is always there.
+2:22:38
+If if building the application is the activity that you are going to do most frequently in this case once the build
+2:22:44
+is done I am just going to use the app. So my focus is purely on what is the
+2:22:49
+going to be there in superbase and for each instance of AI reply generation what is going to be loaded into the
+2:22:54
+LLM's context. In this case LLM is open AI. So that is what my concern is. But when once I build a master application
+2:23:01
+where any customer can buy uh our app and build their own email agent with just front end some mouse clicks then I
+2:23:08
+will be concerned about this. Uh
+2:23:13
+yeah so feedback you guys saw right? I hope you also should be able to see a feedback once if phase four or five is
+2:23:19
+implemented you should be able to see a feedback in the replies. I just want to see the two versions. Original AI draft
+2:23:25
+and the draft which I sent. Okay. So, email ID, user ID. So, this is
+2:23:31
+the AI draft and
+2:23:36
+this is the sent body. Okay. Sent body by the way it should not
+2:23:41
+have subject. So, that is a mistake. But I can see the AI draft and the sent email. So, this is the AI draft with
+2:23:47
+subject. This is the sent body with subject. So, here I had deleted three lines. So those
+2:23:52
+deleted lines will not come in here. So this is good.
+2:24:14
+Uh have you guys checked your super basease? Do you see uh four or five tables depending on how you have built
+2:24:19
+it? Do you see the tables with the um you know with the filled entries or
+2:24:26
+is it still empty tables? Just feel free to let me know.
+2:24:33
+And one thing you might notice is the slowness of the app uh to fetch API. It's very slow. Um you will notice that
+2:24:40
+sometimes everything is like bunch of emails are fetched in bulk. You probably don't want to do that. you have to in
+2:24:46
+implement pagination so that in one page only so many emails are being fetched. Uh so there are bunch of extra things
+2:24:53
+which you can do to make the app super fast.
+2:24:58
+Uh one thing I have noticed is that my archive function now is faster than than Gmail. Uh that is one thing which I'm I
+2:25:04
+really like in my app. Uh but my email fetching is obviously slower than Gmail.
+2:25:11
+um my once the reply is sent the speed with which it is autoarchive that is a
+2:25:17
+bit slow. So auto archive is slow but manual archive using e that is very fast. So in some cases I like my app
+2:25:24
+better in some cases Gmail is better. Then later I had to implement a few more
+2:25:29
+features like right now forwarded emails are not there. If somebody had already forwarded an email to um someone else I
+2:25:36
+don't have to necessarily reply to it directly. Right? So but where do I see whether this email is already forwarded
+2:25:42
+or not? In Gmail you can see that but in this app unless you explicitly build it that feature will not be there. How the
+2:25:48
+feedback will be used to improve reply. So feedback will be used to improve reply in the case where imagine the case
+2:25:54
+where you have lot of details about different courses that with nuances. Okay. And let's say
+2:26:00
+AI hallucinated and said something and you don't want AI to hallucinate in that
+2:26:06
+direction. uh to give an example let's say we have sometimes two URLs for the same course one URL on our um subdomain
+2:26:14
+and one URL on the main domain sometimes we prefer to send the sub subdomain URL
+2:26:19
+because there are a lot more details are there the main domain URL do not have that many details but I have noticed
+2:26:25
+that many times AI keeps sending the uh the main domain URL instead of the
+2:26:30
+subdomain URL then what I did is I manually deleted in some email reply I just manually deleted the subdomain main
+2:26:37
+domain URL and replace it with subdomain URL. Then AI after some times it it
+2:26:43
+noticed that change uh between the original AI draft and the draft which I sent which was added to the context and
+2:26:49
+then it it by default ended up sending now um now it keeps sending the proper URLs. So feedback will be used to
+2:26:56
+improve the reply because these feedbacks will be loaded into the
+2:27:02
+uh context along with the past let's say 30 or 40 email response email plus uh AI
+2:27:08
+AI email draft plus final email draft pairs. So just remember this this table
+2:27:14
+is right now not an issue. If I load this entire table it's not an issue only two items are there. But what if uh I
+2:27:21
+have 300 such rows now in this table then I have to again apply another rag
+2:27:27
+on top of this feedback. So this feedback look at this it's only one row in this table not an issue if I load it
+2:27:33
+into context fully. But if this is 500 rows then again I need to add one more
+2:27:38
+layer of rag on top of the feedback where each entry in the feedback is converted to a vector. And if from
+2:27:45
+feedback I need to fetch relevant vectors corresponding to my current email I should be able to fetch that. If
+2:27:50
+from um course embeddings I need to fetch some relevant courses I should have a rag. So here I already have rag
+2:27:56
+here I don't have rag. Even in my original app, I don't have rag yet for feedback because my feedback number is
+2:28:03
+very low. But eventually if I feel like my context is becoming worse because lot of feedback is being fetched, I will
+2:28:09
+implement rag. Um but yeah, let's see what is the status now.
+2:28:25
+Okay. So this is the
+2:28:44
+latest version. Uh the change that I wanted to implement was
+2:28:49
+I forgot what was my latest command. It was I think regarding
+2:29:27
+Okay, it was regarding uh displaying the context. So, let me now see if I open
+2:29:32
+one whether the context will be displayed or not.
+2:29:52
+Okay. So now this is the full LLM context. Uh system prompt you are a helpful email. Yeah. You see let's see
+2:29:58
+now what all things are loaded here when I'm replying to Simma. So system prompt you are a helpful email assistant for
+2:30:04
+visual and online education platform. your you draft professional friendly and accurate email replies to course
+2:30:09
+inquiries guidelines be warm and these are generic guidelines I never said these things sign off as team user do
+2:30:15
+not make up information these are these are good things then user prompt the following email was received draft a
+2:30:20
+professional reply incoming email subject is uh the subject body hither could you please look at this course and
+2:30:26
+provide details then relevant course information from the knowledge base course one uh statistics for decision-
+2:30:33
+making advanced what was the course that have Uh yeah this is the course that was asked about statistics for decision-m so
+2:30:40
+the course number one which was f fetched by rag is statistics for decision-m advanced course number two is
+2:30:46
+maybe the not advanced version of the course three is metrics for product
+2:30:51
+decisions I don't know why this course is also fed into the context
+2:30:56
+uh maybe product decisions yeah because here it is about decision uh it's about decision making because
+2:31:03
+there are things about product decision here metrics for product decision this is also relevant course four business
+2:31:09
+metrics and dashboards advanced and course five data storytelling for leaders so five courses have been
+2:31:16
+fetched uh from the context to draft the reply but you know what is not added to the
+2:31:22
+context as I can see the feedback is not added to the context yet
+2:31:27
+uh and what else is not added the previous email uh email response pairs
+2:31:34
+that is not yet added to the context right so whatever feedback we have added is not improving the app at the moment
+2:31:41
+so that also see this is the advantage of showing the full LLM context so now this whole thing is passed into the uh
+2:31:48
+and also I would like to know the number of tokens so let me just copy this
+2:31:57
+token counter chat GPT
+2:32:15
+So this is 920 tokens. Uh so it's not too bad. The context window of these
+2:32:21
+LLMs are much bigger than this. So context rot is definitely not happening. But what may be happening is we are not
+2:32:28
+providing feedback or we are not providing previous mistakes AI made in the response none of that to the to this
+2:32:34
+context. So maybe we can add that. So this is a good way you can actually you know implement a token number of tokens
+2:32:40
+consumed visualizer here um so that you can see that you are not exceeding the
+2:32:46
+context. But if this number was 20,000 or something instead of thousand it's a problem. Right now it's not a problem.
+2:32:52
+So let's implement one more thing. I noticed
+2:33:00
+that feedback table is not loaded into the
+2:33:08
+context. Similarly,
+2:33:13
+the replies table is also not loaded to the context.
+2:33:23
+What is the point of having them if we are not using it to
+2:33:32
+draft a new reply?
+2:33:37
+We need a systematic
+2:33:44
+way to load that into the context.
+2:33:50
+Can you guys also implement a context visualizer uh just txt format? No need of fancy context visualization but just
+2:33:56
+I just I'm just curious to know how long is your context in terms of token? Mine is like roughly thousand tokens. Is
+2:34:03
+yours also something like that or is it more like half the number of tokens or double the
+2:34:09
+number of tokens? Uh just try to build that.
+2:34:21
+But rag is working beautifully here. Uh the the order in which the courses are arranged are definitely according to
+2:34:28
+what the user query is.
+2:34:47
+Uh no in this rag I don't think we have implemented any reanker actually reanker is not that important because you know
+2:34:54
+if you are just fetching five items uh and if you are anyway passing all of that into the context it's fine um but
+2:35:00
+if you are fetching 25 items and then you want to apply reranking and then you want to fetch five items from those 25
+2:35:06
+uh then reranking would be very much helpful in this case I don't need a reanker reanker is not a mandatory part
+2:35:12
+of rag. Uh let me just check your screenshot. Amit I I'll have to download it
+2:35:53
+Okay, this is Amit's response. Let's see
+2:36:09
+uh airdraft. Okay. Okay. So, one thing I notic is in all the cases uh airdraft is with the formatting with the star
+2:36:15
+formatting. Um we can we can kind of ask AI. I like your uh all of your UI
+2:36:22
+actually. It's much better than what UI I have. Um but yeah, the the response is kind of
+2:36:29
+good. Thank you for reaching out. Uh however, we offer a variety courses. Yeah, this is good. Courses reference
+2:36:34
+also. This is a good addition. I mean this courses referenced uh being displayed here. Did you explicitly ask AI to add this something like this or
+2:36:41
+was it added by default? Okay. You explicitly mentioned is it okay good to
+2:36:47
+know? Yeah. Yeah. Because this this is good to know because um uh I mean you
+2:36:53
+can see that in the reply but this is also good to know what rag is actually fetching. All right. Uh if you guys can
+2:36:59
+implement this context visualization in txt format that will be great. Um we can actually see whether the context is
+2:37:05
+relevant or not. Meanwhile, I think now we can just go ahead and just deploy
+2:37:10
+this just for the sake of completion. And of course, there are hundreds of things which we can make better here. But let's let's once this is done, let's
+2:37:18
+go ahead and deploy in frontal because that will uh finish the loop. One thing we should definitely check is um we
+2:37:25
+should have additional functions uh deployed if we need more functionality like uh so I have added one functionality where if a new program is
+2:37:33
+released uh if I don't want autoscraping or something I will simply provide a U link
+2:37:40
+or URL to that program and then from the URL manually uh you know whenever I
+2:37:45
+provide the URL fetching scraping data will happen that scraped data will be converted into a format uh which is
+2:37:52
+suitable for my uh superb basease database and then it'll be added to superbase. Here I'm in.
+2:37:58
+So for that I needed a uh railway back end also but in this particular application we don't need railway it
+2:38:04
+said versel itself is handling that when we deploy. So let's first finish this
+2:38:10
+and then let's deploy uh
+2:38:16
+now deploy the application
+2:38:22
+on yourself.
+2:38:30
+Uh how to calculate delta in such cases? Uh, delta meaning mind.
+2:38:53
+Chances like price updated or timings like that in drag knowledge base. Yeah. Yeah. Yeah. Very good, very good
+2:38:58
+question. Uh, so I have added two functionalities. One functionality is to add new information. Another is to
+2:39:04
+visualize the database the rows in the table like cells. Uh cells as in if if
+2:39:10
+there is one one row uh it will be display displayed with an edit option. So in the edit option I can directly
+2:39:17
+make an edit. Um so I have added that functionality also. So yes there could be changes like changes in timings or
+2:39:23
+changes in uh some information about the course about duration something like that for in the existing knowledge base.
+2:39:29
+So I need an edit edit option and each time if you imagine if you have to edit you have to go to superbase manually and
+2:39:34
+edit there it's painful. So you should be able to make that edit from the front end itself and ideally with natural
+2:39:39
+language I mean just just peak and make those changes. Uh that that'll be the even more um ideal situation. Uh what is
+2:39:49
+the app if I may ask on what app for your work or for your college? On what
+2:39:56
+app do you spend most of your time in terms of communication? Is it Slack? Is it Discord? Is it Gmail? What is that is
+2:40:02
+the most painful thing for you? Can you just mention in the chat? I'm just curious to know. Okay. Teams.
+2:40:11
+Uh WhatsApp do you guys use for what company communic like for work or for like personal stuff?
+2:40:22
+Okay.
+2:40:27
+Uh so for those of you who mentioned that uh the number of emails you send per day
+2:40:33
+is like 1 to5 is that number more like 20 30ish when it comes to this chat like
+2:40:40
+teams or slack or Google chat or whichever platforms you use. What is the order of magnitude of per day
+2:40:46
+communication? The number of messages you have to read and number of messages you have to reply
+2:40:51
+on a daily basis. Oh wow. greater than 50
+2:40:56
+okay per day it's that much right so it's it's truly a pain then for all of you I think in that case you will
+2:41:02
+benefit from having a having some sort of agent which can handle at least basic things I mean of course depends on
+2:41:08
+company policy and stuff like that but um but it will help you with having some
+2:41:14
+agent who can who has same knowledge as you to handle at least 80% of these conversations uh in my case most of my
+2:41:21
+spend time is spent sent in email. Um that's the reason why I went with email. But yeah, of course, this can set up in
+2:41:28
+uh uh can we set up teams copilot for this? Not sure. Uh team should have
+2:41:33
+similar to Gmail, team should have a provision to have API access, right?
+2:41:39
+Uh how did you have this conversation or chat of teams in vector database? Uh like how to convert you mean uh to
+2:41:45
+vector database? Yeah. Yeah. Great question. So in email what I did was I showed the I showed the JSON files
+2:41:52
+earlier right last one year worth of email alone itself was around 350 MB or
+2:41:58
+something like that that two emails were there is some reply in the thread the sheer volume of raw emails will be much
+2:42:05
+bigger than that so what I did was I first got all the raw data from the
+2:42:11
+email and I realized that it's a waste to store all of this in vector database so then I ran another loop where I spent
+2:42:17
+some money on LLM where I asked LLM to significantly summarize all of this into one or two
+2:42:23
+JSON files for knowledge base and then those JSON files uh this the individual
+2:42:28
+objects in those JSON I converted to vector. So now the number of rows in my vector database is like 250 or something
+2:42:35
+not more than that. So it should not be like each chat is
+2:42:40
+converted to a vector that will be that will be too much. Um I think the vector database in if it is like a team chat or
+2:42:47
+something should be something like a semantic uh the chunking should be semantic based. Uh in my case the
+2:42:53
+chunking was made more based on structure as you might saw as you might have seen earlier it was based on the
+2:42:59
+structure of the email. Each email was one chunk but if it is like if it h so happens that each reply or each item
+2:43:05
+becomes a chunk then some item might be hi how are you this this so it's on useless chunks right? So your chunk
+2:43:11
+should chunking should be different uh how did you export emails from Gmail into multiple JSONs? Great question. So
+2:43:17
+Mosam for that what I did was I had written a separate function uh using I mean using cloud code but it's a Python
+2:43:24
+script that Python script executed and it took me around 45 minutes to have
+2:43:29
+that much volume of email. In this case each email is a vector. Yeah that's correct. No here I did not make any
+2:43:36
+change. Each email is a vector. Um sorry not each email each course is a
+2:43:42
+vector here I'm not storing email as vectors but in my original application each email is a vector each course is a
+2:43:48
+vector and then both of those vector databases are separately referred to in this particular application which we are
+2:43:54
+building right now there is no email vector we only vectorize the knowledge base for the courses but uh if you were
+2:44:01
+to build something like this for Slack or teams or something the chunking will uh completely
+2:44:08
+matter because uh if you chunk such that each message is a vector it'll be like a meaningful vector meaningless vector but
+2:44:15
+if you chunk based on semantics maybe group of ideas may belong to one vector
+2:44:20
+and then whenever somebody is asking a question regarding that idea you can find the vector that is more more
+2:44:26
+relevant to that but in my experience for those of you are spending maybe 1
+2:44:31
+and a half to two hours because I assume to reply to 50 plus messages on a day it will take at least 1 hour of your time
+2:44:38
+if not more if not one and a half to two hours right so if that is the case I
+2:44:44
+think it's totally worth it to build something like this and maybe you can discuss in your team itself like whether
+2:44:50
+they they would appreciate something like this anyways now the app is deployed let's see production URL is
+2:44:57
+this
+2:45:02
+uh okay I don't need the authentication I and
+2:45:13
+remove the need for versel authentication
+2:45:20
+for this app. But meanwhile, one more thing that we should do which you should not forget is
+2:45:27
+this redirect URLs. So
+2:45:49
+give me all redirect URLs in a separate
+2:45:57
+document. so that I can easily copy.
+2:46:03
+So if we deploy on Versel obviously you will have to go to again cloud console
+2:46:10
+and here you will have to add that URL. Um so whatever your app URL is you will
+2:46:16
+have to add that plus you'll have to publish it if this needs to be publicly available app but
+2:46:21
+otherwise no need to have that. Um so go to clients
+2:46:32
+web client one.
+2:46:37
+So here in this place we should add a URL for production.
+2:47:05
+uh and to connect Versel. Okay, you can just ask uh cloud code to login via
+2:47:12
+Versel or O. So that should be very easy. Then it will ask you to log to versel.
+2:47:18
+Uh authorize redirect URL superbase authentication.
+2:47:32
+Okay. So once this redirect URL is set, go back to superbase. If this is how your structure is. In my case, I had
+2:47:39
+enabled superbase Google authentication. That's the reason why I'm again going here.
+2:49:03
+Okay. So that is also set and
+2:49:45
+So now hopefully this should work uh in deployment. And
+2:50:12
+okay, versel authentication. So this we should on or off deployment protection
+2:50:20
+you can do that. So usually I don't go to vers directly I
+2:50:25
+force cloud code to do it itself. I can just go here and just versel
+2:50:31
+authentication I can switch off but cloud code can do it very easily.
+2:50:40
+Uh do you guys are you guys in the process of deployment? Just let me know once you deploy whether it's working or
+2:50:46
+what's the status.
+2:51:05
+Uh so here one thing you should note is here I did not connect GitHub with Versel right uh the best workflow is
+2:51:12
+doing that connect GitHub and Versel and then whenever you push changes to GitHub it will be auto deployed on Versel here
+2:51:18
+I'm directly deploying to Versel because my cloud code has access to Versel right
+2:51:24
+um so just uh just understand the nuances Yep.
+2:51:49
+Okay.
+2:51:55
+Yeah, we can deploy to versel directly from GitHub repo. So you can go to versel and connect it to any GitHub repo
+2:52:01
+and then once it is connected whenever you push changes to GitHub it will be auto deployed to Versel. So that is for
+2:52:07
+most of the projects that's my workflow. Okay. So here my deployed app is working very nicely. Uh it will only work for me
+2:52:14
+because it's configured with only me as the user. Uh then if I can just reply
+2:52:21
+draft a reply
+2:52:38
+and I can see the full LLM context here. I don't think the issue of fetching things from the feedback is yet.
+2:52:46
+Uh user edit patterns. Okay, now it is fixed. Past reply history and failback
+2:52:51
+user feedback on I hope you can see this. I'll just increase this font size. So issue one two out two out of five as
+2:52:59
+was a star rating request to send. So this was this is one of the feedback only one feedback is there. But then user reply patterns, user edit patterns,
+2:53:06
+the user modified these AI drafts before sending learn from their preferred style. Then uh I had I had removed
+2:53:14
+something from the draft uh user sent instead subject course detail businesses. Oh, somehow I'm not sure if
+2:53:21
+something is getting truncated here. Draft a reply to this email. If the email is asking about okay maybe what
+2:53:29
+might be happening is if this is the full LLM context either what is displayed here is truncated or what is
+2:53:35
+stored in superbase is truncated. Let me just go to superbase and check if something is truncated or not in the
+2:53:41
+replies. So AI draft and sent body.
+2:53:50
+Okay here nothing is truncated. So in the context when in submit something is
+2:53:56
+being fetched from the uh user edit patterns things are
+2:54:01
+truncated. So this we can fix um but I hope you get the general direction. So basically what
+2:54:08
+we implemented here is we have rag just for the courses later we can have rag
+2:54:14
+for if there are large number of emails uh from our past uh to be referenced to
+2:54:20
+if there are large number of feedbacks to be referenced to we can have a rag for that also. So in general the bigger
+2:54:26
+the database becomes the better to store it in vector format at least one column should be vector and that column should
+2:54:32
+be referred to for rag. Um uh I'm just curious to see what is the
+2:54:39
+status of your application right now. Um has anyone managed to deploy it yet?
+2:54:45
+Uh how did you have these conversation or chat of teams in vector data? Uh not that is that yeah we can deploy to yeah
+2:54:52
+I think most of the questions um are covered but I I'm just curious to see did you guys manage to deploy the
+2:54:59
+application or is there any hiccup
+2:55:21
+uh one assignment that I will give you regard based on this is uh I will create a a different knowledge base okay and I
+2:55:27
+I'll share it with all of you um and then what I want you to do is
+2:55:33
+use the final version of I mean make sure that your app is uh picture perfect and polished the knowledge base I will
+2:55:40
+make in such a way that it's very nuanced uh like the app cannot make general assumptions and respond I will
+2:55:46
+make it very very nuanced. So unless the rag is working perfectly, the reply will not be good. Then what I will do is I
+2:55:52
+will set up an agent myself so that if you provide me the email, I will make my agent send one question based on the
+2:55:58
+knowledge based your email and then your email from your email, you should use your agent to reply and once I receive
+2:56:05
+the reply, I'll look at the reply to see how good it is. So uh yes, push the knowledge base. So this
+2:56:12
+knowledge base is already in the GitHub. You should see that uh the CSV file but the latest changes push to GitHub.
+2:56:22
+So the way I can truly evaluate you uh will be based on that. Also you might want to check out our platform called
+2:56:30
+hire.visisualara.ai. Just check this out.
+2:56:35
+So the reason why we built this is because nowadays when we are hiring someone it doesn't matter what their
+2:56:40
+coding skill is. we really need to know if they can truly work with AI tools to build right. So here there are bunch of
+2:56:46
+assignments. The free trial is for few number of days. So you can try with the free trial. Uh and you can create an
+2:56:53
+assessment for testing skills for a particular domain. Uh it can be rag or something else. So just
+2:57:01
+um just try this platform once. uh it's a it's a platform which now some
+2:57:06
+companies have started using after purchasing from us uh to test when they are making a hire. So here we have built
+2:57:14
+an agent who will evaluate how good you are at prompting and building using AI.
+2:57:20
+So there is cloud code inbuilt into a into Amazon AWS and then this platform
+2:57:25
+will give you temporary access to that as a candidate or as a hiring manager and you can use it. So just try this
+2:57:32
+out. uh basically your AI skills will be truly put to test the new knowledge base
+2:57:37
+I will be yes I will be pushing that to GitHub uh I don't have it yet because I want to make it a bit more complex it
+2:57:43
+should not be very simple so I will do that and one more update is the PDF which I said I will share with the
+2:57:48
+engineer plan and industry professional plan guys I will finish compiling it sometime end of the day tomorrow or
+2:57:54
+Monday then I will be putting it on the course dashboard and I will once it is done I will notify all of you uh but
+2:58:01
+Please uh I will create one assignment based on today's building exercise. The
+2:58:06
+assignment will be uh very simple. You need to local host or um show the
+2:58:13
+deployed version of your email tool. Okay, I'm sure you have two emails. So from your second email, send an email to
+2:58:19
+your email where the tool is and then show me the just record using loom.com 1
+2:58:26
+3 or 4 minute video showing the reply uh and and reading through your context like display your full context in txt
+2:58:33
+format and then just go show that but you will have to spend a little bit more time to perfect the UI because right now
+2:58:39
+I'm sure if you got the UI in one shot it is not good. So just make sure that you are spending few more hours to make
+2:58:44
+the UI better. I will give you another three or four days of time for that. So you can work during this weekend as well
+2:58:51
+as few more days during the week. So assignment deadline will be around March 25thish. Uh so you can submit that and
+2:58:58
+then the dates for uh build session with Dr. Raj and Rajat is finalized. I have updated the details on the website. You
+2:59:04
+can use the same link to join that also. Um yeah. So assignment I will I will post
+2:59:10
+it um I will post it on the platform. So uh we can wind up this session today
+2:59:15
+guys. Here I'm I'm hoping to see some good submissions. So whatever you have built so far I know that it will
+2:59:21
+probably be incomplete because you will need more time to build. But I want you to build it and as part of the
+2:59:26
+assignment I want you to submit it. Um so please take good care in making sure that the appearance is really nice. The
+2:59:33
+the format of reply is actually like an email. It should not sound like an AI generated reply. So you have to take
+2:59:39
+care of adding uh sufficient email preferences. If you need to add that in superbase, you can do that. If you need
+2:59:45
+to add more tables in superbase, you can do that. For email tool, latency is not at all not at all an issue. The only
+2:59:52
+issue is uh the reply quality. So even if the time consumption is a bit high, it's okay. The other issue is uh to
+2:59:58
+minimize your LLM cost, you should minimize your length of token, I mean the context window size, whatever number
+3:00:05
+of tokens you are sending. But then at the same time it should not degrade your quality right. So um so two assignments
+3:00:14
+maybe one short assignment will be slightly making the app better and local hosting and showing it through a video
+3:00:19
+format. Second assignment is um just uh I will submit a new I will give you a
+3:00:26
+new knowledge base based on that u redesign your application. That knowledge base will be slightly more
+3:00:31
+difficult and then just submit your email. All of this will be mentioned in the assignment. uh submit your email
+3:00:37
+then I will set up an agent to send emails to your inbox and then using your agent reply to that inbox and I will be
+3:00:44
+evaluating it based on the reply which my agent receives. So um uh thank you so
+3:00:50
+much everyone. I hope you know you guys have built and something something is there in shape at the moment. If it is
+3:00:57
+not if in these 3 hours nothing happened don't worry you can
+3:01:02
+work with cloud code a little bit more and in some more attempts you can get it to working but the final output should
+3:01:07
+be a deployed product okay a deployed thing where there is proper authentication so that only you are able
+3:01:13
+to get access uh unless you reach that stage you cannot say it's the final product okay in the next two build
+3:01:18
+sessions the topic I'm not 100% sure I can ask Rajin Rajat and finalize it with you guys but at the end of the day you
+3:01:25
+will be building um something proper using cloud code. So something very similar structure as that of today but
+3:01:31
+uh different for different purpose. So thank you so much everyone. Um thanks
+3:01:37
+for saying so late. Um and I hope you really enjoyed the course so far and uh
+3:01:43
+sessions. I will be sub sending you across a feedback form. I hope you can give some nice feedback of what you
+3:01:49
+enjoyed about the course and stuff like that. It has taken me a lot of literal sleepless nights to build this course
+3:01:55
+and even to go through the course because the content it is a little bit bit was and to compress it into a format
+3:02:02
+which fits few hours it's very very difficult. So that part was the most challenging to decide what to include
+3:02:08
+and what not to include. Um one more thing that was challenging was to uh
+3:02:13
+create the the lecture notes. The lecture notes on Miro took a lot of
+3:02:18
+iterations to get it into that shape. uh I use paper banana for many uh visualizations but even the prompt which
+3:02:26
+you give to paper banana required certain level of detail so that that's a part which took a lot of time and uh you
+3:02:34
+might have noticed that now um cloud has partnered I mean they are partnering
+3:02:40
+with companies to give uh anthropic builder certificate or stuff like that to individuals so if something like that
+3:02:48
+we start we will let you Um yeah in the upcoming projects with
+3:02:53
+Dr. Rajend Rajat it will be similar but uh mostly yeah agents or sub agents will be utilized um I will I will ask them I
+3:03:00
+don't know what have they finalized yet but I'll really appreciate it you guys if you can give me some feedback I'll
+3:03:05
+send a feedback form link um um first of all thank you all for staying so late I
+3:03:11
+know that many of you from US time zones it's like 2:00 a.m. 1:30 a.m. 3:00 a.m.
+3:03:16
+It's like weird times. Yeah. So I I really really appreciate that. Um I know
+3:03:21
+that the timing is not the most ideal for everyone but because we have people from almost all time zones it's very
+3:03:27
+very difficult to get it correct but all the best everyone. I'll hope you to see in upcoming boot camps or workshops. Um
+3:03:35
+I have one session coming which is starting next weekend on vision language action for autonomous driving. So there
+3:03:42
+I'll be teaching about uh how to build VLA models completely from scratch with
+3:03:47
+general gen in general for robotics but specifically for autonomous driving. If anyone is interested in that space you
+3:03:53
+can check it out. It's basically on this link da visual.ai.
+3:04:01
+So just uh check out this link uh if this is something which interests you. uh
+3:04:08
+because VA you might have noticed in 2026 a lot of companies are getting funded for robotics and um I also
+3:04:15
+strongly believe that embodied AI is the future of uh lot of things that AI has to show because so far AI has seen
+3:04:21
+amazing things it can do in the digital world but in the physical world still uh there are lot of tasks which basic tasks
+3:04:28
+which human can do but AI cannot do so cognitive tasks AI can already do a lot of things which humans can do but
+3:04:33
+physical tasks which simple tasks which humans can do AI cannot do So uh you will learn that from uh you
+3:04:41
+know from that boot camp some parts of it but rest of the parts Rajat is also covering as part of VLA and world models
+3:04:47
+for robotics and we have something called minor in robotics. I don't know how many of you are aware of it. Uh I
+3:04:54
+will just share a link. So this is mostly for those of you who
+3:04:59
+think uh embodied AI is one of the big things which future AI can offer. Uh but
+3:05:06
+thank you so much everyone. I will let you guys go and sleep or have lunch. I'm also very hungry. Uh see you in the now
+3:05:13
+you will see Dr. Raj in the next ninth session of this boot camp and in the 10th session you will see Dr. Rajat. So
+3:05:21
+thank you so much for any doubts just email me. This is my email. Uh sometimes I'll be slow to respond
+3:05:27
+obviously because of the sheer volume of emails but I'll try my best. Uh so all
+3:05:33
+the best everyone. See you soon in any other future boot camps.
