@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" width="960" height="360" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="t d">
   <title id="t">From prompt engineering to context engineering — a four-year arc</title>
   <desc id="d">A horizontal timeline from 2022 to 2026. In late 2022 ChatGPT popularises prompt engineering. Through 2023 the focus is single-turn prompt patterns and chain of thought. In 2024 RAG, function calling, longer windows, and the first agent frameworks reframe the work as multi-source context assembly. In mid-2025 Andrej Karpathy renames the practice context engineering; Anthropic, IBM, and others publish formal articles. Through 2026 the practice consolidates around protocols like MCP, sub-agent patterns, persistent memory systems, and dedicated context-engineering tooling.</desc>
 

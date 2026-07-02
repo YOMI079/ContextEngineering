@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" width="960" height="420" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-labelledby="t d">
   <title id="t">The five jobs of a context engineer</title>
   <desc id="d">A grid of five cards naming the five recurring jobs of a context engineer: decide what goes in, decide what stays out, decide where each piece is placed, decide when to refresh or compress, and decide how to measure whether it worked.</desc>
 

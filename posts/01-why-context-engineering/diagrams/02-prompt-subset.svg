@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="t d">
   <title id="t">Prompt engineering is a subset of context engineering</title>
   <desc id="d">A nested-set diagram. The large outer rounded rectangle is labelled "Context engineering" and contains the six layers the model actually reads on every call: system prompt, tools and MCP, memory and state, retrieved RAG chunks, conversation history, and the user instruction. A small inner ellipse, labelled "Prompt engineering", wraps only the user-instruction layer, showing that prompt engineering is a strict subset of context engineering.</desc>
 
