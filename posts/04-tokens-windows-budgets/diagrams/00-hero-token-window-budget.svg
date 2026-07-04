@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" width="960" height="360" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="t d">
   <title id="t">Tokens, windows, and budgets</title>
   <desc id="d">Three nested concepts. The token is the atomic billed unit. The context window is the architectural ceiling of how many tokens the model will accept. The token budget is the smaller share of that window the engineer chooses to spend, divided across the six layers and an output reserve. The hero shows a long horizontal bar representing the window, with the budget filling roughly half of it and subdivided by layer.</desc>
 
