@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="t d">
+  <title id="t">The economics of prompt caching</title>
+  <desc id="d">Two side-by-side request bars price the same 10,500-token input. The left bar is a cache miss: the whole prompt is billed at full input price and the stable system-and-tools prefix pays an extra 1.25 times write premium to populate the cache. The right bar is a cache hit: the same frozen prefix re-reads from cache at about a tenth of the input price, while only the small volatile suffix, the latest user turn and this turn's retrieval, pays full rate. A note records that a hit also skips prefill of the cached prefix, so it cuts latency as well as cost.</desc>
+
+  <style><![CDATA[
+    :root{
+      --ce-bg:#FAFAF7;--ce-surface:#FFFFFF;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;
+      --ce-ink-subtle:#9A9A9A;--ce-border:#D9D9D4;
+      --ce-primary:#5B7FBF;--ce-accent:#D98E5F;--ce-success:#5C9E78;
+      --ce-warn:#B8895A;--ce-alert:#C66B5E;--ce-neutral-1:#EAEAE4;--ce-neutral-3:#8E8E88;
+    }
+    @media (prefers-color-scheme:dark){
+      :root{
+        --ce-bg:#0E0F12;--ce-surface:#16181C;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;
+        --ce-ink-subtle:#6E6E68;--ce-border:#2A2D33;
+        --ce-primary:#8BA8E0;--ce-accent:#E8B088;--ce-success:#7FBF9B;
+        --ce-warn:#D4B58A;--ce-alert:#D88880;--ce-neutral-1:#1F2229;--ce-neutral-3:#6E6E68;
+      }
+    }
+    .bg{fill:var(--ce-bg);}
+    .card{fill:var(--ce-surface);stroke:var(--ce-border);stroke-width:1;}
+    .track{fill:var(--ce-neutral-1);stroke:var(--ce-border);stroke-width:1;}
+    .seg{stroke:var(--ce-bg);stroke-width:1.5;}
+    .write{fill:none;stroke:var(--ce-alert);stroke-width:1.5;stroke-dasharray:4 3;}
+    .tick{stroke:var(--ce-ink-muted);stroke-width:1;fill:none;}
+    .lead{stroke:var(--ce-ink-subtle);stroke-width:1;fill:none;}
+    .brk{stroke:var(--ce-ink-muted);stroke-width:1;stroke-dasharray:3 3;fill:none;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:20px;fill:var(--ce-ink);}
+    .h{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:12px;fill:var(--ce-ink);text-transform:uppercase;letter-spacing:0.06em;}
+    .l{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ce-ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:12px;fill:var(--ce-ink-muted);}
+    .lab{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:11px;fill:#FFFFFF;}
+    .mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:11px;fill:var(--ce-ink-muted);}
+    .monb{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-weight:700;font-size:13px;fill:var(--ce-ink);}
+  ]]></style>
+
+  <rect class="bg" width="960" height="360"/>
+  <text class="title" x="48" y="44">Cache miss vs cache hit, same 10,500-token input</text>
+  <text class="s" x="48" y="64">A hit re-reads the frozen prefix at about a tenth of the price; only the volatile suffix pays full rate.</text>
+
+  <!-- shared price scale: bar area x 300..900 = 600px wide -->
+  <!-- full-price equivalents: prefix 4,600 tok, suffix 5,900 tok. -->
+  <!-- MISS bar: prefix billed at 1.25x (4600*1.25=5750 units) + suffix 5900 = 11650 units at full rate -->
+  <!-- HIT  bar: prefix billed at 0.10x (4600*0.10=460 units)  + suffix 5900 = 6360 units at full rate -->
+  <!-- scale: 11650 units -> 600px  => 0.05150 px/unit -->
+
+  <!-- ===================== MISS row ===================== -->
+  <text class="h" x="48" y="112">Cache miss</text>
+  <text class="s" x="48" y="130">first call, or prefix changed</text>
+
+  <!-- prefix @1.25x = 5750 units = 296px; suffix = 5900 units = 304px -->
+  <rect class="track" x="300" y="98" width="600" height="40" rx="5"/>
+  <rect class="seg" x="300" y="98" width="296" height="40" fill="var(--ce-primary)"/>
+  <rect class="seg" x="596" y="98" width="304" height="40" fill="var(--ce-accent)"/>
+  <rect class="write" x="300" y="98" width="296" height="40" rx="5"/>
+  <text class="lab" x="448" y="123" text-anchor="middle">prefix at full price + 1.25x write</text>
+  <text class="lab" x="748" y="123" text-anchor="middle">suffix at full price</text>
+  <text class="monb" x="900" y="90" text-anchor="end">~$0.0315 input</text>
+
+  <!-- ===================== HIT row ===================== -->
+  <text class="h" x="48" y="204">Cache hit</text>
+  <text class="s" x="48" y="222">prefix byte-stable, warm cache</text>
+
+  <!-- prefix @0.10x = 460 units = 24px; suffix = 5900 units = 304px -->
+  <rect class="track" x="300" y="190" width="600" height="40" rx="5"/>
+  <rect class="seg" x="300" y="190" width="24" height="40" fill="var(--ce-success)"/>
+  <rect class="seg" x="324" y="190" width="304" height="40" fill="var(--ce-accent)"/>
+  <text class="lab" x="466" y="215" text-anchor="middle">suffix at full price</text>
+  <text class="monb" x="900" y="182" text-anchor="end">~$0.0191 input</text>
+
+  <!-- callout to the tiny cached prefix on the hit bar -->
+  <line class="lead" x1="312" y1="190" x2="312" y2="168"/>
+  <line class="lead" x1="312" y1="168" x2="360" y2="168"/>
+  <text class="s" x="366" y="172">cached prefix re-read at ~0.1x price</text>
+
+  <!-- ===================== stable / volatile legend under bars ===================== -->
+  <!-- align brackets to the full-price footprint: prefix 4600 tok = 237px, suffix 304px -->
+  <line class="tick" x1="300" y1="240" x2="300" y2="250"/>
+  <line class="tick" x1="537" y1="240" x2="537" y2="250"/>
+  <line class="tick" x1="300" y1="250" x2="537" y2="250"/>
+  <text class="l" x="418" y="268" text-anchor="middle">Stable prefix</text>
+  <text class="s" x="418" y="284" text-anchor="middle">system + tools, frozen</text>
+
+  <line class="tick" x1="537" y1="240" x2="537" y2="250"/>
+  <line class="tick" x1="900" y1="240" x2="900" y2="250"/>
+  <line class="tick" x1="537" y1="250" x2="900" y2="250"/>
+  <text class="l" x="718" y="268" text-anchor="middle">Volatile suffix</text>
+  <text class="s" x="718" y="284" text-anchor="middle">this turn's user message + retrieval</text>
+
+  <!-- breakpoint marker between prefix and suffix in the legend -->
+  <line class="brk" x1="537" y1="90" x2="537" y2="238"/>
+  <text class="mono" x="537" y="82" text-anchor="middle">breakpoint</text>
+
+  <!-- ===================== bottom note: latency ===================== -->
+  <g transform="translate(48,304)">
+    <rect class="card" width="852" height="40" rx="8"/>
+    <circle cx="24" cy="20" r="6" fill="var(--ce-success)"/>
+    <text class="l" x="42" y="24">A hit also cuts latency: skipping prefill of the cached prefix collapses time-to-first-token toward the small-prompt case.</text>
+  </g>
+</svg>
