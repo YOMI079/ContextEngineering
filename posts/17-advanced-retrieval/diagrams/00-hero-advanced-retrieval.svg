@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="t d">
+  <title id="t">Advanced retrieval as a router</title>
+  <desc id="d">A query enters a small classifier on the left that reads the shape of the question. From the router, five labelled branches fan out to five retrievers, each drawn as a card: text-to-SQL for structured questions, GraphRAG for multi-hop questions, late-interaction ColBERT retrieval for rare exact terms, long-context load for whole-document questions, and standard hybrid RAG with reranking as the default fall-through. Each branch is labelled with the query shape that selects it.</desc>
+
+  <style><![CDATA[
+    :root{
+      --ce-bg:#FAFAF7;--ce-surface:#FFFFFF;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;
+      --ce-ink-subtle:#9A9A9A;--ce-border:#D9D9D4;
+      --ce-primary:#5B7FBF;--ce-accent:#D98E5F;--ce-success:#5C9E78;
+      --ce-warn:#B8895A;--ce-alert:#C66B5E;--ce-muted:#6B6B6B;--ce-grid:rgba(26,26,26,0.06);
+    }
+    @media (prefers-color-scheme:dark){
+      :root{
+        --ce-bg:#0E0F12;--ce-surface:#16181C;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;
+        --ce-ink-subtle:#6E6E68;--ce-border:#2A2D33;
+        --ce-primary:#8BA8E0;--ce-accent:#E8B088;--ce-success:#7FBF9B;
+        --ce-warn:#D4B58A;--ce-alert:#D88880;--ce-muted:#A6A29B;--ce-grid:rgba(241,238,232,0.08);
+      }
+    }
+    .bg{fill:var(--ce-bg);}
+    .card{fill:var(--ce-surface);stroke:var(--ce-border);stroke-width:1;}
+    .router{fill:var(--ce-surface);stroke:var(--ce-ink);stroke-width:1.5;}
+    .query{fill:var(--ce-surface);stroke:var(--ce-ink);stroke-width:1.5;}
+    .branch{fill:none;stroke:var(--ce-ink-muted);stroke-width:1;}
+    .feed{fill:none;stroke:var(--ce-ink);stroke-width:1.5;}
+    .tab{stroke-width:0;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:20px;fill:var(--ce-ink);}
+    .sub{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:12px;fill:var(--ce-ink-muted);}
+    .rlab{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:12px;fill:var(--ce-ink);text-transform:uppercase;letter-spacing:0.05em;}
+    .name{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:13px;fill:var(--ce-ink);}
+    .desc{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--ce-ink-muted);}
+    .cond{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:11px;fill:var(--ce-ink);}
+    .mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:11px;fill:var(--ce-ink-muted);}
+    .qtxt{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:11px;fill:var(--ce-ink);}
+  ]]></style>
+
+  <rect class="bg" width="960" height="360"/>
+  <text class="title" x="48" y="44">The retrieval router</text>
+  <text class="sub" x="48" y="64">A small classifier reads the shape of each question and dispatches it to the retriever that shape demands.</text>
+
+  <!-- Incoming query -->
+  <rect class="query" x="48" y="150" width="120" height="52" rx="8"/>
+  <text class="rlab" x="60" y="172">Query</text>
+  <text class="qtxt" x="60" y="190">what shape?</text>
+
+  <!-- feed into router -->
+  <line class="feed" x1="168" y1="176" x2="196" y2="176"/>
+
+  <!-- Router / classifier -->
+  <rect class="router" x="196" y="138" width="120" height="76" rx="8"/>
+  <text class="rlab" x="256" y="168" text-anchor="middle">Router</text>
+  <text class="desc" x="256" y="186" text-anchor="middle">classify(query)</text>
+  <text class="mono" x="256" y="202" text-anchor="middle">small LLM</text>
+
+  <!-- Branch bus: router right edge x=316, bus at x=372, cards start x=520 -->
+  <!-- Five target y-centres -->
+  <!-- 1: 96  2: 148  3: 200  4: 252  5: 304 -->
+
+  <!-- horizontal stub from router to bus -->
+  <line class="branch" x1="316" y1="176" x2="372" y2="176"/>
+  <!-- vertical bus -->
+  <line class="branch" x1="372" y1="96" x2="372" y2="304"/>
+
+  <!-- branch legs to each card, with condition labels -->
+  <line class="branch" x1="372" y1="96"  x2="516" y2="96"/>
+  <line class="branch" x1="372" y1="148" x2="516" y2="148"/>
+  <line class="branch" x1="372" y1="200" x2="516" y2="200"/>
+  <line class="branch" x1="372" y1="252" x2="516" y2="252"/>
+  <line class="branch" x1="372" y1="304" x2="516" y2="304"/>
+
+  <!-- condition pills along the legs -->
+  <text class="cond" x="444" y="90"  text-anchor="middle">is_structured</text>
+  <text class="cond" x="444" y="142" text-anchor="middle">needs_traversal</text>
+  <text class="cond" x="444" y="194" text-anchor="middle">rare exact term</text>
+  <text class="cond" x="444" y="246" text-anchor="middle">whole_document</text>
+  <text class="cond" x="444" y="298" text-anchor="middle">default</text>
+
+  <!-- Cards: x=520, width=392, height=44, centred on branch y -->
+  <!-- Card 1: text-to-SQL (accent) -->
+  <g transform="translate(520,74)">
+    <rect class="card" width="392" height="44" rx="8"/>
+    <rect class="tab" x="0" y="0" width="6" height="44" rx="3" fill="var(--ce-accent)"/>
+    <text class="name" x="18" y="20">Text-to-SQL</text>
+    <text class="desc" x="18" y="36">structured tables, schema-aware prompt, read-only run</text>
+  </g>
+
+  <!-- Card 2: GraphRAG (primary) -->
+  <g transform="translate(520,126)">
+    <rect class="card" width="392" height="44" rx="8"/>
+    <rect class="tab" x="0" y="0" width="6" height="44" rx="3" fill="var(--ce-primary)"/>
+    <text class="name" x="18" y="20">GraphRAG</text>
+    <text class="desc" x="18" y="36">multi-hop, traverse the entity graph one or two hops</text>
+  </g>
+
+  <!-- Card 3: Late-interaction / ColBERT (warn) -->
+  <g transform="translate(520,178)">
+    <rect class="card" width="392" height="44" rx="8"/>
+    <rect class="tab" x="0" y="0" width="6" height="44" rx="3" fill="var(--ce-warn)"/>
+    <text class="name" x="18" y="20">Late interaction (ColBERT)</text>
+    <text class="desc" x="18" y="36">per-token MaxSim, recall on short answer spans</text>
+  </g>
+
+  <!-- Card 4: Long-context load (success) -->
+  <g transform="translate(520,230)">
+    <rect class="card" width="392" height="44" rx="8"/>
+    <rect class="tab" x="0" y="0" width="6" height="44" rx="3" fill="var(--ce-success)"/>
+    <text class="name" x="18" y="20">Long-context load</text>
+    <text class="desc" x="18" y="36">skip retrieval, load the whole doc, cache the prefix</text>
+  </g>
+
+  <!-- Card 5: Standard hybrid RAG (ink / default) -->
+  <g transform="translate(520,282)">
+    <rect class="card" width="392" height="44" rx="8"/>
+    <rect class="tab" x="0" y="0" width="6" height="44" rx="3" fill="var(--ce-ink-subtle)"/>
+    <text class="name" x="18" y="20">Standard hybrid RAG + rerank</text>
+    <text class="desc" x="18" y="36">the fall-through: handles the large majority of traffic</text>
+  </g>
+</svg>
