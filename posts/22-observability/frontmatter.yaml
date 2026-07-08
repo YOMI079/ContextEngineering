@@ -1,0 +1,7 @@
+slug: 22-observability
+title: "22 · Observability, tracing, and cost"
+date: 2026-05-12
+tags: [context-engineering, observability]
+hero: diagrams/00-hero-observability.svg
+reading_time: 11
+part: "Part IV — Production concerns"
