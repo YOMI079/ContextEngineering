@@ -1,0 +1,20 @@
+[
+  {
+    "id": "q1",
+    "question": "What does prompt caching cost to read?",
+    "ideal_answer": "about 10% of the input price",
+    "relevant_chunk_ids": ["c_caching_1", "c_caching_2"]
+  },
+  {
+    "id": "q2",
+    "question": "What is the canonical chunk size for prose?",
+    "ideal_answer": "400 to 600 tokens",
+    "relevant_chunk_ids": ["c_chunk_1"]
+  },
+  {
+    "id": "q3",
+    "question": "Name the four WSCI operations.",
+    "ideal_answer": "write, select, compress, isolate",
+    "relevant_chunk_ids": ["c_wsci_1"]
+  }
+]

@@ -1,7 +1,7 @@
 # 24 · Email-reply agent — runnable skeleton
 
 A complete, runnable **skeleton** of the capstone from
-[Post 24](../../posts/24-capstone-email-reply-agent/index.md). Implements
+[Post 30](../../posts/30-capstone-email-reply-agent/index.md). Implements
 the full architecture — triager sub-agent, drafter, send-gate, memory,
 RAG over prior replies — against a **fake mailbox driver** so the pipeline
 runs end-to-end with no cloud setup.
@@ -12,7 +12,7 @@ real OAuth.
 ## Quickstart
 
 ```powershell
-cd code/24-email-reply-agent
+cd code/30-email-reply-agent
 uv sync
 copy .env.example .env           # set OPENAI_API_KEY, optional VOYAGE_API_KEY
 uv run python -m emailbot.run

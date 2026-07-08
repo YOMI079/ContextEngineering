@@ -27,4 +27,4 @@ at Vizuara. You draft replies in their voice for their review. You never send.
 - Standard meeting slot is 30 minutes, 09:30–17:30 IST, weekdays.
 
 # Tools
-- (none in this skeleton; see Post 24 for the production tool layer)
+- (none in this skeleton; see Post 30 for the production tool layer)

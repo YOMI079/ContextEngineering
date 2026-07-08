@@ -1,7 +1,7 @@
 # 22 · RAG Chatbot — runnable companion
 
 A small, framework-light RAG chatbot in Python. Implements every step from
-[Post 22](../../posts/22-build-rag-chatbot/index.md): chunking with overlap,
+[Post 28](../../posts/28-build-rag-chatbot/index.md): chunking with overlap,
 contextual headers, hybrid retrieval (dense + BM25) with reciprocal rank
 fusion, cross-encoder reranking, bookend packing with citations, and a
 four-metric eval harness.
@@ -11,7 +11,7 @@ Designed to be readable end-to-end in one sitting (~350 lines total).
 ## Quickstart
 
 ```powershell
-cd code/22-rag-chatbot
+cd code/28-rag-chatbot
 uv sync                          # or: pip install -e .
 copy .env.example .env           # then edit with your API keys
 uv run python -m rag.ingest data/corpus
@@ -76,7 +76,7 @@ within 5 % of baseline into your CI of choice.
 - It is not multi-turn. Append last-N turns + a query rewriter at the top
   of `answer()` for conversation memory; the post explains the shape.
 
-See [Post 22 §8](../../posts/22-build-rag-chatbot/index.md) for the full
+See [Post 28 §8](../../posts/28-build-rag-chatbot/index.md) for the full
 list of extensions and where each principle in this code traces back to.
 
 ## License

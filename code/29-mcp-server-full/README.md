@@ -4,13 +4,13 @@ A working Model Context Protocol server in ~150 lines. Exposes three tools
 (`search_orders`, `issue_refund`, `escalate_to_human`), one resource
 (`refunds_policy`), and one prompt (`triage_intake`). Implements the iron
 triangle of tool design and the four security defences from
-[Post 13](../../posts/13-tools-and-mcp/index.md) and
-[Post 18](../../posts/18-security/index.md).
+[Post 15](../../posts/15-tools-and-mcp/index.md) and
+[Post 23](../../posts/23-security/index.md).
 
 ## Quickstart
 
 ```powershell
-cd code/23-mcp-server-full
+cd code/29-mcp-server-full
 uv sync                          # or: pip install -e .
 uv run python server.py          # serves over stdio
 ```
@@ -26,7 +26,7 @@ uv run python server.py          # serves over stdio
   "mcpServers": {
     "acme-support": {
       "command": "uv",
-      "args": ["--directory", "C:/absolute/path/to/code/23-mcp-server-full",
+      "args": ["--directory", "C:/absolute/path/to/code/29-mcp-server-full",
                "run", "python", "server.py"]
     }
   }
@@ -71,7 +71,7 @@ search by email).
 - It is not multi-tenant. The server has one identity.
 - It does not log to durable storage. Add an audit table for production.
 
-See [Post 23 §9](../../posts/23-build-mcp-server/index.md) for the full
+See [Post 29 §9](../../posts/29-build-mcp-server/index.md) for the full
 extension list.
 
 ## License
