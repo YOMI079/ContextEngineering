@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="t d">
+  <title id="t">The long-context vs. RAG decision tree</title>
+  <desc id="d">A four-question decision spine runs left to right. Question one asks whether the corpus fits one window with room to spare; a no branches down to RAG. Question two asks whether the corpus is stable enough to cache; a no branches down to RAG. Question three asks whether each query needs most of the corpus or just a slice; a slice branches down to RAG. Question four asks whether the model can actually reason over the whole at this length; a no branches down to RAG. When every answer stays on the top path, the outcome is long context. The final panel notes that most production systems route per query rather than picking once, mixing both.</desc>
+
+  <style><![CDATA[
+    :root{
+      --ce-bg:#FAFAF7;--ce-surface:#FFFFFF;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;
+      --ce-ink-subtle:#9A9A9A;--ce-border:#D9D9D4;
+      --ce-primary:#5B7FBF;--ce-accent:#D98E5F;--ce-success:#5C9E78;
+      --ce-warn:#B8895A;--ce-alert:#C66B5E;--ce-muted:#6B6B6B;--ce-grid:rgba(26,26,26,0.06);
+    }
+    @media (prefers-color-scheme:dark){
+      :root{
+        --ce-bg:#0E0F12;--ce-surface:#16181C;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;
+        --ce-ink-subtle:#6E6E68;--ce-border:#2A2D33;
+        --ce-primary:#8BA8E0;--ce-accent:#E8B088;--ce-success:#7FBF9B;
+        --ce-warn:#D4B58A;--ce-alert:#D88880;--ce-muted:#A6A29B;--ce-grid:rgba(241,238,232,0.08);
+      }
+    }
+    .bg{fill:var(--ce-bg);}
+    .q{fill:var(--ce-surface);stroke:var(--ce-ink);stroke-width:1.5;}
+    .out{fill:var(--ce-surface);stroke:var(--ce-border);stroke-width:1;}
+    .yes{fill:none;stroke:var(--ce-ink);stroke-width:1.5;}
+    .no{fill:none;stroke:var(--ce-ink-muted);stroke-width:1;stroke-dasharray:4 3;}
+    .tab{stroke-width:0;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:20px;fill:var(--ce-ink);}
+    .sub{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:12px;fill:var(--ce-ink-muted);}
+    .qn{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:11px;fill:var(--ce-ink-subtle);text-transform:uppercase;letter-spacing:0.06em;}
+    .qt{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12px;fill:var(--ce-ink);}
+    .edge{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:10px;fill:var(--ce-ink-muted);text-transform:uppercase;letter-spacing:0.05em;}
+    .oname{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:13px;fill:var(--ce-ink);}
+    .odesc{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:11px;fill:var(--ce-ink-muted);}
+    .mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:11px;fill:var(--ce-ink-muted);}
+  ]]></style>
+
+  <rect class="bg" width="960" height="360"/>
+  <text class="title" x="48" y="44">Long context vs. RAG: four questions</text>
+  <text class="sub" x="48" y="64">Walk the spine. Any answer that falls off the top path sends the query to retrieval.</text>
+
+  <!-- ============ Top spine: four question nodes ============ -->
+  <!-- Node geometry: width 158, height 88, top y=104. Centres x: 118, 306, 494, 682 -->
+  <!-- Question 1 -->
+  <g transform="translate(48,104)">
+    <rect class="q" width="140" height="88" rx="10"/>
+    <rect class="tab" x="0" y="0" width="6" height="88" rx="3" fill="var(--ce-primary)"/>
+    <text class="qn" x="18" y="22">Q1 · Fit</text>
+    <text class="qt" x="18" y="42">Fits one</text>
+    <text class="qt" x="18" y="57">window, with</text>
+    <text class="qt" x="18" y="72">room to spare?</text>
+  </g>
+
+  <!-- Question 2 -->
+  <g transform="translate(236,104)">
+    <rect class="q" width="140" height="88" rx="10"/>
+    <rect class="tab" x="0" y="0" width="6" height="88" rx="3" fill="var(--ce-primary)"/>
+    <text class="qn" x="18" y="22">Q2 · Cache</text>
+    <text class="qt" x="18" y="42">Stable enough</text>
+    <text class="qt" x="18" y="57">to cache the</text>
+    <text class="qt" x="18" y="72">prefix?</text>
+  </g>
+
+  <!-- Question 3 -->
+  <g transform="translate(424,104)">
+    <rect class="q" width="140" height="88" rx="10"/>
+    <rect class="tab" x="0" y="0" width="6" height="88" rx="3" fill="var(--ce-primary)"/>
+    <text class="qn" x="18" y="22">Q3 · Scope</text>
+    <text class="qt" x="18" y="42">Query needs</text>
+    <text class="qt" x="18" y="57">most of it, not</text>
+    <text class="qt" x="18" y="72">one slice?</text>
+  </g>
+
+  <!-- Question 4 -->
+  <g transform="translate(612,104)">
+    <rect class="q" width="140" height="88" rx="10"/>
+    <rect class="tab" x="0" y="0" width="6" height="88" rx="3" fill="var(--ce-primary)"/>
+    <text class="qn" x="18" y="22">Q4 · Reason</text>
+    <text class="qt" x="18" y="42">Model reasons</text>
+    <text class="qt" x="18" y="57">well over the</text>
+    <text class="qt" x="18" y="72">whole length?</text>
+  </g>
+
+  <!-- ============ YES edges along the spine ============ -->
+  <line class="yes" x1="188" y1="148" x2="236" y2="148"/>
+  <text class="edge" x="212" y="140" text-anchor="middle">yes</text>
+  <line class="yes" x1="376" y1="148" x2="424" y2="148"/>
+  <text class="edge" x="400" y="140" text-anchor="middle">yes</text>
+  <line class="yes" x1="564" y1="148" x2="612" y2="148"/>
+  <text class="edge" x="588" y="140" text-anchor="middle">yes</text>
+
+  <!-- yes out of Q4 into Long-context outcome -->
+  <line class="yes" x1="752" y1="148" x2="800" y2="148"/>
+  <text class="edge" x="776" y="140" text-anchor="middle">yes</text>
+
+  <!-- ============ Long-context outcome (top-right, success) ============ -->
+  <g transform="translate(800,104)">
+    <rect class="out" width="128" height="88" rx="10"/>
+    <rect class="tab" x="0" y="0" width="6" height="88" rx="3" fill="var(--ce-success)"/>
+    <text class="oname" x="18" y="30">Long context</text>
+    <text class="odesc" x="18" y="50">Load the whole</text>
+    <text class="odesc" x="18" y="65">corpus, cache the</text>
+    <text class="odesc" x="18" y="80">prefix, skip retrieval.</text>
+  </g>
+
+  <!-- ============ NO branches drop to the RAG bus ============ -->
+  <!-- RAG bus is a horizontal line at y=252 spanning the four question columns -->
+  <!-- No leg from each question bottom (y=192) down to bus (y=252) -->
+  <line class="no" x1="118" y1="192" x2="118" y2="252"/>
+  <line class="no" x1="306" y1="192" x2="306" y2="252"/>
+  <line class="no" x1="494" y1="192" x2="494" y2="252"/>
+  <line class="no" x1="682" y1="192" x2="682" y2="252"/>
+
+  <!-- no-edge labels -->
+  <text class="edge" x="118" y="212" text-anchor="middle">no</text>
+  <text class="edge" x="306" y="212" text-anchor="middle">no</text>
+  <text class="edge" x="494" y="212" text-anchor="middle">no</text>
+  <text class="edge" x="682" y="212" text-anchor="middle">slice</text>
+
+  <!-- The bus, gathering the four no-legs, running right into the RAG outcome -->
+  <line class="no" x1="118" y1="252" x2="800" y2="252"/>
+  <line class="no" x1="800" y1="252" x2="800" y2="240"/>
+
+  <!-- ============ RAG outcome (mid-right, accent) ============ -->
+  <g transform="translate(800,208)">
+    <rect class="out" width="128" height="72" rx="10"/>
+    <rect class="tab" x="0" y="0" width="6" height="72" rx="3" fill="var(--ce-accent)"/>
+    <text class="oname" x="18" y="28">RAG</text>
+    <text class="odesc" x="18" y="47">Retrieve a focused</text>
+    <text class="odesc" x="18" y="62">slice, rerank, pack.</text>
+  </g>
+
+  <!-- ============ Bottom panel: per-query routing is the real answer ============ -->
+  <g transform="translate(48,300)">
+    <rect class="out" width="880" height="44" rx="10"/>
+    <rect class="tab" x="0" y="0" width="6" height="44" rx="3" fill="var(--ce-warn)"/>
+    <text class="oname" x="20" y="20">Per-query router</text>
+    <text class="odesc" x="20" y="36">The production answer: a small classifier runs this test per query, so different queries take different paths.</text>
+    <text class="mono" x="700" y="30" text-anchor="middle">build a router, not a religion</text>
+  </g>
+</svg>
