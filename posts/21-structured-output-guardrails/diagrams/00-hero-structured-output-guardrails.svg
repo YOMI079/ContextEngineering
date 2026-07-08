@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-labelledby="t d">
+  <title id="t">Structured output and guardrails: the response control loop</title>
+  <desc id="d">A left-to-right control loop on the model's response. Raw output enters a validate-against-schema gate. Valid output passes right into a moderation and redaction gate and is returned to the consumer. Invalid output is rejected and loops back downward, with the validation error appended to the messages, to prompt a retry through the model. The retry path is capped at three attempts before a hard error is raised.</desc>
+
+  <style><![CDATA[
+    :root{
+      --ce-bg:#FAFAF7;--ce-surface:#FFFFFF;--ce-ink:#1A1A1A;--ce-ink-muted:#5C5C5C;
+      --ce-ink-subtle:#9A9A9A;--ce-border:#D9D9D4;
+      --ce-primary:#5B7FBF;--ce-accent:#D98E5F;--ce-success:#5C9E78;
+      --ce-warn:#B8895A;--ce-alert:#C66B5E;--ce-neutral-1:#EAEAE4;--ce-neutral-3:#8E8E88;
+    }
+    @media (prefers-color-scheme:dark){
+      :root{
+        --ce-bg:#0E0F12;--ce-surface:#16181C;--ce-ink:#F2F2EE;--ce-ink-muted:#B4B4AE;
+        --ce-ink-subtle:#6E6E68;--ce-border:#2A2D33;
+        --ce-primary:#8BA8E0;--ce-accent:#E8B088;--ce-success:#7FBF9B;
+        --ce-warn:#D4B58A;--ce-alert:#D88880;--ce-neutral-1:#1F2229;--ce-neutral-3:#6E6E68;
+      }
+    }
+    .bg{fill:var(--ce-bg);}
+    .node{fill:var(--ce-surface);stroke:var(--ce-ink);stroke-width:1.5;}
+    .gate-ok{fill:var(--ce-surface);stroke:var(--ce-primary);stroke-width:1.5;}
+    .gate-guard{fill:var(--ce-surface);stroke:var(--ce-success);stroke-width:1.5;}
+    .flow{fill:none;stroke:var(--ce-ink);stroke-width:1.5;}
+    .flow-ok{fill:none;stroke:var(--ce-success);stroke-width:1.5;}
+    .flow-bad{fill:none;stroke:var(--ce-alert);stroke-width:1.5;stroke-dasharray:5 4;}
+    .lead{fill:none;stroke:var(--ce-ink-muted);stroke-width:1;}
+    .title{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:20px;fill:var(--ce-ink);}
+    .h{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:12px;fill:var(--ce-ink);text-transform:uppercase;letter-spacing:0.06em;}
+    .l{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:13px;fill:var(--ce-ink);}
+    .s{font-family:Inter,system-ui,sans-serif;font-weight:400;font-size:12px;fill:var(--ce-ink-muted);}
+    .ok{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:11px;fill:var(--ce-success);text-transform:uppercase;letter-spacing:0.05em;}
+    .bad{font-family:Inter,system-ui,sans-serif;font-weight:700;font-size:11px;fill:var(--ce-alert);text-transform:uppercase;letter-spacing:0.05em;}
+    .mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:11px;fill:var(--ce-ink-muted);}
+    .monoi{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:11px;fill:var(--ce-ink);}
+  ]]></style>
+
+  <rect class="bg" width="960" height="360"/>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ce-ink)"/>
+    </marker>
+    <marker id="ar-ok" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ce-success)"/>
+    </marker>
+    <marker id="ar-bad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ce-alert)"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="48" y="44">The response control loop</text>
+  <text class="s" x="48" y="64">Validate against a schema, retry on failure, moderate before returning.</text>
+
+  <!-- ============ Top row: forward path ============ -->
+  <!-- y centre of main row -->
+  <!-- Model output -->
+  <g transform="translate(48,120)">
+    <rect class="node" width="150" height="72" rx="8"/>
+    <text class="h" x="16" y="26">Model output</text>
+    <text class="mono" x="16" y="47">raw response</text>
+    <text class="mono" x="16" y="62">text / JSON</text>
+  </g>
+
+  <!-- arrow model -> validate -->
+  <line class="flow" x1="198" y1="156" x2="248" y2="156" marker-end="url(#ar)"/>
+
+  <!-- Validate gate (diamond-ish rounded box) -->
+  <g transform="translate(250,120)">
+    <rect class="gate-ok" width="170" height="72" rx="8"/>
+    <text class="h" x="16" y="26">validate(schema)</text>
+    <text class="s" x="16" y="47">JSON Schema · types,</text>
+    <text class="s" x="16" y="62">required, enums</text>
+  </g>
+
+  <!-- valid arrow -> moderation -->
+  <line class="flow-ok" x1="420" y1="156" x2="560" y2="156" marker-end="url(#ar-ok)"/>
+  <text class="ok" x="490" y="148" text-anchor="middle">valid</text>
+
+  <!-- Moderation / redaction gate -->
+  <g transform="translate(562,120)">
+    <rect class="gate-guard" width="180" height="72" rx="8"/>
+    <text class="h" x="16" y="26">moderate · redact</text>
+    <text class="s" x="16" y="47">content · PII · leaked</text>
+    <text class="s" x="16" y="62">system detail</text>
+  </g>
+
+  <!-- returned arrow -> consumer -->
+  <line class="flow-ok" x1="742" y1="156" x2="782" y2="156" marker-end="url(#ar-ok)"/>
+
+  <!-- Returned / consumer -->
+  <g transform="translate(784,120)">
+    <rect class="node" width="128" height="72" rx="8"/>
+    <text class="h" x="16" y="26">Returned</text>
+    <text class="s" x="16" y="47">typed record,</text>
+    <text class="s" x="16" y="62">safe to store</text>
+  </g>
+
+  <!-- ============ Retry loop: invalid path ============ -->
+  <!-- down from validate gate -->
+  <line class="flow-bad" x1="335" y1="192" x2="335" y2="252" marker-end="url(#ar-bad)"/>
+  <text class="bad" x="345" y="222" text-anchor="start">invalid</text>
+
+  <!-- Append-error node (below validate) -->
+  <g transform="translate(230,254)">
+    <rect class="node" width="210" height="66" rx="8"/>
+    <text class="h" x="16" y="24">append error → retry</text>
+    <text class="monoi" x="16" y="45">messages += [error]</text>
+    <text class="mono" x="16" y="59">the error is the fix instruction</text>
+  </g>
+
+  <!-- loop back left to model, then up -->
+  <!-- from append node left edge to under model, then up into model -->
+  <path class="flow-bad" d="M230 287 L123 287 L123 192" marker-end="url(#ar-bad)"/>
+  <text class="mono" x="150" y="305" text-anchor="start">re-prompt</text>
+
+  <!-- attempt cap annotation -->
+  <line class="lead" x1="440" y1="287" x2="500" y2="287"/>
+  <g transform="translate(502,262)">
+    <rect width="200" height="52" rx="8" fill="var(--ce-bg)" stroke="var(--ce-border)" stroke-width="1"/>
+    <text class="l" x="14" y="22">Cap the loop</text>
+    <text class="s" x="14" y="40">3 attempts, then hard error</text>
+  </g>
+
+  <!-- guardrail bracket under forward path -->
+  <line class="lead" x1="250" y1="104" x2="742" y2="104"/>
+  <line class="lead" x1="250" y1="104" x2="250" y2="112"/>
+  <line class="lead" x1="742" y1="104" x2="742" y2="112"/>
+  <text class="h" x="496" y="96" text-anchor="middle" fill="var(--ce-ink-muted)">Output guardrail layer</text>
+
+</svg>

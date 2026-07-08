@@ -1,0 +1,7 @@
+slug: 21-structured-output-guardrails
+title: "21 · Structured output and guardrails"
+date: 2026-05-14
+tags: [context-engineering, structured-output, guardrails, validation]
+hero: diagrams/00-hero-structured-output-guardrails.svg
+reading_time: 13
+part: "Part IV — Production concerns"
