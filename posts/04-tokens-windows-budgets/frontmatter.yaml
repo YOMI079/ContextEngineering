@@ -7,7 +7,7 @@ description: >
   Learn how to estimate prompt size, optimize context allocation, reduce
   inference costs with prompt caching, and design efficient LLM agents.
 
-author: "Om Panwar"
+author: "Ajay"
 
 date: 2026-05-13
 last_modified: 2026-05-13
