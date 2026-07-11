@@ -1,7 +1,50 @@
+---
 slug: 02-six-layers-of-context
-title: "02 · The six layers of context"
+title: "02 · The Six Layers of Context"
+
+description: >
+  Learn the six layers of a modern LLM context window—system prompts,
+  tools, memory, RAG, conversation history, and user instructions—and
+  understand how each layer affects accuracy, cost, latency, and debugging.
+
+author: "Ajay"
+
 date: 2026-05-13
-tags: [context-engineering, foundations, layers]
-hero: ../../assets/diagrams/exports/01-context-window-stack.svg
+last_modified: 2026-05-13
+
+tags:
+  - context-engineering
+  - foundations
+  - context-window
+  - llm
+  - rag
+  - ai-agents
+
+category: Foundations
+series: Context Engineering
+part: 1
+chapter: "Part I — Foundations"
+
+hero: ../diagrams/02-six-layers-of-context.svg
+hero_alt: "Diagram showing the six layers of a modern LLM context window"
+
 reading_time: 14
-part: "Part I — Foundations"
+
+toc: true
+draft: false
+
+keywords:
+  - Context Window
+  - Context Engineering
+  - System Prompt
+  - RAG
+  - Memory
+  - MCP
+  - AI Agents
+  - Large Language Models
+
+canonical_url: ""
+
+prev: ../01-why-context-engineering/
+next: ../03-how-llms-read-context/
+---

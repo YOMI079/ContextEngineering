@@ -113,7 +113,7 @@ The practical mental model: choose the corner you are optimising for *per workfl
 
 The arithmetic that follows is the back-of-envelope every team eventually does, written out once. To keep the sums easy to follow, it uses round illustrative rates of **\$2.50 / 1 M input** and **\$10 / 1 M output** (close to the mid tier above; plug in your provider's current numbers to get real figures).
 
-Consider a customer-support agent with the following per-turn shape. Two acronyms appear here: **MCP** (Model Context Protocol, the open standard for exposing tools to a model; Post 15) and **RAG** (retrieval-augmented generation, pulling in the *top-k* most relevant chunks from a store; Post 11). Each contributes its own slice of the input budget:
+Consider a customer-support agent with the following per-turn shape. Two acronyms appear here: **MCP** (Model Context Protocol, the open standard for exposing tools to a model; [Post 15](../15-tools-and-mcp/index.md)) and **RAG** (retrieval-augmented generation, pulling in the *top-k* most relevant chunks from a store; [Post 11](../11-rag-in-depth/index.md)). Each contributes its own slice of the input budget:
 
 | Layer | Tokens per call |
 |---|---|
@@ -191,10 +191,10 @@ The arithmetic above only works if each layer of your context has a budget you a
 | Layer | Default share | Why |
 |---|---|---|
 | System prompt | 5–15 % | Must be small enough to keep the cached prefix *cacheable* |
-| Tools / MCP | 5–15 % | RAG over tool schemas (Post 15) when this exceeds 15 % |
+| Tools / MCP | 5–15 % | RAG over tool schemas ([Post 15](../15-tools-and-mcp/index.md)) when this exceeds 15 % |
 | Memory | 5–10 % | Compress aggressively; episodic memory should not grow unbounded |
 | RAG | 20–40 % | The biggest variable lever; tune retrieval `k` to the budget, not the other way round |
-| History | 10–30 % | Summarise on a schedule (Post 12), not at the limit |
+| History | 10–30 % | Summarise on a schedule ([Post 12](../12-compress-strategies/index.md)), not at the limit |
 | User turn | 1–5 % | Almost always the smallest, despite being the reason for the call |
 | **Output reserve** | 10–20 % of *window* | Cap with `max_tokens`; never trust the model to be brief |
 
@@ -215,7 +215,7 @@ The five questions below cover almost every model-selection conversation in prac
 4. **Is the input short but the task hard?** (Architect a refactor.) → Frontier tier with a small prompt; you are paying for thinking, not reading.
 5. **Is the task user-facing and time-critical?** → Mid tier with streaming, plus an explicit per-call latency budget that triggers fallback to a cheaper model on timeout.
 
-Two patterns recur often enough to deserve their own names. **Cascade**: try the cheap model first, escalate to the frontier model only when an upstream eval (Post 20) flags the cheap answer. **Plan-and-execute**: a frontier model writes the plan once; cheap models execute the steps. Both shrink the average cost per task without sacrificing tail quality.
+Two patterns recur often enough to deserve their own names. **Cascade**: try the cheap model first, escalate to the frontier model only when an upstream eval ([Post 20](../20-evaluation/index.md)) flags the cheap answer. **Plan-and-execute**: a frontier model writes the plan once; cheap models execute the steps. Both shrink the average cost per task without sacrificing tail quality.
 
 ---
 

@@ -1,7 +1,57 @@
+---
 slug: 04-tokens-windows-budgets
-title: "04 · Tokens, windows, and budgets"
+title: "04 · Tokens, Windows, and Budgets"
+
+description: >
+  Understand tokens, context windows, token budgets, latency, and API costs.
+  Learn how to estimate prompt size, optimize context allocation, reduce
+  inference costs with prompt caching, and design efficient LLM agents.
+
+author: "Om Panwar"
+
 date: 2026-05-13
-tags: [context-engineering, tokens, budgets]
+last_modified: 2026-05-13
+
+tags:
+  - context-engineering
+  - tokens
+  - context-window
+  - token-budget
+  - prompt-caching
+  - kv-cache
+  - llm-cost
+  - latency
+
+category: Foundations
+series: Context Engineering
+part: 1
+chapter: "Part I — Foundations"
+
 hero: diagrams/00-hero-token-window-budget.svg
+hero_alt: "Illustration showing the relationship between tokens, context windows, and token budgets"
+
 reading_time: 13
-part: "Part I — Foundations"
+
+toc: true
+draft: false
+
+keywords:
+  - Tokenization
+  - Context Window
+  - Token Budget
+  - Prompt Budget
+  - Prompt Caching
+  - KV Cache
+  - LLM Pricing
+  - Inference Cost
+  - Latency
+  - Prefill
+  - Decode
+  - Long Context
+  - Context Engineering
+
+canonical_url: ""
+
+prev: ../03-how-llms-read-context/
+next: ../05-context-lifecycle/
+---

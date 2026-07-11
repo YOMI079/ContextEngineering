@@ -1,7 +1,59 @@
+---
 slug: 06-context-failure-modes
-title: "05 · Five context failure modes"
+title: "06 · Five Context Failure Modes"
+
+description: >
+  Learn the five most common context failure modes in modern LLM systems:
+  distraction, confusion, conflict, lost-in-the-middle, and tool-storm.
+  Understand their symptoms, root causes, and practical fixes for building
+  reliable AI agents.
+
+author: "Ajay"
+
 date: 2026-05-13
-tags: [context-engineering, failure-modes]
+last_modified: 2026-05-13
+
+tags:
+  - context-engineering
+  - failure-modes
+  - debugging
+  - llm
+  - ai-agents
+  - retrieval
+  - tools
+  - evaluation
+
+category: Foundations
+series: Context Engineering
+part: 1
+chapter: "Part I — Foundations"
+
 hero: diagrams/01-failure-modes-grid.svg
+hero_alt: "Grid illustrating the five context failure modes and the context layers where they originate"
+
 reading_time: 14
-part: "Part I — Foundations"
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - LLM Failure Modes
+  - Distraction
+  - Confusion
+  - Conflict
+  - Lost in the Middle
+  - Tool Storm
+  - Retrieval Errors
+  - AI Agent Debugging
+  - Long Context
+  - Context Window
+  - WSCI
+  - RAG
+  - Tool Calling
+
+canonical_url: ""
+
+prev: ../05-economics-of-context/
+next: ../07-write-select-compress-isolate/
+---
