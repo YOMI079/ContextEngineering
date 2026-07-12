@@ -7,7 +7,7 @@
 > - Specify the minimum metadata each memory cell needs.
 > - Avoid the four classes of bug that turn a memory store into an active liability.
 
-![Memory taxonomy](../../assets/diagrams/exports/08-memory-taxonomy.svg)
+![Memory taxonomy](../16-memory-systems/diagrams/08-memory-taxonomy.svg)
 
 *The three-kind memory taxonomy: episodic (events), semantic (facts and preferences), and procedural (rules and how-tos), each with its own write trigger, retrieval strategy, and decay policy.*
 

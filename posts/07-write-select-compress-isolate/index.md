@@ -7,7 +7,7 @@
 > - Pick the right operation for any of the five failure modes.
 > - Read the rest of the series knowing where each technique fits.
 
-![The WSCI framework](../../assets/diagrams/exports/02-wsci-quadrants.svg)
+![The WSCI framework](../07-write-select-compress-isolate/diagrams/01-wsci-quadrants.svg)
 
 *The four WSCI operations arranged by direction (information in or out) and scope (one context window or several).*
 

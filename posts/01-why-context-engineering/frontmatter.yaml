@@ -1,7 +1,47 @@
+---
 slug: 01-why-context-engineering
 title: "01 · Why context engineering — and why now"
+
+description: >
+  Why modern LLM work moved from prompt engineering to context
+  engineering, and why the shift matters now.
+
+author: "Ajay"
+
 date: 2026-05-12
-tags: [context-engineering, foundations]
+last_modified: 2026-05-12
+
+tags:
+  - context-engineering
+  - foundations
+  - llm
+  - ai-agents
+  - rag
+
+category: Foundations
+series: Context Engineering
+part: 1
+chapter: "Part I — Foundations"
+
 hero: diagrams/01-timeline.svg
+hero_alt: "Timeline from prompt engineering to context engineering"
+
 reading_time: 12
-part: "Part I — Foundations"
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - Prompt Engineering
+  - LLM
+  - RAG
+  - AI Agents
+  - Context Window
+
+canonical_url: ""
+
+prev: null
+next: ../02-six-layers-of-context/
+
+---

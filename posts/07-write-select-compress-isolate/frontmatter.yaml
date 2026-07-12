@@ -1,7 +1,59 @@
+---
 slug: 07-write-select-compress-isolate
-title: "06 · Write, select, compress, isolate"
-date: 2026-05-12
-tags: [context-engineering, wsci]
+title: "07 · Write, Select, Compress, Isolate"
+
+description: >
+  Discover the WSCI framework—the four fundamental operations of context
+  engineering: Write, Select, Compress, and Isolate. Learn how every
+  production LLM technique maps to these primitives and how they solve
+  common context failure modes.
+
+author: "Ajay"
+
+date: 2026-05-15
+last_modified: 2026-05-15
+
+tags:
+  - context-engineering
+  - wsci
+  - write
+  - select
+  - compress
+  - isolate
+  - ai-agents
+  - llm
+
+category: The Four Primitives
+series: Context Engineering
+part: 2
+chapter: "Part II — The Four Primitives (WSCI)"
+
 hero: ../../assets/diagrams/exports/02-wsci-quadrants.svg
+hero_alt: "The WSCI framework showing the four primitive operations: Write, Select, Compress, and Isolate"
+
 reading_time: 10
-part: "Part II — The four primitives (WSCI)"
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - WSCI
+  - Write
+  - Select
+  - Compress
+  - Isolate
+  - AI Agents
+  - Retrieval
+  - RAG
+  - Memory Systems
+  - Prompt Compression
+  - Multi-Agent Systems
+  - Context Window
+  - Agent Architecture
+
+canonical_url: ""
+
+prev: ../06-context-failure-modes/
+next: ../08-write-strategies/
+---

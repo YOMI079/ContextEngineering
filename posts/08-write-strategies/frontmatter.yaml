@@ -1,7 +1,61 @@
+---
 slug: 08-write-strategies
-title: "07 · Write strategies"
-date: 2026-05-12
-tags: [context-engineering, wsci, write, memory]
-hero: ../../assets/diagrams/exports/08-memory-taxonomy.svg
+title: "08 · Write Strategies"
+
+description: >
+  Learn how to design durable write paths for AI agents using memory stores,
+  scratchpads, repository documentation, and embedding indexes. Explore
+  metadata, governance, decay policies, and best practices for building
+  reliable long-term memory systems.
+
+author: "Ajay"
+
+date: 2026-05-16
+last_modified: 2026-05-16
+
+tags:
+  - context-engineering
+  - wsci
+  - write
+  - memory
+  - scratchpad
+  - agents-md
+  - rag
+  - embeddings
+
+category: The Four Primitives
+series: Context Engineering
+part: 2
+chapter: "Part II — The Four Primitives (WSCI)"
+
+hero: ../diagrams/08-write-strategies/hero.png
+hero_alt: "Taxonomy of episodic, semantic, and procedural memory used by AI agents"
+
 reading_time: 12
-part: "Part II — The four primitives (WSCI)"
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - WSCI
+  - Write Strategy
+  - AI Memory
+  - Episodic Memory
+  - Semantic Memory
+  - Procedural Memory
+  - Scratchpad
+  - AGENTS.md
+  - CLAUDE.md
+  - Skill Files
+  - Embedding Index
+  - RAG
+  - Long-Term Memory
+  - Memory Governance
+  - Vector Database
+
+canonical_url: ""
+
+prev: ../07-write-select-compress-isolate/
+next: ../09-select-strategies/
+---

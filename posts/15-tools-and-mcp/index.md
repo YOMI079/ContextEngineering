@@ -8,7 +8,7 @@
 > - Decide when MCP is the right integration choice and when bespoke glue still wins.
 > - Choose between a tool call and a structured `response_format` for a given task.
 
-![MCP has three roles: the host application, an MCP client inside it, and one or more MCP servers exposing tools, resources, and prompts](../../assets/diagrams/exports/05-mcp-triangle.svg)
+![MCP has three roles: the host application, an MCP client inside it, and one or more MCP servers exposing tools, resources, and prompts](../15-tools-and-mcp/diagrams/05-mcp-triangle.svg)
 
 *The Model Context Protocol in one picture: a host embeds an MCP client that speaks the protocol to one or more servers, each exposing tools, resources, and prompts. The design tensions those tools create, catalogued in [§2](#2-the-iron-triangle), are this post's real subject.*
 

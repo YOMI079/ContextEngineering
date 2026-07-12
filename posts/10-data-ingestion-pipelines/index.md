@@ -7,7 +7,7 @@
 > - Preserve tables, structure, and provenance through the pipeline instead of flattening them into unusable text.
 > - Stand up incremental re-indexing so a corpus that changes daily does not silently rot.
 
-![Ingestion pipeline: raw PDF, HTML, scan and spreadsheet sources feed a parse and OCR stage, then clean, enrich, chunk and index (dense plus lexical), with the parse, clean and enrich stages marked as where retrieval quality is set upstream.](diagrams/00-hero-data-ingestion-pipelines.svg)
+![Ingestion pipeline: raw PDF, HTML, scan and spreadsheet sources feed a parse and OCR stage, then clean, enrich, chunk and index (dense plus lexical), with the parse, clean and enrich stages marked as where retrieval quality is set upstream.](../10-data-ingestion-pipelines/diagrams/00-hero-data-ingestion-pipelines.svg)
 *Retrieval quality is decided upstream: what the parser keeps or drops is what the model can ever retrieve.*
 
 ---
@@ -34,7 +34,7 @@ source  →  parse  →  clean  →  enrich  →  chunk  →  index
            layout    plate                (Post 11)
 ```
 
-*The ingestion pipeline: five upstream stages that decide what text exists at all, then chunking and indexing (the subject of Post 11) that decide how it is retrieved.*
+*The ingestion pipeline: five upstream stages that decide what text exists at all, then chunking and indexing (the subject of [Post 11](../11-rag-in-depth/index.md)) that decide how it is retrieved.*
 
 - **Source**: fetch the raw bytes and record where they came from. A PDF from a document management system, an HTML page from a crawl, a row exported from a wiki.
 - **Parse**: turn bytes into structured text, ideally preserving reading order, headings, and tables. This is the stage that makes or breaks everything downstream, and most of this post lives here.
@@ -122,7 +122,7 @@ It pays off in three places downstream:
 - **Conflict resolution.** When two chunks disagree, an old policy and its replacement, the timestamp and source metadata let the system prefer the newer or more authoritative one. Conflict is one of the five failure modes catalogued in [Post 06](../06-context-failure-modes/index.md), and dated provenance is a large part of the cure: a model told "prefer the source with the most recent timestamp" can resolve a contradiction that would otherwise produce a confidently stale answer.
 - **Filtered retrieval.** Metadata filtering ([Post 09](../09-select-strategies/index.md), §3) is only possible if the metadata exists. Scoping a query to one document, one date range, or one language is free recall, but only if `source`, `timestamp`, and `language` rode along from ingest.
 
-A useful discipline is a **manifest table**, one row per source document recording its hash, its chunk ids, the parser and embedding-model versions, and the ingest timestamp. Post 11 introduces the same table from the indexing side; build it once and share it, because it is the record that answers "what changed, and what parsed it".
+A useful discipline is a **manifest table**, one row per source document recording its hash, its chunk ids, the parser and embedding-model versions, and the ingest timestamp. [Post 11](../11-rag-in-depth/index.md) introduces the same table from the indexing side; build it once and share it, because it is the record that answers "what changed, and what parsed it".
 
 ---
 

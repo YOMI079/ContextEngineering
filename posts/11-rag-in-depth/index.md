@@ -7,7 +7,7 @@
 > - Apply the three techniques that consistently lift quality (contextual retrieval, hybrid + RRF, cross-encoder reranking).
 > - Wire up the minimum eval harness that tells you whether a change actually helped.
 
-![The RAG pipeline](../../assets/diagrams/exports/04-rag-pipeline.svg)
+![The RAG pipeline](../11-rag-in-depth/diagrams/04-rag-pipeline.svg)
 
 *The RAG pipeline: an offline half (chunk, enrich, embed, index) that sets the quality ceiling, and an online half (query, retrieve, re-rank, pack, generate) that decides how close you get to it.*
 

@@ -1,7 +1,67 @@
+---
 slug: 09-select-strategies
-title: "08 · Select strategies"
-date: 2026-05-12
-tags: [context-engineering, wsci, select, retrieval]
-hero: ../../assets/diagrams/exports/04-rag-pipeline.svg
-reading_time: 12
-part: "Part II — The four primitives (WSCI)"
+title: "09 · Select Strategies"
+
+description: >
+  Learn the Select primitive of the WSCI framework and discover how the same
+  retrieval pipeline powers RAG, tool selection, memory recall, and few-shot
+  example selection. Explore query construction, candidate generation,
+  re-ranking, and packing to build accurate, efficient retrieval systems.
+
+author: "Ajay"
+
+date: 2026-05-17
+last_modified: 2026-05-17
+
+tags:
+  - context-engineering
+  - wsci
+  - select
+  - retrieval
+  - rag
+  - reranking
+  - embeddings
+  - hybrid-search
+
+category: The Four Primitives
+series: Context Engineering
+part: 2
+chapter: "Part II — The Four Primitives (WSCI)"
+
+hero: ../09-select-strategies/diagrams/04-rag-pipeline.svg
+hero_alt: "The four-stage Select pipeline showing query construction, candidate generation, re-ranking, and prompt packing"
+
+reading_time: 16
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - WSCI
+  - Select
+  - Retrieval
+  - Retrieval-Augmented Generation
+  - RAG
+  - Hybrid Search
+  - Dense Retrieval
+  - Sparse Retrieval
+  - BM25
+  - Reciprocal Rank Fusion
+  - RRF
+  - Re-ranking
+  - Cross Encoder
+  - HyDE
+  - Query Rewriting
+  - Few-shot Selection
+  - Tool Selection
+  - Memory Retrieval
+  - Embeddings
+  - ANN Search
+  - Contextual Retrieval
+
+canonical_url: ""
+
+prev: ../08-write-strategies/
+next: ../10-data-ingestion-document-pipelines/
+---
