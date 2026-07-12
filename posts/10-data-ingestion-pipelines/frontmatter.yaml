@@ -1,7 +1,66 @@
-slug: 10-data-ingestion-pipelines
-title: "10 · Data ingestion and document pipelines"
-date: 2026-05-14
-tags: [context-engineering, select, ingestion, rag]
-hero: diagrams/00-hero-data-ingestion-pipelines.svg
-reading_time: 13
-part: "Part II — The four primitives (WSCI)"
+---
+slug: 10-data-ingestion-document-pipelines
+title: "10 · Data Ingestion and Document Pipelines"
+
+description: >
+  Learn how production RAG systems ingest documents from PDFs, HTML,
+  spreadsheets, and scanned images. Explore parsing strategies, OCR,
+  layout-aware extraction, metadata enrichment, provenance, incremental
+  re-indexing, and the upstream decisions that determine retrieval quality.
+
+author: "Ajay"
+
+date: 2026-05-18
+last_modified: 2026-05-18
+
+tags:
+  - context-engineering
+  - data-ingestion
+  - document-parsing
+  - rag
+  - ocr
+  - pdf
+  - html
+  - retrieval
+
+category: The Four Primitives
+series: Context Engineering
+part: 2
+chapter: "Part II — The Four Primitives (WSCI)"
+
+hero: ../10-data-ingestion-pipelines/diagrams/00-hero-data-ingestion-pipelines.svg
+hero_alt: "Document ingestion pipeline showing parsing, cleaning, enrichment, chunking, and indexing for production RAG systems"
+
+reading_time: 15
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - Data Ingestion
+  - Document Pipelines
+  - RAG
+  - PDF Parsing
+  - OCR
+  - Layout Analysis
+  - Table Extraction
+  - HTML Parsing
+  - Document Parsing
+  - Metadata
+  - Provenance
+  - Chunking
+  - Vector Database
+  - Incremental Indexing
+  - Re-indexing
+  - Docling
+  - Unstructured
+  - LlamaParse
+  - Tesseract OCR
+  - Retrieval Pipeline
+
+canonical_url: ""
+
+prev: ../09-select-strategies/
+next: ../11-rag-in-depth/
+---

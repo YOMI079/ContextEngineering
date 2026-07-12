@@ -1,7 +1,65 @@
+---
 slug: 14-system-prompt-as-software
-title: "14 · The system prompt as software"
-date: 2026-05-12
-tags: [context-engineering, system-prompt]
+title: "14 · The System Prompt as Software"
+
+description: >
+  Learn how to treat system prompts as production software rather than
+  static text. Explore prompt architecture, versioning, testing,
+  prompt caching, AGENTS.md, CLAUDE.md, CI pipelines, and monitoring
+  practices for building reliable AI agents.
+
+author: "Ajay"
+
+date: 2026-05-22
+last_modified: 2026-05-22
+
+tags:
+  - context-engineering
+  - system-prompts
+  - prompt-engineering
+  - ai-agents
+  - prompt-caching
+  - testing
+  - ci-cd
+  - agents-md
+
+category: Components
+series: Context Engineering
+part: 3
+chapter: "Part III — Components"
+
 hero: diagrams/00-hero-system-prompt-as-software.svg
-reading_time: 12
-part: "Part III — The layers in depth"
+hero_alt: "Five-block architecture of a production system prompt: Identity, Rules, Format, Knowledge, and Tools"
+
+reading_time: 16
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - System Prompt
+  - Prompt Engineering
+  - Prompt Architecture
+  - Identity
+  - Rules
+  - Output Format
+  - Prompt Versioning
+  - Prompt Testing
+  - Prompt Evaluation
+  - Prompt Caching
+  - KV Cache
+  - AGENTS.md
+  - CLAUDE.md
+  - System Instructions
+  - AI Agents
+  - CI/CD
+  - Regression Testing
+  - Prompt Monitoring
+  - Production AI
+
+canonical_url: ""
+
+prev: ../13-isolate-strategies/
+next: ../15-tools-and-mcp/
+---

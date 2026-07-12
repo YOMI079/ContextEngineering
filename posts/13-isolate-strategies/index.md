@@ -7,7 +7,7 @@
 > - Specify the input and output contracts a sub-agent needs to be safe to deploy.
 > - Pick among sequential, fan-out / fan-in, and supervisor topologies.
 
-![Sub-agent isolation](../../assets/diagrams/exports/06-subagent-isolation.svg)
+![Sub-agent isolation](../13-isolate-strategies/diagrams/06-subagent-isolation.svg)
 
 *A parent agent delegates a scoped task to a sub-agent with its own clean context; only the structured result returns, leaving the parent's window uncluttered.*
 

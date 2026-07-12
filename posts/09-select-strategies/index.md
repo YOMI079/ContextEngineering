@@ -19,7 +19,7 @@ A naïve reading of the WSCI framework treats Select and RAG (retrieval-augmente
 
 Each of these is a Select. Each can be analysed as a four-stage pipeline:
 
-![The four-stage Select pipeline: query, candidates, re-rank, pack](../../assets/diagrams/exports/04-rag-pipeline.svg)
+![The four-stage Select pipeline: query, candidates, re-rank, pack](../09-select-strategies/diagrams/04-rag-pipeline.svg)
 
 *The Select pipeline: construct a query, generate a broad candidate set, re-rank it down, and pack the survivors into the prompt.*
 

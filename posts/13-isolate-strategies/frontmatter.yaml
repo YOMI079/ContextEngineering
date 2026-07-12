@@ -1,7 +1,69 @@
+---
 slug: 13-isolate-strategies
-title: "11 · Isolate strategies"
-date: 2026-05-12
-tags: [context-engineering, wsci, isolate, multi-agent]
+title: "13 · Isolate Strategies"
+
+description: >
+  Learn how to scale AI systems beyond a single context window using the
+  Isolate primitive of the WSCI framework. Explore sub-agents,
+  sandboxing, workflow topologies, supervisor architectures, and the
+  engineering principles for building reliable multi-agent systems.
+
+author: "Ajay"
+
+date: 2026-05-21
+last_modified: 2026-05-21
+
+tags:
+  - context-engineering
+  - wsci
+  - isolate
+  - multi-agent
+  - sub-agents
+  - sandboxing
+  - orchestration
+  - ai-agents
+
+category: The Four Primitives
+series: Context Engineering
+part: 2
+chapter: "Part II — The Four Primitives (WSCI)"
+
 hero: ../../assets/diagrams/exports/06-subagent-isolation.svg
-reading_time: 12
-part: "Part II — The four primitives (WSCI)"
+hero_alt: "Parent agent delegating tasks to isolated sub-agents with independent context windows"
+
+reading_time: 19
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - WSCI
+  - Isolate
+  - Multi-Agent Systems
+  - AI Agents
+  - Sub-Agents
+  - Agent Orchestration
+  - Supervisor Agent
+  - Worker Agent
+  - Sequential Workflow
+  - Fan-Out Fan-In
+  - Map Reduce
+  - Sandboxing
+  - Tool Isolation
+  - Context Isolation
+  - Context Window
+  - Agent Contracts
+  - JSON Schema
+  - Workflow vs Agent
+  - Anthropic
+  - LangGraph
+  - AutoGen
+  - OpenAI Swarm
+  - Cognition Devin
+
+canonical_url: ""
+
+prev: ../12-compress-strategies/
+next: ../14-system-prompts/
+---

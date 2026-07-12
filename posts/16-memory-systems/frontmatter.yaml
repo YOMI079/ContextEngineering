@@ -1,7 +1,65 @@
+---
 slug: 16-memory-systems
-title: "16 · Memory systems"
-date: 2026-05-12
-tags: [context-engineering, memory]
-hero: ../../assets/diagrams/exports/08-memory-taxonomy.svg
-reading_time: 12
-part: "Part III — The layers in depth"
+title: "16 · Memory Systems"
+
+description: >
+  Explore how AI agents build and use long-term memory through episodic,
+  semantic, and procedural memory. Learn memory architectures, retrieval
+  orchestration, decay policies, conflict resolution, and how production
+  frameworks like Mem0, Letta, and Graphiti implement persistent memory.
+
+author: "Ajay"
+
+date: 2026-05-24
+last_modified: 2026-05-24
+
+tags:
+  - context-engineering
+  - memory
+  - ai-agents
+  - long-term-memory
+  - episodic-memory
+  - semantic-memory
+  - procedural-memory
+  - retrieval
+
+category: Components
+series: Context Engineering
+part: 3
+chapter: "Part III — Components"
+
+hero: ../16-memory-systems/diagrams/08-memory-taxonomy.svg
+hero_alt: "Taxonomy of episodic, semantic, and procedural memory used in AI agent architectures"
+
+reading_time: 18
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - AI Memory
+  - Memory Systems
+  - Long-Term Memory
+  - Episodic Memory
+  - Semantic Memory
+  - Procedural Memory
+  - Memory Retrieval
+  - Memory Orchestration
+  - Memory Context
+  - Mem0
+  - Letta
+  - MemGPT
+  - Graphiti
+  - Zep
+  - Vector Database
+  - Knowledge Graph
+  - Agent Memory
+  - Memory Decay
+  - Conflict Resolution
+
+canonical_url: ""
+
+prev: ../15-tools-and-mcp/
+next: ../17-advanced-retrieval/
+---

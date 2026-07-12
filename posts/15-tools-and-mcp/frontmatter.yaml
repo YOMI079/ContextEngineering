@@ -1,7 +1,68 @@
+---
 slug: 15-tools-and-mcp
 title: "15 · Tools and MCP"
-date: 2026-05-12
-tags: [context-engineering, tools, mcp]
-hero: ../../assets/diagrams/exports/05-mcp-triangle.svg
-reading_time: 13
-part: "Part III — The layers in depth"
+
+description: >
+  Learn how LLMs use tools to interact with the real world and how the
+  Model Context Protocol (MCP) standardizes tool integration. Explore
+  tool design, runtime tool selection, structured outputs, permissions,
+  sandboxing, and production-scale tool orchestration.
+
+author: "Ajay"
+
+date: 2026-05-23
+last_modified: 2026-05-23
+
+tags:
+  - context-engineering
+  - tools
+  - mcp
+  - tool-calling
+  - function-calling
+  - structured-output
+  - ai-agents
+  - orchestration
+
+category: Components
+series: Context Engineering
+part: 3
+chapter: "Part III — Components"
+
+hero: ../15-tools-and-mcp/diagrams/05-mcp-triangle.svg
+hero_alt: "Model Context Protocol architecture showing a host application, MCP client, and multiple MCP servers exposing tools, resources, and prompts"
+
+reading_time: 18
+
+toc: true
+draft: false
+
+keywords:
+  - Context Engineering
+  - Model Context Protocol
+  - MCP
+  - Tool Calling
+  - Function Calling
+  - Structured Output
+  - JSON Schema
+  - Pydantic
+  - Instructor
+  - Outlines
+  - Constrained Decoding
+  - Tool Selection
+  - Hybrid Retrieval
+  - Cross-Encoder Re-ranking
+  - Tool Catalog
+  - AI Agents
+  - Agent Skills
+  - OpenAI Function Calling
+  - Anthropic MCP
+  - Prompt Engineering
+  - Tool Permissions
+  - Sandboxing
+  - Runtime Orchestration
+
+canonical_url: ""
+
+prev: ../14-system-prompt-as-software/
+next: ../16-memory-systems/
+---
